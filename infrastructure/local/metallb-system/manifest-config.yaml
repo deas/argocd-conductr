@@ -1,0 +1,17 @@
+# https://kind.sigs.k8s.io/docs/user/loadbalancer/
+# docker network inspect -f '{{.IPAM.Config}}' kind
+# [{172.22.0.0/16  172.22.0.1 map[]} {fc00:f853:ccd:e793::/64  fc00:f853:ccd:e793::1 map[]}]
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: example
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.22.255.200-172.22.255.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: empty
+  namespace: metallb-system

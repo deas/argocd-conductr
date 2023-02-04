@@ -1,0 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind:   GitRepository
+metadata:
+  name: apps-automation
+spec:
+  # https://github.com/fluxcd/flux2/issues/3062
+  # gitImplementation: libgit2 # go-git|libgit2
+  interval: 1m0s
+  ref:
+    branch: ${gitops_branch:=none}
+  secretRef:
+    name: apps-automation
+  url: ssh://git@github.com/deas/flux-conductr

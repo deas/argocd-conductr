@@ -1,0 +1,49 @@
+apiVersion: infra.contrib.fluxcd.io/v1alpha1
+kind: Terraform
+metadata:
+  name: datadog
+#  namespace: flux-system
+spec:
+  approvePlan: auto
+  #backendConfig:
+  #  customConfiguration: |
+  #    backend "s3" {
+  #      bucket                      = "s3-terraform-state1"
+  #      key                         = "dev/terraform.tfstate"
+  #      region                      = "us-east-1"
+  #      endpoint                    = "http://localhost:4566"
+  #      skip_credentials_validation = true
+  #      skip_metadata_api_check     = true
+  #      force_path_style            = true
+  #      dynamodb_table              = "terraformlock"
+  #      dynamodb_endpoint           = "http://localhost:4566"
+  #      encrypt                     = true
+  #    }
+  path: ./modules/datadog
+  interval: 1m
+  #runnerPodTemplate:
+  #  spec:
+  #    image: registry.io/tf-runner:xyz
+  cliConfigSecretRef:
+    name: datadog-env
+    namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demos
+    namespace: flux-system
+  #healthChecks:
+  #  - name: myapp
+  #    type: http
+  #    url: "{{.myappURL}}"
+  #    timeout: 5s
+  #vars:
+  #- name: region
+  #  value: us-east-1
+  varsFrom:
+  #- kind: ConfigMap
+  #  name: cluster-config
+  #  varsKeys:
+  #  - nodeCount
+  #  - instanceType
+  - kind: Secret
+    name: cluster-creds  

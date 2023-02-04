@@ -1,0 +1,296 @@
+{
+    "title": "${env}: Flux",
+    "description": "",
+    "widgets": [
+        {
+            "definition": {
+                "title": "Reconciliation status",
+                "title_size": "16",
+                "title_align": "left",
+                "type": "query_table",
+                "requests": [
+                    {
+                        "formulas": [
+                            {
+                                "alias": "Not ready",
+                                "conditional_formats": [
+                                    {
+                                        "palette": "white_on_red",
+                                        "comparator": ">=",
+                                        "value": 1
+                                    },
+                                    {
+                                        "palette": "white_on_green",
+                                        "comparator": "<",
+                                        "value": 1
+                                    }
+                                ],
+                                "limit": {
+                                    "count": 500,
+                                    "order": "desc"
+                                },
+                                "cell_display_mode": "number",
+                                "formula": "query1"
+                            },
+                            {
+                                "alias": "Suspended",
+                                "conditional_formats": [
+                                    {
+                                        "palette": "black_on_light_yellow",
+                                        "comparator": ">=",
+                                        "value": 1
+                                    },
+                                    {
+                                        "palette": "white_on_green",
+                                        "comparator": "<",
+                                        "value": 1
+                                    }
+                                ],
+                                "cell_display_mode": "number",
+                                "formula": "query2"
+                            }
+                        ],
+                        "response_format": "scalar",
+                        "queries": [
+                            {
+                                "query": "max:flux.gotk_reconcile_condition{type:ready,status:false,$namespace,$name,$kind} by {kind,name,namespace}",
+                                "data_source": "metrics",
+                                "name": "query1",
+                                "aggregator": "last"
+                            },
+                            {
+                                "query": "max:flux.gotk_suspend_status{$namespace,$name,$kind} by {kind,name,namespace}",
+                                "data_source": "metrics",
+                                "name": "query2",
+                                "aggregator": "last"
+                            }
+                        ]
+                    }
+                ],
+                "has_search_bar": "always"
+            },
+            "layout": {
+                "x": 0,
+                "y": 0,
+                "width": 12,
+                "height": 4
+            }
+        },
+        {
+            "definition": {
+                "title": "Workers",
+                "title_size": "16",
+                "title_align": "left",
+                "show_legend": true,
+                "legend_layout": "vertical",
+                "legend_columns": [
+                    "avg",
+                    "min",
+                    "max",
+                    "value",
+                    "sum"
+                ],
+                "type": "timeseries",
+                "requests": [
+                    {
+                        "formulas": [
+                            {
+                                "alias": "Free workers",
+                                "formula": "query2 - query1"
+                            }
+                        ],
+                        "response_format": "timeseries",
+                        "queries": [
+                            {
+                                "query": "max:flux.controller_runtime_max_concurrent_reconciles{*} by {pod_name}",
+                                "data_source": "metrics",
+                                "name": "query2"
+                            },
+                            {
+                                "query": "max:flux.controller_runtime_active_workers{*} by {pod_name}",
+                                "data_source": "metrics",
+                                "name": "query1"
+                            }
+                        ],
+                        "style": {
+                            "palette": "dog_classic",
+                            "line_type": "solid",
+                            "line_width": "normal"
+                        },
+                        "display_type": "line"
+                    }
+                ],
+                "yaxis": {
+                    "include_zero": true,
+                    "scale": "linear",
+                    "label": "",
+                    "min": "auto",
+                    "max": "auto"
+                },
+                "markers": []
+            },
+            "layout": {
+                "x": 0,
+                "y": 4,
+                "width": 12,
+                "height": 3
+            }
+        },
+        {
+            "definition": {
+                "title": "Controller reconciliation time P90",
+                "title_size": "16",
+                "title_align": "left",
+                "show_legend": true,
+                "legend_layout": "horizontal",
+                "legend_columns": [
+                    "avg",
+                    "min",
+                    "max",
+                    "value",
+                    "sum"
+                ],
+                "type": "timeseries",
+                "requests": [
+                    {
+                        "formulas": [
+                            {
+                                "formula": "query1"
+                            }
+                        ],
+                        "response_format": "timeseries",
+                        "queries": [
+                            {
+                                "query": "p90:flux.controller_runtime_reconcile_time_seconds{*} by {controller}",
+                                "data_source": "metrics",
+                                "name": "query1"
+                            }
+                        ],
+                        "style": {
+                            "palette": "dog_classic",
+                            "line_type": "solid",
+                            "line_width": "normal"
+                        },
+                        "display_type": "line"
+                    }
+                ],
+                "yaxis": {
+                    "include_zero": true,
+                    "scale": "linear",
+                    "label": "",
+                    "min": "auto",
+                    "max": "auto"
+                },
+                "markers": []
+            },
+            "layout": {
+                "x": 0,
+                "y": 7,
+                "width": 12,
+                "height": 3
+            }
+        },
+        {
+            "definition": {
+                "title": "Events",
+                "type": "group",
+                "show_title": true,
+                "layout_type": "ordered",
+                "widgets": [
+                    {
+                        "definition": {
+                            "title": "Source",
+                            "title_size": "16",
+                            "title_align": "left",
+                            "type": "event_stream",
+                            "query": "sources:kubernetes tags:source_component:source-controller $namespace $name $kind",
+                            "tags_execution": "and",
+                            "event_size": "l"
+                        },
+                        "layout": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 12,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "definition": {
+                            "title": "Kustomization",
+                            "title_size": "16",
+                            "title_align": "left",
+                            "type": "event_stream",
+                            "query": "sources:kubernetes tags:source_component:kustomize-controller $namespace $name $kind",
+                            "tags_execution": "and",
+                            "event_size": "l"
+                        },
+                        "layout": {
+                            "x": 0,
+                            "y": 3,
+                            "width": 12,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "definition": {
+                            "title": "HelmRelease",
+                            "title_size": "16",
+                            "title_align": "left",
+                            "type": "event_stream",
+                            "query": "sources:kubernetes tags:source_component:helm-controller $namespace $name $kind",
+                            "tags_execution": "and",
+                            "event_size": "l"
+                        },
+                        "layout": {
+                            "x": 0,
+                            "y": 6,
+                            "width": 12,
+                            "height": 3
+                        }
+                    }
+                ]
+            },
+            "layout": {
+                "x": 0,
+                "y": 10,
+                "width": 12,
+                "height": 10,
+                "is_column_break": true
+            }
+        }
+    ],
+    "template_variables": [
+        {
+            "name": "namespace",
+            "default": "*",
+            "prefix": "namespace",
+            "available_values": []
+        },
+        {
+            "name": "name",
+            "default": "*",
+            "prefix": "name",
+            "available_values": []
+        },
+        {
+            "name": "kind",
+            "default": "*",
+            "prefix": "kind",
+            "available_values": [
+                "helmrelease",
+                "helmchart",
+                "helmrepository",
+                "gitrepository",
+                "kustomization",
+                "imagepolicy",
+                "imagerepository",
+                "imageupdateautomation"
+            ]
+        }
+    ],
+    "layout_type": "ordered",
+    "is_read_only": false,
+    "notify_list": [],
+    "reflow_type": "fixed",
+    "id": "bzh-gej-34v"
+}

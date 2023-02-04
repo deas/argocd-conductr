@@ -1,0 +1,29 @@
+# https://fluxcd.io/flux/use-cases/gh-actions-helm-promotion/#configure-flux-for-repository-dispatching
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: github
+  namespace: podinfo
+spec:
+  type: githubdispatch
+  address: https://github.com/org/repo
+  secretRef:
+    name: github-token
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Alert
+metadata:
+  name: podinfo-dispatch
+  namespace: podinfo
+spec:
+  providerRef:
+    name: github
+  summary: "env=local"
+  eventSeverity: info
+  eventSources:
+    - kind: HelmRelease
+      name: podinfo
+  exclusionList:
+    - ".*upgrade.*has.*started"
+    - ".*is.*not.*ready"
+    - "^Dependencies.*"

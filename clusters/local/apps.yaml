@@ -1,0 +1,26 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg
+  interval: 10m0s
+  dependsOn:
+    - name: infrastructure
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/local
+  prune: true
+  postBuild:
+    substitute:
+      gitops_branch: main
+      env: testing # May be broader scope
+      # aws_acc_id: "TODO"
+      # aws_region: eu-central-1
+  wait: true
+  timeout: 5m0s

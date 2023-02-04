@@ -1,0 +1,57 @@
+apiVersion: infra.contrib.fluxcd.io/v1alpha1
+kind: Terraform
+metadata:
+  name: hello
+#  namespace: flux-system
+spec:
+  path: ./modules/hello
+  # backendConfig:
+  #   customConfiguration: |
+  #    backend "s3" {
+  #      bucket                      = "s3-terraform-state1"
+  #      key                         = "dev/terraform.tfstate"
+  #      region                      = "us-east-1"
+  #      endpoint                    = "http://localhost:4566"
+  #      skip_credentials_validation = true
+  #      skip_metadata_api_check     = true
+  #      force_path_style            = true
+  #      dynamodb_table              = "terraformlock"
+  #      dynamodb_endpoint           = "http://localhost:4566"
+  #      encrypt                     = true
+  #    }
+
+  # Only drift detection - no plan+apply
+  # approvePlan: disable
+  # Auto w/o drift detection
+  approvePlan: auto
+  alwaysCleanupRunnerPod: false
+  # disableDriftDetection: true
+
+  interval: 1m
+  runnerPodTemplate:
+    spec:
+      envFrom:
+        - secretRef:
+            name: terraform-hello-env
+  #    # image: registry.io/tf-runner:xyz
+
+  sourceRef:
+    kind: GitRepository
+    name: apps-automation
+    namespace: flux-system
+  #healthChecks:
+  #  - name: myapp
+  #    type: http
+  #    url: "{{.myappURL}}"
+  #    timeout: 5s
+  vars:
+  - name: env
+    value: ${gitops_branch:=none}
+  #varsFrom:
+  #- kind: ConfigMap
+  #  name: cluster-config
+  #  varsKeys:
+  #  - nodeCount
+  #  - instanceType
+  #- kind: Secret
+  #  name: cluster-creds    

@@ -1,0 +1,14 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: slack-ops
+spec:
+  type: slack
+  channel: local-ops
+  # webhook address (ignored if secretRef is specified)
+  # address: https://...
+  # proxy: https://proxy.corp:8080
+  # secret containing the webhook address (optional)
+  # curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/...
+  secretRef:
+    name: slack-ops-test
