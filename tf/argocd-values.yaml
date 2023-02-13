@@ -1,0 +1,152 @@
+## Argo CD configuration
+## Ref: https://github.com/argoproj/argo-cd
+##
+## openshift:
+  # -- enables using arbitrary uid for argo repo server
+  # enabled: false
+
+## Argo Configs
+configs:
+  # General Argo CD configuration
+  ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+  cm:
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+
+#configs:
+  # Argo CD sensitive data
+  # Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
+  # secret:
+    # -- Bcrypt hashed admin password
+    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+    ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+    # argocdServerAdminPassword: ""
+    # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+    # @default -- `""` (defaults to current time)
+    # argocdServerAdminPasswordMtime: ""
+repoServer:
+  env:
+    - name: XDG_CONFIG_HOME
+      value: /.config
+    - name: SOPS_AGE_KEY_FILE
+      value: /.config/sops/age/keys.txt
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.0.1
+      command: ["/bin/sh", "-c"]
+      args:
+        - echo "Installing KSOPS...";
+          mv ksops /custom-tools/;
+          mv $GOPATH/bin/kustomize /custom-tools/;
+          echo "Done.";
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+ ##   - name: import-gpg-key
+ ##     image: argoproj/argocd:v2.1.7
+ ##     command: ["gpg", "--import","/sops-gpg/sops.asc"]
+ ##     env:
+ ##       - name: GNUPGHOME
+ ##         value: /gnupg-home/.gnupg
+ ##     volumeMounts:
+ ##       - mountPath: /sops-gpg
+ ##         name: sops-gpg
+ ##       - mountPath: /gnupg-home
+ ##         name: gnupg-home
+  volumes:
+    - name: custom-tools
+      emptyDir: {}  
+    - name: sops-age
+      secret:
+        secretName: sops-age
+  volumeMounts:
+    - mountPath: /usr/local/bin/kustomize
+      name: custom-tools
+      subPath: kustomize
+    - mountPath: /usr/local/bin/ksops
+      name: custom-tools
+      subPath: ksops
+    - mountPath: /.config/sops/age/keys.txt
+      name: sops-age
+      subPath: keys.txt
+
+server:
+  #configEnabled: true
+  #config:
+  #  repositories: |
+  #    - name: argo-helm
+  #      type: helm
+  #      url: https://argoproj.github.io/argo-helm
+  #additionalApplications: 
+  #  - name: argocd
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      helm:
+  #        version: v3
+  #        valueFiles:
+  #        - values.yaml
+  #        - ../values-override.yaml
+  #      path: argocd-install/argo-cd
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #    syncPolicy:
+  #      syncOptions:
+  #      - CreateNamespace=true
+  #  - name: argocd-apps
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      path: argocd-apps
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #      directory:
+  #        recurse: true
+  #        jsonnet: {}
+  #    syncPolicy:
+  #      automated:
+  #        selfHeal: true
+  #        prune: true
+  #  - name: argocd-appprojects
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      path: argocd-appprojects
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #      directory:
+  #        recurse: true
+  #        jsonnet: {}
+  #    syncPolicy:
+  #      automated:
+  #        selfHeal: true
+  #        prune: true
+  #additionalProjects: 
+  #- name: argocd
+  #  namespace: argocd
+  #  additionalLabels: {}
+  #  additionalAnnotations: {}
+  #  description: Argocd Project
+  #  sourceRepos:
+  #  - '*'
+  #  destinations:
+  #  - namespace: argocd
+  #    server: https://kubernetes.default.svc
+  #  clusterResourceWhitelist:
+  #  - group: '*'
+  #    kind: '*'
+  #  orphanedResources:
+  #    warn: false
+#  extraArgs:
+#    - --insecure
+#  configManagementPlugins: |
+  service:
+    type: LoadBalancer

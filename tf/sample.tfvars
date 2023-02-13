@@ -1,6 +1,7 @@
-filename_flux_path         = "../clusters/local/flux-system"
-target_path                = "clusters/local"
-cluster                    = "local"
-id_rsa_fluxbot_ro_path     = "../keys/id_rsa-flux-conductr"
-id_rsa_fluxbot_ro_pub_path = "../keys/id_rsa-flux-conductr.pub"
-additional_keys            = { "sops-gpg" = { "sops.asc" = "../keys/flux-conductr-priv.asc" } }
+# target_path                = "clusters/local"
+# cluster                    = "local"
+# argocd_version    = "5.19.15"
+# bootstrap_path  = "./bootstrap.yaml"
+# enable_olm = true
+additional_keys = { "sops-age" = { "keys.txt" = "../sample-key.txt" } }
+

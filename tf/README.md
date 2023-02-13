@@ -1,4 +1,4 @@
-# terraform infra for flux conductr
+# terraform infra for argocd conductr
 
 ## Usage
 ```shell

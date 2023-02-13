@@ -1,8 +1,0 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: acme-oci 
-spec:
-  interval: 30m
-  url: "oci://FIXME.dkr.ecr.eu-central-1.amazonaws.com/"
-  type: "oci"

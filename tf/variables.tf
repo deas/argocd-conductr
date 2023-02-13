@@ -6,12 +6,26 @@
 variable "kind_cluster_name" {
   type        = string
   description = "Cluster name"
-  default     = "flux-conductr"
+  default     = "argocd-conductr"
 }
 
-variable "target_path" {
+variable "bootstrap_path" {
   type        = string
-  description = "flux sync target path"
+  default     = null
+  description = "bootstrap path"
+}
+
+/*
+variable "argocd_version" {
+  type    = string
+  default = "5.19.15"
+}
+
+*/
+
+variable "enable_olm" {
+  type    = bool
+  default = false
 }
 
 /*
@@ -22,22 +36,9 @@ variable "github_init" {
 }
 */
 
-variable "id_rsa_fluxbot_ro_path" {
-  type = string
-}
-
-variable "id_rsa_fluxbot_ro_pub_path" {
-  type = string
-}
-
 variable "additional_keys" {
   type    = map(any)
   default = {}
-}
-
-variable "filename_flux_path" {
-  type    = string
-  default = "../simple/clusters/local/flux-system"
 }
 
 /*
@@ -53,7 +54,8 @@ variable "flux_secrets" {
   type = set(string)
 }
 */
-
+/*
 variable "cluster" {
   type = string
 }
+*/

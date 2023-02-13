@@ -1,6 +1,6 @@
 #!/bin/sh
 
-name=flux-conductr
+name=argocd-conductr
 domain=contentreich.de
 
 full_path=$(realpath $0)
