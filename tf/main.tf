@@ -5,11 +5,6 @@ terraform {
       source  = "tehcyx/kind"
       version = "0.0.16"
     }
-    /*
-    github = {
-      source  = "integrations/github"
-      version = ">= 4.5.2"
-    }*/
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = ">= 2.0.2"
@@ -22,14 +17,8 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = ">= 1.10.0"
     }
-    /*
-    tls = {
-      source  = "hashicorp/tls"
-      version = "3.1.0"
-    }*/
   }
 }
-
 
 provider "helm" {
   kubernetes {
@@ -63,7 +52,7 @@ provider "kubectl" {
 }
 
 module "olm" {
-  source = "github.com/deas/terraform-modules//olm"
+  source = "github.com/deas/terraform-modules//olm?ref=main"
   # source = "../../terraform-modules/olm"
   count = var.enable_olm ? 1 : 0
 }
@@ -83,9 +72,9 @@ module "olm" {
 #  url = "https://operatorhub.io/install/metallb-operator.yaml"
 #}
 
-data "http" "metallb_native" {
-  url = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
-}
+#data "http" "metallb_native" {
+#  url = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
+#}
 
 resource "kind_cluster" "default" {
   name           = var.kind_cluster_name
@@ -96,40 +85,19 @@ resource "kind_cluster" "default" {
 
     node {
       role = "control-plane"
+      dynamic "extra_mounts" {
+        for_each = var.extra_mounts
+        content {
+          container_path = extra_mounts.value["container_path"]
+          host_path      = extra_mounts.value["host_path"]
+        }
+      }
+
     }
-
-    # Cilium
-    #networking {
-    #  disable_default_cni = true   # do not install kindnet
-    #  kube_proxy_mode     = "none" # do not run kube-proxy
-    #}
-
-    #node {
-    #  role = "worker"
-    #  image = "kindest/node:v1.19.1"
-    #}
-    # Guess this will work as the creation changes to context?
   }
-  // TODO: Should be covered by wait_for_ready?
-  /*
-  provisioner "local-exec" {
-    command = "kubectl -n kube-system wait --timeout=180s --for=condition=ready pod -l tier=control-plane"
-  }
-  */
 }
 
-/*
-resource "helm_release" "cilium" {
-  name = "cilium"
-
-  repository = "https://helm.cilium.io"
-  chart      = "cilium"
-  version    = "1.12.3"
-  namespace  = "kube-system"
-  values     = [file("cilium-values.yaml")]
-}
-*/
-
+# TODO: We should probably create the namespace within the module to align with the flux module
 resource "kubernetes_namespace" "argocd" {
   metadata {
     name = "argocd"
@@ -138,7 +106,7 @@ resource "kubernetes_namespace" "argocd" {
 
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
-  source = "github.com/deas/terraform-modules//argocd"
+  source = "github.com/deas/terraform-modules//argocd?ref=main"
   # source               = "../../terraform-modules/argocd"
   # version
   namespace            = kubernetes_namespace.argocd.metadata[0].name
@@ -170,6 +138,19 @@ module "argocd" {
   }
 }
 
+# Be careful with this module. It will patch coredns configmap ;)
+module "coredns" {
+  # version
+  # source          = "../../terraform-modules/coredns"
+  source = "github.com/deas/terraform-modules//coredns?ref=main"
+  hosts  = var.dns_hosts
+  count  = var.dns_hosts != null ? 1 : 0
+  providers = {
+    kubectl = kubectl
+  }
+}
+
+
 
 /*
 module "secrets" {
@@ -200,16 +181,6 @@ locals {
     content : v
     }
   ], {})
-  metallb_native = [for v in data.kubectl_file_documents.metallb_native.documents : {
-    data : yamldecode(v)
-    content : v
-    }
-  ]
-  metallb_config = [for v in data.kubectl_file_documents.metallb_config.documents : {
-    data : yamldecode(v)
-    content : v
-    }
-  ]
 }
 
 # TODO: Should be replaced by kubectl (which uses apply and we need anyways )
@@ -232,29 +203,31 @@ data "kubectl_file_documents" "bootstrap" {
   content = file(var.bootstrap_path)
 }
 
-# TODO: metallb should probably be kicked off via argocd as well
-data "kubectl_file_documents" "metallb_native" {
-  content = data.http.metallb_native.response_body
+data "http" "metallb_native" {
+  count = var.metallb ? 1 : 0
+  url   = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
 }
 
-data "kubectl_file_documents" "metallb_config" {
-  content = file("${path.module}/../apps/metallb/manifest-config.yaml")
+module "metallb_config" {
+  count  = var.metallb ? 1 : 0
+  source = "github.com/deas/terraform-modules//kind-metallb?ref=main"
 }
 
-resource "kubectl_manifest" "metallb_native" {
-  for_each  = { for v in local.metallb_native : lower(join("/", compact([v.data.apiVersion, v.data.kind, lookup(v.data.metadata, "namespace", ""), v.data.metadata.name]))) => v.content }
-  yaml_body = each.value
+module "metallb" {
+  count  = var.metallb ? 1 : 0
+  source = "github.com/deas/terraform-modules//metallb?ref=main"
+  # source           = "../../terraform-modules/metallb"
+  install_manifest = data.http.metallb_native[0].response_body
+  config_manifest  = module.metallb_config[0].manifest
 }
 
-resource "null_resource" "metallb_wait" {
-  depends_on = [kubectl_manifest.metallb_native]
-  provisioner "local-exec" {
-    command = "kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=90s"
-  }
+variable "dns_hosts" {
+  type    = map(string)
+  default = null
 }
 
-resource "kubectl_manifest" "metallb_config" {
-  for_each   = { for v in local.metallb_config : lower(join("/", compact([v.data.apiVersion, v.data.kind, lookup(v.data.metadata, "namespace", ""), v.data.metadata.name]))) => v.content }
-  yaml_body  = each.value
-  depends_on = [null_resource.metallb_wait]
+
+variable "extra_mounts" {
+  type    = list(map(string))
+  default = []
 }

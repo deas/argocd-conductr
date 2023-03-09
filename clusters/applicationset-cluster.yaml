@@ -16,7 +16,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/deas/argocd-conductr
-        targetRevision: main # HEAD
+        targetRevision: wip # HEAD
         path: apps/root # For moment, could use cluster/{{cluster}}
       # Sync policy
       syncPolicy:

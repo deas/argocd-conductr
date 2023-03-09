@@ -10,7 +10,7 @@ I'm aiming to cover the most essential bits such as secret support and aggregrat
 Generate encryption keys TODO:
 
 ```shell
-# TODO
+./scripts/gen-keys.sh
 ```
 Add public deployment key to github. You may also want to disable github actions to start.
 ```
@@ -41,6 +41,7 @@ should spin up an ArgoCD managed `kind` cluster.
 - Environment propagation
 - Support for ksops + gpg
 - Testing (`terratest`), linting, format enforcement via GH actions
+- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops)
 
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)

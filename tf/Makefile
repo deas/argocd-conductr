@@ -73,37 +73,11 @@ docker_generate_docs:
 generate_docs: docker_generate_docs
 
 .PHONY: apply
-apply:
+apply: ## Terraform apply
 	terraform apply -auto-approve
 
-create_age_key:
-	age-keygen -o ../key.txt
-
-#create_gpg_secret:
-## --dry-run -o yaml 
-#	gpg --export-secret-keys --armor "$(GPG_ID)" | \
-#		kubectl create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=/dev/stdin
-
-create_age_secret:
-	cat ../key.txt | kubectl create secret generic sops-age --namespace=argocd \
-		--from-file=key.txt=/dev/stdin
-
-
-.PHONY:
-argocd_initial_admin_password: ## Show initial ArgoCD admin password
-	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d; echo
-
-# TODO: Pull Load-Balancer IP from Kubernetes
-argocd_admin_login:  ## ArgoCD admin login
-	argocd login --insecure --username admin \
-		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n argocd get svc/argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-argocd_ensure_cluster_admin: ## Ensure ArgoCD sa can do anything
-	kubectl auth can-i create pod --as=system:serviceaccount:argocd:argocd-application-controller -n kube-system
-
-argocd_deploy: ## ArgoCD deploy guestbook
-	argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
-
-show_docker_subnet:
-	docker network inspect --format '{{ json (index .IPAM.Config 0) }}' kind | jq -r .Subnet
+.PHONY: quick-destroy
+quick-destroy: ## Quick destruction
+	docker stop argocd-conductr-control-plane || true
+	docker rm argocd-conductr-control-plane || true
+	rm -rf 	terraform.tfstate*
