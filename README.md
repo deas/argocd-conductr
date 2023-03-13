@@ -33,14 +33,13 @@ should spin up an ArgoCD managed `kind` cluster.
 - Deduplicate/Dry things
 - `terraform`? (just like in `tf-controller`)
 - ~~basic sops/lastpass/github key managment?~~
-- ~~default to auto update everything?~~
-- Modularize metallb/pull IPAM from docker
+- ~~default to auto update everything?
 - ~~Proper self management of ArgoCD~~
 - Proper dependencies sync-waves, phases, `Application(Set)`
 - ~~Extract modules to `deas/terraform-modules`~~
 - Environment propagation
-- Support for ksops + gpg
-- Testing (`terratest`), linting, format enforcement via GH actions
+- ~~Support for ksops + gpg~~
+- Testing (`terratest`)
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops)
 
 ## Known issues
