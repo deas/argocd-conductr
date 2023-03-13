@@ -1,0 +1,41 @@
+name: Pull Request
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    #- name: Setup tools
+    #  uses: ./.github/actions/tools
+    # TODO: With `act` : Error response from daemon: pull access denied for act-github-actions-tools-dockeraction, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        # https://github.com/gruntwork-io/terratest/issues/706#issuecomment-733495166
+        terraform_wrapper: false
+    - uses: terraform-linters/setup-tflint@v3
+      name: Setup TFLint
+      with:
+        tflint_version: latest # v0.44.1
+    - uses: actions/cache@v3
+      name: Setup tflint Plugins Cache
+      with:
+        path: ~/.tflint.d/plugins
+        key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+    - name: Check Format
+      run: make fmt
+    - name: Lint
+      run: make lint
+    #- name: Validate
+    #  run: make validate
+    #- name: Run tests
+    #  run: |
+    #    make test

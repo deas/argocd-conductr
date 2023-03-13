@@ -1,5 +1,5 @@
 # dns_hosts = { "192.168.1.121" = "proxy.local" }
-# argocd_version    = "5.19.15"
+# kubeconfig_path = "/home/deas/.kube/config"
 # bootstrap_path  = "./bootstrap.yaml"
 # enable_olm = true
 additional_keys = {

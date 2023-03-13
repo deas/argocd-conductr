@@ -60,7 +60,7 @@ target/manifest-ca-certs.yaml: target ## Recreate ca certs manifests
 	cat $(CA_CERTS_FILE) | $(KUBECTL) create configmap ca-certs --from-file=ca-certificates.crt=/dev/stdin --dry-run=client -o yaml > target/manifest-ca-certs.yaml
 
 .PHONY: recreate-argocd-ca-res
-recreate-argocd-ca-res: target/manifest-ca-certs.yaml ## Re-create litmus ca certs
+recreate-argocd-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca certs
 	$(KUBECTL) -n $(ARGOCD_NS) delete configmap ca-certs || true
 	$(KUBECTL) -n $(ARGOCD_NS) create -f target/manifest-ca-certs.yaml
 

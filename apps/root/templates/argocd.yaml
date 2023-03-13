@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argo-cd
-    targetRevision: "5.19.15" # TODO: Should be the same version we us for tf bootstrap
+    targetRevision: "5.25.0"
     helm:
       values: |
         ## Argo CD configuration
@@ -83,7 +83,7 @@ spec:
                 - mountPath: /custom-tools
                   name: custom-tools
             - name: import-gpg-key
-              image: argoproj/argocd:v2.5.10
+              image: argoproj/argocd:v2.6.4
               command: ["gpg", "--import","/sops-gpg/sops.asc"]
               env:
                 - name: GNUPGHOME

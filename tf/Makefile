@@ -80,4 +80,5 @@ apply: ## Terraform apply
 quick-destroy: ## Quick destruction
 	docker stop argocd-conductr-control-plane || true
 	docker rm argocd-conductr-control-plane || true
-	rm -rf 	terraform.tfstate*
+# rm -rf 	terraform.tfstate*
+	terraform state list | cut -f 1 -d '[' | sort | uniq | xargs terraform state rm

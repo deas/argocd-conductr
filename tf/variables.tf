@@ -4,6 +4,11 @@ variable "kind_cluster_name" {
   default     = "argocd-conductr"
 }
 
+variable "kubeconfig_path" {
+  type    = string
+  default = null
+}
+
 variable "bootstrap_path" {
   type        = string
   default     = null
@@ -24,3 +29,14 @@ variable "metallb" {
   type    = bool
   default = true
 }
+
+variable "dns_hosts" {
+  type    = map(string)
+  default = null
+}
+
+variable "extra_mounts" {
+  type    = list(map(string))
+  default = []
+}
+
