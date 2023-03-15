@@ -32,16 +32,12 @@ should spin up an ArgoCD managed `kind` cluster.
 - Naming?
 - Deduplicate/Dry things
 - `terraform`? (just like in `tf-controller`)
-- ~~basic sops/lastpass/github key managment?~~
-- ~~default to auto update everything?~~
-- Modularize metallb/pull IPAM from docker
+- ~~default to auto update everything~~?
 - ~~Proper self management of ArgoCD~~
 - Proper dependencies sync-waves, phases, `Application(Set)`
-- ~~Extract modules to `deas/terraform-modules`~~
 - Environment propagation
-- Support for ksops + gpg
-- Testing (`terratest`), linting, format enforcement via GH actions
-- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops)
+- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing?
+- Proper cascaded removal. ArgoCD should be last. Will likely involve terraform. 
 
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)

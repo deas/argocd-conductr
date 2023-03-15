@@ -60,9 +60,9 @@ module "argocd" {
   # source = "../../terraform-modules/argocd"
   # version
   namespace            = "argocd"
-  application_manifest = file("../apps/root/templates/argocd.yaml")
+  application_manifest = file("../apps/local/root/templates/argocd.yaml")
   bootstrap_path       = var.bootstrap_path
-  cluster_manifest     = file("${path.module}/../clusters/applicationset-cluster.yaml")
+  cluster_manifest     = templatefile("${path.module}/../clusters/application-root.tmpl.yaml", { env = "local" })
   additional_keys      = var.additional_keys
   # local.additional_keys
   # tls_key = {

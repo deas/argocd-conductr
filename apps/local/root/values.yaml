@@ -4,4 +4,4 @@ spec:
   source:
     repoURL: https://github.com/deas/argocd-conductr
     targetRevision: main
-    #HEAD
+    rootPath: "apps/local"

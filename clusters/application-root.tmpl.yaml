@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  # Add this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  # Add labels to your application object.
+  #labels:
+  #  name: root
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/deas/argocd-conductr
+    targetRevision: main
+    path: apps/${env}/root
+    # TODO We could allow overriding the branch here, right?
+    #helm:
+    #  # Values file as block file
+    #  values: |
+    #    spec:
+    #      source:
+    #        targetRevision: main
+
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

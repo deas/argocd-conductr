@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: helm-hooks
+  name: sync-waves
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    namespace: helm-hooks
+    namespace: sync-waves
     server: {{ .Values.spec.destination.server }}
   project: default
-  syncPolicy:
-    automated: {}
+  # Not auto, so we can play and watch
+  #syncPolicy:
+  #  automated: {}
   source:
-    path: apps/helm-hooks
+    path: {{ .Values.spec.source.rootPath }}/sync-waves
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
-
