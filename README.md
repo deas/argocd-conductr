@@ -2,17 +2,17 @@
 
 This repo is mostly based on [flux-conductr](https://github.com/deas/flux-conductr).
 
-The primary goal of this project is to excercize and experiment with [GitOps](https://gitops.tech) orchestration of components with ArgoCD. As such, I consider localhost experience (hence `kind` and maybe `k3s` soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on bigger or even produtive environments as well.
+The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deploymentcovering the full cycle - up to production via promotion, if you want to. Experimentation and production do not have to conflict.
 
-I'm aiming to cover the most essential bits such as secret support and aggregration/composition + dependencies.
-
+The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
 
 Generate encryption keys TODO:
 
 ```shell
 ./scripts/gen-keys.sh
 ```
-Add public deployment key to github. You may also want to disable github actions to start.
+
+Optional: Add public deployment key to github. You may also want to disable github actions to start.
 ```
 gh repo deploy-key add ...
 ```
