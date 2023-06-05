@@ -10,9 +10,14 @@ spec:
     namespace: ksops
     server: {{ .Values.spec.destination.server }}
   project: default
+  # https://argo-cd.readthedocs.io/en/stable/proposals/server-side-apply/
   syncPolicy:
-    automated: {}
+    syncOptions: # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+      - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true
   source:
-    path: {{ .Values.spec.source.rootPath }}/ksops
+    path: "{{ .Values.spec.source.rootPath }}/ksops"
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}

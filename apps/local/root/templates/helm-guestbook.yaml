@@ -13,6 +13,6 @@ spec:
   syncPolicy:
     automated: {}
   source:
-    path: {{ .Values.spec.source.rootPath }}/helm-guestbook
+    path: "{{ .Values.spec.source.rootPath }}/helm-guestbook"
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}

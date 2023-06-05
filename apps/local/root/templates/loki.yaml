@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd # default
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki
+    targetRevision: "4.8.0" # "5.0.0" is out
+    helm:
+      # Helm values files for overriding values in the helm chart
+      # The path is relative to the spec.source.path directory defined above
+      # valueFiles:
+      # ../values-kube-prometheus.yaml' resolved to outside repository root
+      #  - ../values-kube-prometheus.yaml
+      #  - ../values-override.yaml
+      values: |
+        minio:
+          enabled: true
+        loki:
+          auth_enabled: false
+          storage:
+            s3:
+              # enterprise-logs / supersecret
+              s3: null
+              endpoint: http://loki-minio:9000
+              region: null
+              # secretAccessKey: XXXXXXXXXXX
+              # accessKeyId: XXXXXXXXXX
+              s3ForcePathStyle: true
+              insecure: true
+          commonConfig:
+            replication_factor: 1
+        #   storage:
+        #     type: 'filesystem'
+        # singleBinary: # TODO: Does not render grafana dashboards
+        #   replicas: 1
+        # # https://github.com/grafana/loki/issues/7907
+        gateway:
+          service:
+            type: NodePort
+            nodePort: 30180
+    
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+        write:
+          replicas: 1
+        read:
+          replicas: 1
+        backend:
+          replicas: 1
+        monitoring:
+          serviceMonitor:
+            labels:
+              release: prometheus
+
+        #
+  syncPolicy:
+    syncOptions: # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+      - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true

@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argo-cd
-    targetRevision: "5.25.0"
+    targetRevision: "5.34.6"
     helm:
       values: |
         ## Argo CD configuration
@@ -22,13 +22,15 @@ spec:
         ## openshift:
           # -- enables using arbitrary uid for argo repo server
           # enabled: false
-        
         ## Argo Configs
         configs:
+          params:
+            server.insecure: "true"
           # General Argo CD configuration
           ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
           cm:
-            kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+            # https://github.com/argoproj/argo-cd/blob/master/docs/user-guide/kustomize.md
+            kustomize.buildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
             # Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
             # https://github.com/argoproj/argo-cd/issues/7437
             resource.customizations.health.argoproj.io_Application: |
@@ -208,6 +210,8 @@ spec:
 
       # - ../../argocd/values.yaml # TODO: move me here
   syncPolicy:
+    syncOptions: # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+      - ServerSideApply=true
     automated:
       prune: true
       selfHeal: true

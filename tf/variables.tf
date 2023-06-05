@@ -4,6 +4,11 @@ variable "kind_cluster_name" {
   default     = "argocd-conductr"
 }
 
+variable "kind_cluster_image" {
+  type    = string
+  default = "kindest/node:v1.25.8"
+}
+
 variable "kubeconfig_path" {
   type    = string
   default = null

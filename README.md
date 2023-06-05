@@ -36,16 +36,18 @@ should spin up an ArgoCD managed `kind` cluster.
 - ~~Proper self management of ArgoCD~~
 - Proper dependencies sync-waves, phases, `Application(Set)`
 - Environment propagation
-- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing?
+- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
 - Proper cascaded removal. ArgoCD should be last. Will likely involve terraform. 
 
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
+- `argcocd` cli does not support apps with multiple sources.
 
 
 ## References
 - [viaduct-ai/kustomize-sops](https://github.com/viaduct-ai/kustomize-sops)
 - [Introduction to GitOps with ArgoCD](https://blog.codecentric.de/gitops-argocd)
+- [3 patterns for deploying Helm charts with Argo CD](https://developers.redhat.com/articles/2023/05/25/3-patterns-deploying-helm-charts-argocd?sc_cid=7013a0000034Yq3AAE)
 - [Self Managed Argo CD — App Of Everything](https://medium.com/devopsturkiye/self-managed-argo-cd-app-of-everything-a226eb100cf0)
 - [Setting up Argo CD with Helm](https://www.arthurkoziel.com/setting-up-argocd-with-helm/)
 - [terraform-argocd-bootstrap](https://github.com/iits-consulting/terraform-argocd-bootstrap)

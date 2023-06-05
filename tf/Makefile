@@ -21,7 +21,10 @@ SHELL := /usr/bin/env bash
 DOCKER_TAG_VERSION_DEVELOPER_TOOLS := 1.3
 DOCKER_IMAGE_DEVELOPER_TOOLS := cft/developer-tools
 REGISTRY_URL := gcr.io/cloud-foundation-cicd
-GPG_ID := 68789365A466F3CFC4D563AF9C946BF5155242C6
+CLUSTER_NAME = argocd-conductr-control-plane
+DOCKER_RESTART = no
+
+# GPG_ID := 68789365A466F3CFC4D563AF9C946BF5155242C6
 
 .DEFAULT_GOAL := help
 
@@ -82,3 +85,7 @@ quick-destroy: ## Quick destruction
 	docker rm argocd-conductr-control-plane || true
 # rm -rf 	terraform.tfstate*
 	terraform state list | cut -f 1 -d '[' | sort | uniq | xargs terraform state rm
+
+.PHONY: quick-destroy
+docker-update-restart: ## Update Docker Restart Policy
+	docker update --restart=$(DOCKER_RESTART) $(CLUSTER_NAME)

@@ -35,7 +35,8 @@ resource "kind_cluster" "default" {
     api_version = "kind.x-k8s.io/v1alpha4"
 
     node {
-      role = "control-plane"
+      role  = "control-plane"
+      image = var.kind_cluster_image
       dynamic "extra_mounts" {
         for_each = var.extra_mounts
         content {
