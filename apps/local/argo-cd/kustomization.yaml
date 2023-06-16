@@ -1,0 +1,29 @@
+namespace: argocd
+#resources:
+# - ...
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+- name: argocd-image-updater
+  repo: https://argoproj.github.io/argo-helm
+  version: "0.9.1"
+  releaseName: argocd-image-updater
+  namespace: argocd
+  # valuesFile: values.yaml
+  # valuesInline:
+  #   fullnameOverride: helloagain
+- name: argo-rollouts
+  repo: https://argoproj.github.io/argo-helm
+  version: "2.31.0"
+  releaseName: argo-rollouts
+  namespace: argocd
+  valuesInline:
+    controller:
+      replicas: 1
+# TODO: Not quite sure about the fate of the following - so we are dropping them into argocd ns      
+- name: argo-events
+  repo: https://argoproj.github.io/argo-helm
+  version: "2.3.3"
+  releaseName: argo-events
+  namespace: argocd
+# argocd notification is deprecated
