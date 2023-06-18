@@ -15,8 +15,9 @@ spec:
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
   syncPolicy:
-    # syncOptions: # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
-    #  - ServerSideApply=true
+    syncOptions: # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+    # TODO: Strictly needed for argo-cd only?
+     - ServerSideApply=true
     automated:
       prune: true
       selfHeal: true

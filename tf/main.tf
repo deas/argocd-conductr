@@ -57,14 +57,14 @@ module "kubeconfig" {
 
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
-  source = "github.com/deas/terraform-modules//argocd?ref=main"
   # source = "../../terraform-modules/argocd"
-  # version
-  namespace            = "argocd"
-  application_manifest = file("../apps/local/root/templates/argocd.yaml")
-  bootstrap_path       = var.bootstrap_path
-  cluster_manifest     = templatefile("${path.module}/../clusters/application-root.tmpl.yaml", { env = "local" })
-  additional_keys      = var.additional_keys
+  source           = "github.com/deas/terraform-modules//argocd?ref=main"
+  namespace        = "argocd"
+  chart_version    = yamldecode(file("${path.module}/../apps/local/argo-cd/kustomization.yaml")).helmCharts[0].version
+  values           = file("${path.module}/../apps/local/argo-cd/values-argo-cd.yaml")
+  bootstrap_path   = var.bootstrap_path
+  cluster_manifest = templatefile("${path.module}/../clusters/application-root.tmpl.yaml", { env = "local" })
+  additional_keys  = var.additional_keys
   # local.additional_keys
   # tls_key = {
   #  private = file(var.id_rsa_fluxbot_ro_path)

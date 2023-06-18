@@ -6,6 +6,19 @@ The primary goal of this project is to exercise with ArgoCD based [GitOps](https
 
 The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
 
+At the moment, we cover deployments of:
+- Caretta
+- Metallb
+- Kube-Prometheus
+- Loki/Promtail
+- Flagger
+- AWS Credentials Sync
+- SOPS Secrets
+- Argo-CD Image-Updater
+- Argo rollouts
+- Argo Events
+
+## Bootrapping
 Generate encryption keys TODO:
 
 ```shell
@@ -16,8 +29,6 @@ Optional: Add public deployment key to github. You may also want to disable gith
 ```
 gh repo deploy-key add ...
 ```
-
-## Bootrapping
 
 There is a `terraform` + `kind` based bootstrap in [`tf`](./tf):
 
@@ -37,6 +48,7 @@ should spin up an ArgoCD managed `kind` cluster.
 - Proper dependencies sync-waves, phases, `Application(Set)`
 - Environment propagation
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
+- Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
 - Proper cascaded removal. ArgoCD should be last. Will likely involve terraform. 
 
 ## Known issues
