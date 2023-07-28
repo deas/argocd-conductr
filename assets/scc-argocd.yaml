@@ -1,0 +1,45 @@
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities: null
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+users:
+- system:serviceaccount:argocd:default
+#groups:
+#- system:cluster-admins
+kind: SecurityContextConstraints
+metadata:
+  # annotations:
+  #   include.release.openshift.io/ibm-cloud-managed: "true"
+  #   include.release.openshift.io/self-managed-high-availability: "true"
+  #   include.release.openshift.io/single-node-developer: "true"
+  #   kubernetes.io/description: isuite provides all features of the restricted SCC
+  #     but allows users to run with any UID and any GID.
+  #   release.openshift.io/create-only: "true"
+  name: argocd
+priority: 10
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- MKNOD
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+seccompProfiles: # Needed on top of anyuid
+- runtime/default
+supplementalGroups:
+  type: RunAsAny
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret

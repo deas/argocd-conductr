@@ -64,6 +64,37 @@ recreate-argocd-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca cer
 	$(KUBECTL) -n $(ARGOCD_NS) delete configmap ca-certs || true
 	$(KUBECTL) -n $(ARGOCD_NS) create -f target/manifest-ca-certs.yaml
 
+.PHONY: patch-argocd-openshift-auth
+patch-argocd-openshift-auth: ## Patch ArgoCD to use OpenShift auth
+#  Deprecated since openshift 4.11: oc -n serviceaccounts get-token argocd-dex-server
+#  Needs secret in secrets property of serviceaccount
+	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
+	ns=$(ARGOCD_NS) \
+	sa=argocd-dex-server \
+	issuer=$$(oc whoami --show-server) && \
+	./assets/create-argocd-openshift-auth-patch.sh && \
+	$(KUBECTL) -n $(ARGOCD_NS) patch serviceaccount argocd-dex-server --type='json' -p='[{"op": "add", "path": "/metadata/annotations/serviceaccounts.openshift.io~1oauth-redirecturi.dex", "value":"'https://$${argocd_host}/api/dex/callback'"}]'
+	$(KUBECTL) -n $(ARGOCD_NS) delete pod -l app.kubernetes.io/component=dex-server
+	$(KUBECTL) -n $(ARGOCD_NS) delete pod -l app.kubernetes.io/component=server
+
+.PHONY: patch-openshift-htpass
+patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on CRC)
+	htpasswd -bBn admin admin | $(KUBECTL) create secret generic htpass --from-file=htpasswd=/dev/stdin -n openshift-config
+	$(KUBECTL) apply -f assets/oauth-cluster.yaml
+
+
+
+.PHONY: helm-install-basic-argocd
+# TODO: A bit overlap with terraform 
+helm-install-basic-argocd: ## Install ArgoCD with Helm
+	$(KUBECTL) create ns $(ARGOCD_NS) || true
+	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/argocd-conductr-priv.asc || true
+	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
+	$(KUBECTL) apply -f assets/scc-argocd.yaml
+#   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
+	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/local/argo-cd/values-argo-cd.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 5.36.1
+
+
 .PHONY: fmt
 fmt: ## Format
 	terraform fmt --check --recursive

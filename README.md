@@ -50,6 +50,9 @@ should spin up an ArgoCD managed `kind` cluster.
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
 - Proper cascaded removal. ArgoCD should be last. Will likely involve terraform. 
+- [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/)(s. Known Issues)
+- Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with ArgoCD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
+
 
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)

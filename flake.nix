@@ -1,6 +1,7 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
     systems.url = "github:nix-systems/default";
     devenv.url = "github:cachix/devenv";
   };
@@ -23,6 +24,8 @@
                   # https://devenv.sh/reference/options/
                   packages = [
                      pkgs.argocd-autopilot
+                     pkgs.argocd
+		                 pkgs.kustomize-sops
                      # pkgs.terraform
                      # pkgs.kubernetes-helm
                      # pkgs.kustomize

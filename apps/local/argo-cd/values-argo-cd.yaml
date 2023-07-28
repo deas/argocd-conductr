@@ -1,6 +1,7 @@
 ## Argo CD configuration
 ## Ref: https://github.com/argoproj/argo-cd
 ##
+## TODO: Does not appear to be needed, but redis still has the uid issue
 ## openshift:
   # -- enables using arbitrary uid for argo repo server
   # enabled: false
@@ -186,5 +187,14 @@ server:
 #  extraArgs:
 #    - --insecure
 #  configManagementPlugins: |
+  ingress:
+    enabled: true
+    # ingressClassName: nginx
+    hosts:
+    - argocd-server.apps-crc.testing
+    paths:
+    - /
+    annotations:
+      route.openshift.io/termination: edge
   service:
     type: LoadBalancer
