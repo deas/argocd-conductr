@@ -14,7 +14,7 @@ spec:
 
   source:
     repoURL: https://github.com/deas/argocd-conductr
-    targetRevision: main
+    targetRevision: wip
     path: apps/${env}/root
     # TODO We could allow overriding the branch here, right?
     #helm:
