@@ -18,3 +18,4 @@ bin/
 ignore/
 .direnv/
 .devenv/
+keys/id_*
