@@ -38,7 +38,7 @@ create_age_secret:
 
 .PHONY:
 argocd_initial_admin_password: ## Show initial ArgoCD admin password
-	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d; echo
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 # TODO: Pull Load-Balancer IP from Kubernetes
 argocd_admin_login:  ## ArgoCD admin login
