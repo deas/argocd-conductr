@@ -1,3 +1,9 @@
+variable "env" {
+  type        = string
+  description = "Environment"
+  default     = null # "local"
+}
+
 variable "kind_cluster_name" {
   type        = string
   description = "Cluster name"
@@ -6,7 +12,7 @@ variable "kind_cluster_name" {
 
 variable "kind_cluster_image" {
   type    = string
-  default = "kindest/node:v1.25.8"
+  default = "kindest/node:v1.31.0"
 }
 
 variable "kubeconfig_path" {
