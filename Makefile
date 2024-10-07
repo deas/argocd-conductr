@@ -1,6 +1,7 @@
 KUBECTL=kubectl
 CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
+GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
 .DEFAULT_GOAL := help
 
@@ -88,7 +89,7 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 # TODO: A bit overlap with terraform 
 helm-install-basic-argocd: ## Install ArgoCD with Helm
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
-	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/argocd-conductr-priv.asc || true
+	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -

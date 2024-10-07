@@ -9,6 +9,8 @@ key_dir="$(dirname $dir_path)/keys"
 
 ssh-keygen -N "" -C "${name}" -f "${key_dir}/id_rsa-${name}"
 
+export GPG_TTY=$(tty)
+
 gpg --batch --gen-key <<EOF
 Key-Type: 1
 Key-Length: 2048
