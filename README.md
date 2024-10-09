@@ -11,11 +11,10 @@ At the moment, we cover deployments of:
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
-- Flagger
 - AWS Credentials Sync
 - SOPS Secrets
 - Argo-CD Image-Updater
-- Argo rollouts
+- Argo Rollouts
 - Argo Events
 
 ## Bootrapping
@@ -57,7 +56,7 @@ should spin up an ArgoCD managed `kind` cluster.
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
-
+- kube-prometheus sync fail: `failed to create typed patch object (monitoring/prometheus-kube-prometheus-alertmanager; monitoring.coreos.com/v1, Kind=ServiceMonitor): .spec.endpoints[0].enableHttp2: field not declared in schema`
 
 ## References
 - [viaduct-ai/kustomize-sops](https://github.com/viaduct-ai/kustomize-sops)
