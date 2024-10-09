@@ -3,8 +3,8 @@
 ##
 ## TODO: Does not appear to be needed, but redis still has the uid issue
 ## openshift:
-  # -- enables using arbitrary uid for argo repo server
-  # enabled: false
+# -- enables using arbitrary uid for argo repo server
+# enabled: false
 ## Argo Configs
 configs:
   params:
@@ -14,8 +14,9 @@ configs:
   cm:
     # https://github.com/argoproj/argo-cd/blob/master/docs/user-guide/kustomize.md
     kustomize.buildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
-    # Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
+    # TODO: Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
     # https://github.com/argoproj/argo-cd/issues/7437
+    # https://argo-cd.readthedocs.io/en/stable/faq/#why-is-my-application-stuck-in-progressing-state
     resource.customizations.health.argoproj.io_Application: |
       hs = {}
       hs.status = "Progressing"
@@ -29,18 +30,29 @@ configs:
         end
       end
       return hs
-
-#configs:
+    resource.customizations.health.networking.k8s.io_Ingress: |
+      hs = {}
+      if obj.status ~= nil then
+        hs.status = "Healthy"
+        hs.message = "Ingress Nginx Hack"
+      end
+      return hs
+    resource.customizations.health.bitnami.com_SealedSecret: |
+      hs = {}
+      hs.status = "Healthy"
+      hs.message = "Controller doesn't report resource status"
+      return hs
   # Argo CD sensitive data
   # Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
   # secret:
-    # -- Bcrypt hashed admin password
-    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
-    ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
-    # argocdServerAdminPassword: ""
-    # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
-    # @default -- `""` (defaults to current time)
-    # argocdServerAdminPasswordMtime: ""
+  # -- Bcrypt hashed admin password
+  ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+  ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+  # argocdServerAdminPassword: ""
+  # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+  # @default -- `""` (defaults to current time)
+  # argocdServerAdminPasswordMtime: ""
+#configs:
 repoServer:
   env:
     - name: XDG_CONFIG_HOME
@@ -69,7 +81,7 @@ repoServer:
           name: custom-tools
     - name: import-gpg-key
       image: quay.io/argoproj/argocd:v2.12.4
-      command: ["gpg", "--import","/sops-gpg/sops.asc"]
+      command: ["gpg", "--import", "/sops-gpg/sops.asc"]
       env:
         - name: GNUPGHOME
           value: /gnupg-home/.gnupg
@@ -80,7 +92,7 @@ repoServer:
           name: gnupg-home
   volumes:
     - name: custom-tools
-      emptyDir: {}  
+      emptyDir: {}
     - name: sops-age
       secret:
         secretName: sops-age
@@ -115,7 +127,7 @@ server:
   #    - name: argo-helm
   #      type: helm
   #      url: https://argoproj.github.io/argo-helm
-  #additionalApplications: 
+  #additionalApplications:
   #  - name: argocd
   #    namespace: argocd
   #    destination:
@@ -168,7 +180,7 @@ server:
   #      automated:
   #        selfHeal: true
   #        prune: true
-  #additionalProjects: 
+  #additionalProjects:
   #- name: argocd
   #  namespace: argocd
   #  additionalLabels: {}
@@ -184,16 +196,16 @@ server:
   #    kind: '*'
   #  orphanedResources:
   #    warn: false
-#  extraArgs:
-#    - --insecure
-#  configManagementPlugins: |
+  #  extraArgs:
+  #    - --insecure
+  #  configManagementPlugins: |
   ingress:
     enabled: true
     # ingressClassName: nginx
     hosts:
-    - argocd-server.apps-crc.testing
+      - argocd-server.apps-crc.testing
     paths:
-    - /
+      - /
     annotations:
       route.openshift.io/termination: edge
   service:
