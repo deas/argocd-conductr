@@ -1,0 +1,11 @@
+# namePrefix: olm-
+# TODO: operator still ends up in operator namespace, we might want to pull in manifests via a make-/just target
+#
+# Error: namespace transformation produces ID conflict
+# namespace: olm
+
+resources:
+  - https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
