@@ -26,9 +26,9 @@ variable "bootstrap_path" {
   description = "bootstrap path"
 }
 
-variable "enable_olm" {
-  type    = bool
-  default = false
+variable "cilium_helmrelease_path" {
+  type    = string
+  default = null # "../infrastructure/lib/config/cilium/release-cilium.yaml"
 }
 
 variable "additional_keys" {

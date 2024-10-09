@@ -1,10 +1,18 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
-}
-module "olm" {
-  source = "github.com/deas/terraform-modules//olm?ref=main"
-  # source = "../../terraform-modules/olm"
-  count = var.enable_olm ? 1 : 0
+  # TODO: Whoa! The ultimate mess. Can we do better?
+  cilium_spec         = try(yamldecode(file(var.cilium_helmrelease_path))["spec"], null)
+  cilium_version      = try(local.cilium_spec["chart"]["spec"]["version"], null)
+  cilium_release_name = try(local.cilium_spec["releaseName"], null)
+  cilium_values = try(yamlencode(merge(
+    local.cilium_spec["values"],
+    {
+      "hubble" = {
+        "metrics" = { "serviceMonitor" = { "enabled" = false } },
+        "relay"   = { "prometheus" = { "serviceMonitor" = { "enabled" = false } } }
+      }
+    }
+  )), null)
 }
 
 #data "http" "argocd_operator" {
@@ -29,7 +37,7 @@ module "olm" {
 resource "kind_cluster" "default" {
   name           = local.kind_cluster_name
   count          = var.kubeconfig_path == null ? 1 : 0
-  wait_for_ready = true # false likely needed for cilium bootstrap
+  wait_for_ready = false # false likely needed for cilium bootstrap
   kind_config {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
@@ -44,6 +52,11 @@ resource "kind_cluster" "default" {
           host_path      = extra_mounts.value["host_path"]
         }
       }
+    }
+
+    networking {
+      disable_default_cni = var.cilium_helmrelease_path != null                       # do not install kindnet for cilium
+      kube_proxy_mode     = var.cilium_helmrelease_path != null ? "none" : "iptables" # do not run kube-proxy for cilium
     }
   }
 }
@@ -92,6 +105,19 @@ module "coredns" {
   providers = {
     kubectl = kubectl
   }
+}
+
+# Bare minimum to get CNI up here (Won't work via flux)
+resource "helm_release" "cilium" {
+  count      = var.cilium_helmrelease_path != null ? 1 : 0 # var.cilium_version != null ? 1 : 0
+  name       = local.cilium_release_name
+  repository = "https://helm.cilium.io"
+  chart      = "cilium"
+  version    = local.cilium_version # var.cilium_version
+  namespace  = "kube-system"
+  values     = [local.cilium_values]
+  # file("../infrastructure/lib/config/cilium/values-cilium.yaml")]
+  # values     = [file("cilium-values.yaml")]
 }
 
 data "http" "metallb_native" {

@@ -95,6 +95,10 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/local/argo-cd/values-argo-cd.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
+.PHONY: update-olm-manifests
+update-olm-manifests: ## Update olm manifests
+	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/crds.yaml -O components/olm/crd/crds.yaml
+	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml -O components/olm/non-crd/olm.yaml
 
 .PHONY: fmt
 fmt: ## Format
