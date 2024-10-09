@@ -15,12 +15,12 @@ helmCharts:
   #   fullnameOverride: helloagain
 - name: argocd-image-updater
   repo: https://argoproj.github.io/argo-helm
-  version: "0.9.1"
+  version: "0.11.0"
   releaseName: argocd-image-updater
   namespace: argocd
 - name: argo-rollouts
   repo: https://argoproj.github.io/argo-helm
-  version: "2.31.0"
+  version: "2.37.7"
   releaseName: argo-rollouts
   namespace: argocd
   valuesInline:
@@ -29,7 +29,7 @@ helmCharts:
 # TODO: Not quite sure about the fate of the following - so we are dropping them into argocd ns      
 - name: argo-events
   repo: https://argoproj.github.io/argo-helm
-  version: "2.3.3"
+  version: "2.4.8"
   releaseName: argo-events
   namespace: argocd
 # argocd notification is deprecated
