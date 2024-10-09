@@ -3,6 +3,7 @@ CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
+ENV=local
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
 
 .DEFAULT_GOAL := help
@@ -95,6 +96,10 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/local/argo-cd/values-argo-cd.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
+
+.PHONY: apply-argocd-root
+apply-argocd-root: ## Apply argocd root application
+	sed -e s,'$${env}',$(ENV),g < clusters/application-root.tmpl.yaml | $(KUBECTL) apply -f
 
 .PHONY: update-olm-manifests
 update-olm-manifests: ## Update olm manifests
