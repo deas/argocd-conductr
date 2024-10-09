@@ -1,3 +1,4 @@
+{{- if .Values.ksops.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -21,3 +22,4 @@ spec:
     path: "{{ .Values.spec.source.rootPath }}/ksops"
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
+{{- end }}
