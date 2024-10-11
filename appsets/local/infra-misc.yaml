@@ -36,7 +36,7 @@ spec:
         # repoURL: https://github.com/deas/argocd-conductr.git
         # targetRevision: wip
         # path: "{{.path.path}}"
-        - repoURL: "{{ .repoURL }}"
+        - repoURL: https://github.com/deas/argocd-conductr.git
           chart: "{{ .appName }}"
           targetRevision: wip
       # Destination cluster and namespace to deploy the application
@@ -44,7 +44,7 @@ spec:
         server: https://kubernetes.default.svc
         # We don't stage/env at the ns level
         # namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
-        namespace: "{{ .namespace }}"
+        # namespace: " .namespace "
 
       # Sync policy
       syncPolicy:
