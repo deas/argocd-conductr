@@ -12,6 +12,10 @@ spec:
           # - cluster: {}
           - list:
               elements:
+                - appName: ingress-nginx
+                  repoURL: https://kubernetes.github.io/ingress-nginx
+                  namespace: ingress
+                  targetRevision: "4.7.1"
                 - appName: loki
                   repoURL: https://grafana.github.io/helm-charts
                   namespace: monitoring
