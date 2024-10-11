@@ -34,6 +34,7 @@ spec:
             # Helm values files for overriding values in the helm chart
             # The path is relative to the spec.source.path directory defined above
             valueFiles:
+              - "$values/{{ .path.path }}/../../values.yaml"
               - "$values/{{ .path.path }}/values.yaml"
         - repoURL: https://github.com/deas/argocd-conductr.git
           targetRevision: wip
