@@ -94,6 +94,7 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
 		--from-literal env=$(ENV) \
+		--from-literal repo=https://github.com/deas/argocd-conductr.git \
 		--from-literal server=https://kubernetes.default.svc \
 		--dry-run=client -o yaml | $(KUBECTL) apply -f -
 	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
@@ -105,7 +106,7 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 
 .PHONY: apply-argocd-root
 apply-argocd-root: ## Apply argocd root application
-	sed -e s,'$${env}',$(ENV),g < clusters/application-root.tmpl.yaml | $(KUBECTL) apply -f
+	sed -e s,'$${env}',$(ENV),g < clusters/app-root.tmpl.yaml | $(KUBECTL) apply -f
 
 .PHONY: update-olm-manifests
 update-olm-manifests: ## Update olm manifests
