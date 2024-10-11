@@ -6,6 +6,9 @@ metadata:
   # Add this finalizer ONLY if you want these to cascade delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  #annotations:
+  #  env: ${env}
+  #  rev: wip
   # Add labels to your application object.
   #labels:
   #  name: root
@@ -15,20 +18,7 @@ spec:
   source:
     repoURL: https://github.com/deas/argocd-conductr
     targetRevision: wip
-    path: apps/${env}/root
-    helm:
-      valuesObject:
-        spec:
-          source:
-            rootPath: apps/${env}
-            targetRevision: wip
-    # TODO We could allow overriding the branch here, right?
-    #helm:
-    #  # Values file as block file
-    #  values: |
-    #    spec:
-    #      source:
-    #        targetRevision: main
+    path: appsets/${env}
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
