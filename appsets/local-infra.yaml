@@ -10,19 +10,19 @@ spec:
     - matrix:
         generators:
           # - cluster: {}
-          - git:
-              repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip # HEAD
-              directories:
-                - path: apps/infra/{{ .appName }}/envs/local
-              # apps/*envs/local
-              # - path: apps/*/envs/local
           - list:
               elements:
                 - appName: sealed-secrets
                   namespace: kube-system
                   targetRevision: "2.16.1"
               # chart: sealed-secrets
+          - git:
+              repoURL: https://github.com/deas/argocd-conductr.git
+              revision: wip # HEAD
+              directories:
+                - path: "apps/infra/{{ .appName }}/envs/local"
+              # apps/*envs/local
+              # - path: apps/*/envs/local
   template:
     metadata:
       # We don't env/stage at the name level
@@ -38,7 +38,7 @@ spec:
         # path: "{{.path.path}}"
         - repoURL: https://bitnami-labs.github.io/sealed-secrets
           chart: sealed-secrets
-          targetRevision: "{{ targetRevision }}"
+          targetRevision: "{{ .targetRevision }}"
           helm:
             # Helm values files for overriding values in the helm chart
             # The path is relative to the spec.source.path directory defined above
