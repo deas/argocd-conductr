@@ -12,7 +12,12 @@ spec:
           # - cluster: {}
           - list:
               elements:
+                - appName: kube-prometheus-stack
+                  repoURL: https://prometheus-community.github.io/helm-charts
+                  namespace: monitoring
+                  targetRevision: "45.7.1" # "65.1.0"
                 - appName: sealed-secrets
+                  repoURL: https://bitnami-labs.github.io/sealed-secrets
                   namespace: kube-system
                   targetRevision: "2.16.1"
               # chart: sealed-secrets
@@ -36,8 +41,8 @@ spec:
         # repoURL: https://github.com/deas/argocd-conductr.git
         # targetRevision: wip
         # path: "{{.path.path}}"
-        - repoURL: https://bitnami-labs.github.io/sealed-secrets
-          chart: sealed-secrets
+        - repoURL: "{{ .repoURL }}"
+          chart: "{{ .appName }}"
           targetRevision: "{{ .targetRevision }}"
           helm:
             # Helm values files for overriding values in the helm chart
