@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: infra
+  name: infra-misc
   namespace: argocd
 spec:
   goTemplate: true
@@ -12,23 +12,8 @@ spec:
           # - cluster: {}
           - list:
               elements:
-                - appName: ingress-nginx
-                  repoURL: https://kubernetes.github.io/ingress-nginx
-                  namespace: ingress
-                  targetRevision: "4.7.1"
-                - appName: loki
-                  repoURL: https://grafana.github.io/helm-charts
-                  namespace: monitoring
-                  targetRevision: "4.8.0" # "5.0.0" is out
-                - appName: kube-prometheus-stack
-                  repoURL: https://prometheus-community.github.io/helm-charts
-                  namespace: monitoring
-                  targetRevision: "45.7.1" # "65.1.0"
-                - appName: sealed-secrets
-                  repoURL: https://bitnami-labs.github.io/sealed-secrets
-                  namespace: kube-system
-                  targetRevision: "2.16.1"
-              # chart: sealed-secrets
+                - appName: olm
+              # namespace: olm
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip # HEAD
@@ -53,16 +38,7 @@ spec:
         # path: "{{.path.path}}"
         - repoURL: "{{ .repoURL }}"
           chart: "{{ .appName }}"
-          targetRevision: "{{ .targetRevision }}"
-          helm:
-            # Helm values files for overriding values in the helm chart
-            # The path is relative to the spec.source.path directory defined above
-            valueFiles:
-              - "$values/{{ .path.path }}/../../values.yaml"
-              - "$values/{{ .path.path }}/values.yaml"
-        - repoURL: https://github.com/deas/argocd-conductr.git
           targetRevision: wip
-          ref: values
       # Destination cluster and namespace to deploy the application
       destination:
         server: https://kubernetes.default.svc
