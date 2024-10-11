@@ -92,8 +92,12 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
 	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
 	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)
+	$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
+		--from-literal env=$(ENV) \
+		--from-literal server=https://kubernetes.default.svc \
+		--dry-run=client -o yaml | $(KUBECTL) apply -f -
 	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
-	# $(KUBECTL) -n $(ARGOCD_NS) label secret $(ENV) argocd.argoproj.io/secret-type=cluster
+	$(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
