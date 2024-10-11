@@ -52,7 +52,8 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         # We don't stage/env at the ns level
-        namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
+        # namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
+        namespace: "{{ .namespace }}"
 
       # Sync policy
       syncPolicy:
