@@ -14,7 +14,6 @@ metadata:
   #  name: root
 spec:
   project: default
-
   source:
     repoURL: https://github.com/deas/argocd-conductr
     targetRevision: wip
@@ -26,3 +25,6 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+      - ServerSideApply=true
