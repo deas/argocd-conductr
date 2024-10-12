@@ -40,6 +40,14 @@ spec:
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
                   targetRevision: "2.4.8"
+                - appName: submariner-operator
+                  repoURL: https://submariner-io.github.io/submariner-charts/charts
+                  namespace: submariner-operator
+                  targetRevision: "0.18.*" # TODO Document targetRevision
+                - appName: submariner-k8s-broker
+                  repoURL: https://submariner-io.github.io/submariner-charts/charts
+                  namespace: submariner-k8s-broker
+                  targetRevision: "0.18.*"
               # chart: sealed-secrets
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
