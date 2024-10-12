@@ -9,6 +9,7 @@ metadata:
     namespace: argocd
     server: https://kubernetes.default.svc
   project: default
+spec:
   sources:
     - chart: argo-cd
       helm:
