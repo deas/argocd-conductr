@@ -5,11 +5,11 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-options: Prune=false
+spec:
   destination:
     namespace: argocd
     server: https://kubernetes.default.svc
   project: default
-spec:
   sources:
     - chart: argo-cd
       helm:
