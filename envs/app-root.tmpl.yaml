@@ -18,7 +18,7 @@ spec:
   source:
     repoURL: https://github.com/deas/argocd-conductr
     targetRevision: wip
-    path: appsets/${env}
+    path: envs/${env}
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
