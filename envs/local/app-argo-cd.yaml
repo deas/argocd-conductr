@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: argo-cd
+      helm:
+        valueFiles:
+          - $values/apps/infra/argo-cd/envs/local/../../values.yaml
+          - $values/apps/infra/argo-cd/envs/local/values.yaml
+      repoURL: https://argoproj.github.io/argo-helm
+      targetRevision: 7.6.8
+    - ref: values
+      repoURL: https://github.com/deas/argocd-conductr.git
+      targetRevision: wip
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

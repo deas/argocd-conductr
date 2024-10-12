@@ -59,6 +59,7 @@ should spin up an ArgoCD managed `kind` cluster.
 
 
 ## References
+- [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)
 - [Bootstrapping: ApplicationSets vs App-of-apps vs Kustomize](https://github.com/argoproj/argo-cd/discussions/11892)
 - [ArgoCD 2.10: ApplicationSet full templating](https://medium.com/@geoffrey.muselli/argocd-2-10-applicationset-full-templating-b94ce90fde96)
 - [viaduct-ai/kustomize-sops](https://github.com/viaduct-ai/kustomize-sops)

@@ -4,6 +4,12 @@ metadata:
   name: infra-helm
   namespace: argocd
 spec:
+  syncPolicy:
+    #syncOptions:
+    #  - CreateNamespace=true
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: true
+      selfHeal: true
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
@@ -28,10 +34,6 @@ spec:
                   repoURL: https://bitnami-labs.github.io/sealed-secrets
                   namespace: kube-system
                   targetRevision: "2.16.1"
-                - appName: argo-cd
-                  repoURL: https://argoproj.github.io/argo-helm
-                  namespace: argocd
-                  targetRevision: "7.6.8"
                 - appName: argo-rollouts
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
@@ -73,12 +75,21 @@ spec:
   #        automated:
   #          prune: {{ .prune }}
   #    {{- end }} #
+  #  spec:
+  #    source:
+  #      helm:
+  #        valueFiles:
+  #        {{- range $#valueFile := .valueFiles }}
+  #         - {{ $valueFile | toJson }}
+  #          {{- end }}
   template:
     metadata:
       # We don't env/stage at the name level
       name: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
       finalizers:
         - resources-finalizer.argocd.argoproj.io
+      #annotations:
+      #  argocd.argoproj.io/sync-options: Prune=false
     spec:
       # The project the application belongs to.
       project: default
