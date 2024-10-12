@@ -33,7 +33,7 @@ help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nNutzung:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 # Enter docker container for local development
-.PHONY: docker_run
+.PHONY: docker-run
 docker_run:
 #	docker run --rm -it \
 
@@ -41,37 +41,37 @@ docker_run:
 #		-e TF_VAR_folder_id \
 #		-e TF_VAR_billing_account \
 
-.PHONY: docker_test_prepare
+.PHONY: docker-test-prepare
 docker_test_prepare:
 #	docker run --rm -it \
 
 # Clean up test environment within the docker container
-.PHONY: docker_test_cleanup
+.PHONY: docker-test-cleanup
 docker_test_cleanup:
 #	docker run --rm -it \
 
 # Execute integration tests within the docker container
-.PHONY: docker_test_integration
-docker_test_integration:
+.PHONY: docker-test-integration
+docker-test-integration:
 #	docker run --rm -it \
 
-.PHONY: docker_test_lint
-docker_test_lint: ## Execute lint tests within the docker container
+.PHONY: docker-test-lint
+docker-test-lint: ## Execute lint tests within the docker container
 	docker run --rm -it \
 		-v $(CURDIR):/workspace \
 		$(REGISTRY_URL)/${DOCKER_IMAGE_DEVELOPER_TOOLS}:${DOCKER_TAG_VERSION_DEVELOPER_TOOLS} \
 		/usr/local/bin/test_lint.sh
 
-.PHONY: docker_generate_docs
-docker_generate_docs: ## Generate documentation
+.PHONY: docker-generate-docs
+docker-generate-docs: ## Generate documentation
 	docker run --rm -it \
 		-v $(CURDIR):/workspace \
 		$(REGISTRY_URL)/${DOCKER_IMAGE_DEVELOPER_TOOLS}:${DOCKER_TAG_VERSION_DEVELOPER_TOOLS} \
 		/bin/bash -c 'source /usr/local/bin/task_helper_functions.sh && generate_docs'
 
 # Alias for backwards compatibility
-.PHONY: generate_docs
-generate_docs: docker_generate_docs
+.PHONY: generate-docs
+generate_docs: docker-generate-docs
 
 .PHONY: apply
 apply: ## Terraform apply
