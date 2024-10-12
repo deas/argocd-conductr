@@ -12,6 +12,14 @@ configs:
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
+    configManagementPlugins: |
+      - name: kustomized-helm
+        init:
+          command: ["/bin/sh", "-c"]
+          args: ["helm dependency build || true"]
+        generate:
+          command: ["/bin/sh", "-c"]
+          args: ["helm template ../../helm_base --name-template $ARGOCD_APP_NAME --include-crds > ../../helm_base/all.yml && kustomize build"]
     # https://github.com/argoproj/argo-cd/blob/master/docs/user-guide/kustomize.md
     kustomize.buildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
     # TODO: Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
