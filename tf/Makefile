@@ -55,17 +55,15 @@ docker_test_cleanup:
 docker_test_integration:
 #	docker run --rm -it \
 
-# Execute lint tests within the docker container
 .PHONY: docker_test_lint
-docker_test_lint:
+docker_test_lint: ## Execute lint tests within the docker container
 	docker run --rm -it \
 		-v $(CURDIR):/workspace \
 		$(REGISTRY_URL)/${DOCKER_IMAGE_DEVELOPER_TOOLS}:${DOCKER_TAG_VERSION_DEVELOPER_TOOLS} \
 		/usr/local/bin/test_lint.sh
 
-# Generate documentation
 .PHONY: docker_generate_docs
-docker_generate_docs:
+docker_generate_docs: ## Generate documentation
 	docker run --rm -it \
 		-v $(CURDIR):/workspace \
 		$(REGISTRY_URL)/${DOCKER_IMAGE_DEVELOPER_TOOLS}:${DOCKER_TAG_VERSION_DEVELOPER_TOOLS} \
