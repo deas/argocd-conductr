@@ -31,6 +31,11 @@ variable "cilium_helmrelease_path" {
   default = null # "../infrastructure/lib/config/cilium/release-cilium.yaml"
 }
 
+variable "containerd_config_patches" {
+  type    = list(string)
+  default = []
+}
+
 variable "additional_keys" {
   type    = map(any)
   default = {}

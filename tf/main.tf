@@ -39,9 +39,9 @@ resource "kind_cluster" "default" {
   count          = var.kubeconfig_path == null ? 1 : 0
   wait_for_ready = false # false likely needed for cilium bootstrap
   kind_config {
-    kind        = "Cluster"
-    api_version = "kind.x-k8s.io/v1alpha4"
-
+    kind                      = "Cluster"
+    api_version               = "kind.x-k8s.io/v1alpha4"
+    containerd_config_patches = var.containerd_config_patches
     node {
       role  = "control-plane"
       image = var.kind_cluster_image
@@ -71,11 +71,12 @@ module "kubeconfig" {
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
   # source = "../../terraform-modules/argocd"
-  count            = var.env != null ? 1 : 0
-  source           = "github.com/deas/terraform-modules//argocd?ref=main"
-  namespace        = "argocd"
-  chart_version    = yamldecode(file("${path.module}/../apps/${var.env}/argo-cd/kustomization.yaml")).helmCharts[0].version
-  values           = file("${path.module}/../apps/${var.env}/argo-cd/values-argo-cd.yaml")
+  count         = var.env != null ? 1 : 0
+  source        = "github.com/deas/terraform-modules//argocd?ref=main"
+  namespace     = "argocd"
+  chart_version = yamldecode(file("${path.module}/../apps/${var.env}/argo-cd/kustomization.yaml")).helmCharts[0].version
+  # TODO: Should probly support two values files.
+  values           = file("${path.module}/../apps/infra/argo-cd/values.yaml") # TODO:: Bring back ${var.env}
   bootstrap_path   = var.bootstrap_path
   cluster_manifest = templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env })
   additional_keys  = var.additional_keys

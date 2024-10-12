@@ -102,7 +102,7 @@ helm-install-basic-argocd: ## Install ArgoCD with Helm
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
-	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/local/argo-cd/values-argo-cd.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
+	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
 .PHONY: apply-argocd-root
 apply-argocd-root: ## Apply argocd root application
