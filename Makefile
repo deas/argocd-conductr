@@ -106,7 +106,7 @@ argocd-helm-install-basic: ## Install ArgoCD with Helm
 
 .PHONY: argocd-apply-root
 argocd-apply-root: ## Apply argocd root application
-	sed -e s,'$${env}',$(ENV),g < envs/app-root.tmpl.yaml | $(KUBECTL) apply -f -
+	$(KUBECTL) apply -f envs/$(ENV)/app-root.yaml
 
 .PHONY: update-olm-manifests
 update-olm-manifests: ## Update olm manifests

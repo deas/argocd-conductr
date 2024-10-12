@@ -10,6 +10,7 @@ YAML at scale is ... terrible.
 - Speed 🚀
 - Scalability
 - kind, vanilla, crc, openshift  
+- Simplicity (yes, really)
 
 ## Non Goals
 ## Decisions
