@@ -1,10 +1,17 @@
 # ArgoCD Conductr - GitOps Everything 🧪
 
-This repo is mostly based on [flux-conductr](https://github.com/deas/flux-conductr).
-
-The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deploymentcovering the full cycle - up to production via promotion, if you want to. Experimentation and production do not have to conflict.
+The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production do not have to conflict.
 
 The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
+
+## Goals
+- Speed 🚀
+- Scalability
+- kind, vanilla, crc, openshift  
+
+## Non Goals
+## Decisions
+- Single level environment staging. Not reflected in names and namespaces. Because Matroka.
 
 At the moment, we cover deployments of:
 - Caretta
