@@ -19,7 +19,9 @@ At the moment, we cover deployments of:
 - Kube-Prometheus
 - Loki/Promtail
 - AWS Credentials Sync
+- Sealed Secrets
 - SOPS Secrets
+- Submariner
 - Argo-CD Image-Updater
 - Argo Rollouts
 - Argo Events
@@ -46,12 +48,15 @@ make apply
 should spin up an ArgoCD managed `kind` cluster.
 
 ## TODO
-- Naming?
-- Deduplicate/Dry things
 - `terraform`? (just like in `tf-controller`)
+- crossplane
+- Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
 - ~~Proper self management of ArgoCD~~
-- Proper dependencies sync-waves, phases, `Application(Set)`
+- metrics-server
+- contour?
+- cilium
+- Sync alerts slack/matrix
 - Environment propagation
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
