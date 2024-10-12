@@ -86,9 +86,9 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 	htpasswd -bBn admin admin | $(KUBECTL) create secret generic htpass --from-file=htpasswd=/dev/stdin -n openshift-config
 	$(KUBECTL) apply -f assets/oauth-cluster.yaml
 
-.PHONY: helm-install-basic-argocd
+.PHONY: argocd-helm-install-basic
 # TODO: A bit overlap with terraform 
-helm-install-basic-argocd: ## Install ArgoCD with Helm
+argocd-helm-install-basic: ## Install ArgoCD with Helm
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
 	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
 	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)

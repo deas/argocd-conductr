@@ -4,6 +4,8 @@ The primary goal of this project is to exercise with ArgoCD based [GitOps](https
 
 The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
 
+YAML at scale is ... terrible.
+
 ## Goals
 - Speed 🚀
 - Scalability
