@@ -56,9 +56,11 @@ should spin up an ArgoCD managed `kind` cluster.
 ## Known issues
 - [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
-- kube-prometheus sync fail: `failed to create typed patch object (monitoring/prometheus-kube-prometheus-alertmanager; monitoring.coreos.com/v1, Kind=ServiceMonitor): .spec.endpoints[0].enableHttp2: field not declared in schema`
+
 
 ## References
+- [Bootstrapping: ApplicationSets vs App-of-apps vs Kustomize](https://github.com/argoproj/argo-cd/discussions/11892)
+- [ArgoCD 2.10: ApplicationSet full templating](https://medium.com/@geoffrey.muselli/argocd-2-10-applicationset-full-templating-b94ce90fde96)
 - [viaduct-ai/kustomize-sops](https://github.com/viaduct-ai/kustomize-sops)
 - [Introduction to GitOps with ArgoCD](https://blog.codecentric.de/gitops-argocd)
 - [3 patterns for deploying Helm charts with Argo CD](https://developers.redhat.com/articles/2023/05/25/3-patterns-deploying-helm-charts-argocd?sc_cid=7013a0000034Yq3AAE)
