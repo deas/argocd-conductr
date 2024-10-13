@@ -36,10 +36,6 @@ spec:
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
                   targetRevision: "0.11.0"
-                #                 - appName: argocd-notifications
-                #                   repoURL: https://argoproj.github.io/argo-helm
-                #                   namespace: argocd
-                #                   targetRevision: "1.8.*"
                 - appName: argo-events
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
