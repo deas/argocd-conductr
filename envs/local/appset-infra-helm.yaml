@@ -4,12 +4,6 @@ metadata:
   name: infra-helm
   namespace: argocd
 spec:
-  syncPolicy:
-    #syncOptions:
-    #  - CreateNamespace=true
-    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
-      prune: true
-      selfHeal: true
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
