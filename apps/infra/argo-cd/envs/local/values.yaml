@@ -71,9 +71,8 @@ configs:
 repoServer:
   metrics:
     enabled: true
-    metrics:
-      serviceMonitor:
-        enabled: true
+    serviceMonitor:
+      enabled: true
   env:
     - name: XDG_CONFIG_HOME
       value: /.config
@@ -143,9 +142,8 @@ repoServer:
 server:
   metrics:
     enabled: true
-    metrics:
-      serviceMonitor:
-        enabled: true
+    serviceMonitor:
+      enabled: true
   #configEnabled: true
   #config:
   #  repositories: |
@@ -244,15 +242,13 @@ notifications:
 applicationSet:
   metrics:
     enabled: true
-    metrics:
-      serviceMonitor:
-        enabled: true
+    serviceMonitor:
+      enabled: true
 redis:
   metrics:
     enabled: true
-    metrics:
-      serviceMonitor:
-        enabled: true
+    serviceMonitor:
+      enabled: true
 dex:
   metrics:
     enabled: true
