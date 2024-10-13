@@ -58,14 +58,8 @@ argocd-deploy: ## ArgoCD deploy guestbook
 .PHONY: argocd-generate-monitor-manifests
 argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 	helm template --release-name argo-cd argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 \
-		--set controller.metrics.enabled=true --set controller.metrics.serviceMonitor.enabled=true\
-		--set notifications.metrics.enabled=true --set notifications.metrics.serviceMonitor.enabled=true\
-		--set applicationController.metrics.enabled=true --set applicationController.metrics.serviceMonitor.enabled=true\
-		--set repoServer.metrics.enabled=true --set repoServer.metrics.serviceMonitor.enabled=true\
-		--set server.metrics.enabled=true --set server.metrics.serviceMonitor.enabled=true\
-		--set redis.metrics.enabled=true --set redis.metrics.serviceMonitor.enabled=true\
-		--set dex.metrics.enabled=true --set dex.metrics.serviceMonitor.enabled=true\
-		| yq 'select(.kind == "ServiceMonitor")'
+		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/values-monitor.yaml \
+	| yq 'select(.kind == "ServiceMonitor")'
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
