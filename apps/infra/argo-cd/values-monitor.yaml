@@ -8,7 +8,7 @@ notifications:
     enabled: true
     serviceMonitor:
       enabled: true
-applicationController:
+applicationSet:
   metrics:
     enabled: true
     metrics:
