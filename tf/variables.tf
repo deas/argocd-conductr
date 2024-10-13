@@ -26,9 +26,9 @@ variable "bootstrap_path" {
   description = "bootstrap path"
 }
 
-variable "cilium_helmrelease_path" {
+variable "cilium_appset_path" {
   type    = string
-  default = null # "../infrastructure/lib/config/cilium/release-cilium.yaml"
+  default = null # "envs/local/appset-infra-helm.yaml"
 }
 
 variable "containerd_config_patches" {

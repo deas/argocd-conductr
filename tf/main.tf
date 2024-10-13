@@ -1,7 +1,7 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
-  cilium_spec         = try(yamldecode(file(var.cilium_helmrelease_path))["spec"], null)
+  cilium_spec         = try(yamldecode(file(var.cilium_appset_path))["spec"], null)
   cilium_version      = try(local.cilium_spec["chart"]["spec"]["version"], null)
   cilium_release_name = try(local.cilium_spec["releaseName"], null)
   cilium_values = try(yamlencode(merge(
@@ -55,8 +55,8 @@ resource "kind_cluster" "default" {
     }
 
     networking {
-      disable_default_cni = var.cilium_helmrelease_path != null                       # do not install kindnet for cilium
-      kube_proxy_mode     = var.cilium_helmrelease_path != null ? "none" : "iptables" # do not run kube-proxy for cilium
+      disable_default_cni = var.cilium_appset_path != null                       # do not install kindnet for cilium
+      kube_proxy_mode     = var.cilium_appset_path != null ? "none" : "iptables" # do not run kube-proxy for cilium
     }
   }
 }
@@ -113,7 +113,7 @@ module "coredns" {
 
 # Bare minimum to get CNI up here (Won't work via flux)
 resource "helm_release" "cilium" {
-  count      = var.cilium_helmrelease_path != null ? 1 : 0 # var.cilium_version != null ? 1 : 0
+  count      = var.cilium_appset_path != null ? 1 : 0 # var.cilium_version != null ? 1 : 0
   name       = local.cilium_release_name
   repository = "https://helm.cilium.io"
   chart      = "cilium"
