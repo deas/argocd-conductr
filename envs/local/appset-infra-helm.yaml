@@ -36,10 +36,15 @@ spec:
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
                   targetRevision: "0.11.0"
+                - appName: argo-notifications
+                  repoURL: https://argoproj.github.io/argo-helm
+                  namespace: argocd
+                  targetRevision: "1.8.*"
                 - appName: argo-events
                   repoURL: https://argoproj.github.io/argo-helm
                   namespace: argocd
-                  targetRevision: "2.4.8"
+                  targetRevision:
+                    "2.4.8"
                     #- appName: submariner-operator
                     #  repoURL: https://submariner-io.github.io/submariner-charts/charts
                     #  namespace: submariner-operator
