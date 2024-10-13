@@ -63,9 +63,8 @@ configs:
 #configs:
 controller:
   metrics:
-    service:
-      serviceMonitor:
-        enabled: true
+    serviceMonitor:
+      enabled: true
 
 repoServer:
   env:
