@@ -57,13 +57,7 @@ argocd-deploy: ## ArgoCD deploy guestbook
 
 .PHONY: argocd-generate-monitor-manifests
 argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
-	cat <<EOF | helm template argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 -f - \
-	  controller:\
-	    metrics:\
-	      enabled: true\
-	        serviceMonitor:\
-	          enabled: true\
-	EOF
+	helm template argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 --set controller.metrics.enabled=true --set controller.metrics.serviceMonitor.enabled=true
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
