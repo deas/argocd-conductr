@@ -72,7 +72,7 @@ module "kubeconfig" {
 module "argocd" {
   # source = "../../terraform-modules/argocd"
   count         = var.env != null ? 1 : 0
-  source        = "github.com/deas/terraform-modules//argocd?ref=main"
+  source        = "github.com/deas/terraform-modules//argocd?ref=wip"
   namespace     = "argocd"
   chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
   # TODO: Should probly support two values files.

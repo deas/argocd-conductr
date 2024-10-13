@@ -47,7 +47,7 @@ argocd-initial-admin-password: ## Show initial ArgoCD admin password
 argocd-admin-login:  ## ArgoCD admin login
 	argocd login --insecure --username admin \
 		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n argocd get svc/argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
 	kubectl auth can-i create pod --as=system:serviceaccount:argocd:argocd-application-controller -n kube-system
@@ -72,7 +72,7 @@ argocd-recreate-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca cer
 argocd-patch-openshift-auth: ## Patch ArgoCD to use OpenShift auth
 #  Deprecated since openshift 4.11: oc -n serviceaccounts get-token argocd-dex-server
 #  Needs secret in secrets property of serviceaccount
-	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
+	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argo-cd-argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
 	ns=$(ARGOCD_NS) \
 	sa=argocd-dex-server \
 	issuer=$$(oc whoami --show-server) && \

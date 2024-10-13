@@ -61,10 +61,12 @@ configs:
   # @default -- `""` (defaults to current time)
   # argocdServerAdminPasswordMtime: ""
 #configs:
-controller:
-  metrics:
-    serviceMonitor:
-      enabled: true
+# relies on .Capabilities.APIVersions.Has "monitoring.coreos.com/v1"
+# controller:
+#   metrics:
+#     enabled: true
+#     serviceMonitor:
+#       enabled: true
 
 repoServer:
   env:

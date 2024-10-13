@@ -25,6 +25,7 @@ At the moment, we cover deployments of:
 - Sealed Secrets
 - SOPS Secrets
 - Submariner
+- ArgoCD Notifications
 - Argo-CD Image-Updater
 - Argo Rollouts
 - Argo Events
@@ -53,13 +54,14 @@ should spin up an ArgoCD managed `kind` cluster.
 ## TODO
 - `terraform`? (just like in `tf-controller`)
 - crossplane
+- ArgoCD Service Monitor (depends on prom)
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
 - ~~Proper self management of ArgoCD~~
 - metrics-server
 - contour?
 - cilium
-- Sync alerts slack/matrix
+- Notifications Sync alerts slack/matrix
 - Environment propagation
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
