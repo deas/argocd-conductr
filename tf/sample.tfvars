@@ -1,6 +1,7 @@
 # dns_hosts = { "192.168.1.121" = "proxy.local" }
 # kubeconfig_path = "/home/deas/.kube/config"
-# bootstrap_path  = "./bootstrap.yaml"
+# bootstrap_path  = "../secret-sealed-secrets.yaml"
+
 additional_keys = {
   "sops-age" = { "keys.txt" = "../sample-key.txt" }
   "sops-gpg" = { "sops.asc" = "../keys/argocd-conductr-priv.asc" }
