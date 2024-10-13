@@ -61,6 +61,11 @@ configs:
   # @default -- `""` (defaults to current time)
   # argocdServerAdminPasswordMtime: ""
 #configs:
+controller:
+  metrics:
+    serviceMonitor:
+      enabled: true
+
 repoServer:
   env:
     - name: XDG_CONFIG_HOME
