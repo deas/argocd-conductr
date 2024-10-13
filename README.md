@@ -7,10 +7,11 @@ The change process starts at localhost. Hence, we consider localhost experience 
 YAML at scale is ... terrible.
 
 ## Goals
-- Speed 🚀
+- Speed 🚀 (-> Notifications)
 - Scalability
 - kind, vanilla, crc, openshift  
 - Simplicity (yes, really)
+- Composability
 
 ## Non Goals
 ## Decisions
