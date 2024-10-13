@@ -1,6 +1,7 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
+  # [for app in [] : app if app.appName == "cilium"]
   cilium_spec = try(yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"], null)
   # cilium_spec         = try(yamldecode(file(var.cilium_appset_path))["spec"], null)
   cilium_version      = try(local.cilium_spec["chart"]["spec"]["version"], null)
