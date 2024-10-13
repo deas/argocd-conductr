@@ -74,9 +74,12 @@ module "argocd" {
   count         = var.env != null ? 1 : 0
   source        = "github.com/deas/terraform-modules//argocd?ref=main"
   namespace     = "argocd"
-  chart_version = yamldecode(file("${path.module}/../apps/${var.env}/argo-cd/kustomization.yaml")).helmCharts[0].version
+  chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
   # TODO: Should probly support two values files.
-  values           = file("${path.module}/../apps/infra/argo-cd/values.yaml") # TODO:: Bring back ${var.env}
+  values = [
+    file("${path.module}/../apps/infra/argo-cd/values.yaml"),
+    file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml")
+  ]
   bootstrap_path   = var.bootstrap_path
   cluster_manifest = templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env })
   additional_keys  = var.additional_keys
