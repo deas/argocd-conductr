@@ -7,6 +7,7 @@ The change process starts at localhost. Hence, we consider localhost experience 
 YAML at scale is ... terrible.
 Naming ... is hard
 Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
+Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
 ## Goals
 - Speed 🚀 (-> Notifications)
 - Scalability
