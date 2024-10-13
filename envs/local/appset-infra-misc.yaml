@@ -13,6 +13,7 @@ spec:
           - list:
               elements:
                 - appName: olm
+                - appName: private
               # namespace: olm
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
