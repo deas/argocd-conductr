@@ -69,6 +69,11 @@ configs:
 #       enabled: true
 
 repoServer:
+  metrics:
+    enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
   env:
     - name: XDG_CONFIG_HOME
       value: /.config
@@ -136,6 +141,11 @@ repoServer:
     #  name: ca-certs
     #  subPath: ca-certificates.crt
 server:
+  metrics:
+    enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
   #configEnabled: true
   #config:
   #  repositories: |
@@ -226,6 +236,23 @@ server:
   service:
     type: LoadBalancer
 
+notifications:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+applicationSet:
+  metrics:
+    enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
+redis:
+  metrics:
+    enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
 dex:
   metrics:
     enabled: true
