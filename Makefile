@@ -57,7 +57,7 @@ argocd-deploy: ## ArgoCD deploy guestbook
 
 .PHONY: argocd-generate-monitor-manifests
 argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
-	helm template argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 \
+	helm template --release-name argo-cd argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 \
 		--set controller.metrics.enabled=true --set controller.metrics.serviceMonitor.enabled=true\
 		--set notifications.metrics.enabled=true --set notifications.metrics.serviceMonitor.enabled=true\
 		--set applicationController.metrics.enabled=true --set applicationController.metrics.serviceMonitor.enabled=true\
