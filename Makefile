@@ -65,6 +65,7 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 		--set server.metrics.enabled=true --set server.metrics.serviceMonitor.enabled=true\
 		--set redis.metrics.enabled=true --set redis.metrics.serviceMonitor.enabled=true\
 		--set dex.metrics.enabled=true --set dex.metrics.serviceMonitor.enabled=true\
+		| yq 'select(.kind == "ServiceMonitor")'
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
