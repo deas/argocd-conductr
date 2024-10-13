@@ -4,6 +4,7 @@ metadata:
   name: argo-cd
   namespace: argocd
   annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
     argocd.argoproj.io/sync-options: Prune=false
 spec:
   destination:

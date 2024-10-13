@@ -83,7 +83,8 @@ spec:
       name: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
       finalizers:
         - resources-finalizer.argocd.argoproj.io
-      #annotations:
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
       #  argocd.argoproj.io/sync-options: Prune=false
     spec:
       # The project the application belongs to.
