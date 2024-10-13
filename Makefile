@@ -55,6 +55,15 @@ argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
 argocd-deploy: ## ArgoCD deploy guestbook
 	argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
 
+.PHONY: argocd-generate-monitor-manifests
+argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
+	cat <<EOF | helm template argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 -f - \
+	  controller:\
+	    metrics:\
+	      enabled: true\
+	        serviceMonitor:\
+	          enabled: true\
+	EOF
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
