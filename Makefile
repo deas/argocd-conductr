@@ -57,7 +57,7 @@ argocd-deploy: ## ArgoCD deploy guestbook
 
 .PHONY: argocd-generate-monitor-manifests
 argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
-	helm template --release-name argo-cd argo/argo-cd -n argco-cd --api-versions monitoring.coreos.com/v1 \
+	helm template --release-name argo-cd argo/argo-cd -n argocd --api-versions monitoring.coreos.com/v1 \
 		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/values-monitor.yaml \
 	| yq 'select(.kind == "ServiceMonitor")'
 
