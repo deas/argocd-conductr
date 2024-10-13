@@ -6,6 +6,7 @@ metadata:
   annotations:
     # sealed secrets secret from private app below must exist to prevent
     # race with sealed-secret release creating it.
+    # Not sure if this actually ensures this appset applies cleanly before infra-helm - fear not
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   goTemplate: true
