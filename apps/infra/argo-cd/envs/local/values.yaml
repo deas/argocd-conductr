@@ -225,3 +225,9 @@ server:
       route.openshift.io/termination: edge
   service:
     type: LoadBalancer
+
+dex:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
