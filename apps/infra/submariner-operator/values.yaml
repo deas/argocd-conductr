@@ -1,6 +1,6 @@
 ---
 submariner:
-  clusterId: ""
+  clusterId: "localhost"
   #  token: ""
   clusterCidr: ""
   serviceCidr: ""
@@ -19,15 +19,15 @@ submariner:
 broker:
   server: example.k8s.apiserver
   token: test
-  namespace: xyz
-  insecure: false
+  namespace: submariner-k8s-broker
+  # insecure: false
   ca: ""
   #  globalnet: false
 #rbac:
 #  create: true
 #images: {}
 ipsec:
-  psk: ""
+  psk: "TNUqTmREXY5RMWDl2TBjPODJBjOtZVNpAt3FclPUvBopeaZabArrTmeynzYDZEsa"
   #debug: false
   #forceUDPEncaps: false
   #ikePort: 500
@@ -57,9 +57,9 @@ serviceAccounts:
   globalnet:
     create: false # true
     #  name: ""
-  lighthouseAgent:
-    create: true
-    name: ""
-  lighthouseCoreDns:
-    create: true
-    name: ""
+  #lighthouseAgent:
+  #create: true
+  #name: ""
+  #lighthouseCoreDns:
+  #create: true
+  #name: ""
