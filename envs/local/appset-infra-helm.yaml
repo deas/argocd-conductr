@@ -56,7 +56,7 @@ spec:
             #- appName: cilium
             #  repoURL: https://helm.cilium.io
             #  namespace: kube-system
-            #  targetRevision: "1.13.1" # Must not be floating - used in terraform
+            #  targetRevision: "1.16.2" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip # HEAD

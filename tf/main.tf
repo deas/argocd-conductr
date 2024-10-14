@@ -1,7 +1,7 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
-  cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == "cilium"][0], null)
+  cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
   cilium_values = try(yamlencode(merge(
     yamldecode(file("../apps/infra/cilium/envs/local/values.yaml")),
@@ -54,6 +54,9 @@ resource "kind_cluster" "default" {
     }
 
     networking {
+      # podSubnet: "10.244.0.0/16"
+      # serviceSubnet: "10.96.0.0/12"
+      # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
       disable_default_cni = var.cilium_appset_path != null                       # do not install kindnet for cilium
       kube_proxy_mode     = var.cilium_appset_path != null ? "none" : "iptables" # do not run kube-proxy for cilium
     }
@@ -113,7 +116,7 @@ module "coredns" {
 # Bare minimum to get CNI up here (Won't work via flux)
 resource "helm_release" "cilium" {
   count      = var.cilium_appset_path != null ? 1 : 0 # var.cilium_version != null ? 1 : 0
-  name       = local.cilium_release_name
+  name       = var.cilium_name
   repository = "https://helm.cilium.io"
   chart      = "cilium"
   version    = local.cilium_version # var.cilium_version

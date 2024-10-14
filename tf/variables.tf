@@ -26,6 +26,11 @@ variable "bootstrap_path" {
   description = "bootstrap path"
 }
 
+variable "cilium_name" {
+  type    = string
+  default = "cilium"
+}
+
 variable "cilium_appset_path" {
   type    = string
   default = null # "envs/local/appset-infra-helm.yaml"
