@@ -3,6 +3,7 @@ locals {
   # TODO: Whoa! The ultimate mess. Can we do better?
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
+  cilium_enabled = local.cilium_version != null
   cilium_values = try(yamlencode(merge(
     yamldecode(file("../apps/infra/cilium/envs/local/values.yaml")),
     {
@@ -36,7 +37,7 @@ locals {
 resource "kind_cluster" "default" {
   name           = local.kind_cluster_name
   count          = var.kubeconfig_path == null ? 1 : 0
-  wait_for_ready = false # false likely needed for cilium bootstrap
+  wait_for_ready = !local.cilium_enabled
   kind_config {
     kind                      = "Cluster"
     api_version               = "kind.x-k8s.io/v1alpha4"
@@ -57,8 +58,8 @@ resource "kind_cluster" "default" {
       # podSubnet: "10.244.0.0/16"
       # serviceSubnet: "10.96.0.0/12"
       # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
-      disable_default_cni = var.cilium_appset_path != null                       # do not install kindnet for cilium
-      kube_proxy_mode     = var.cilium_appset_path != null ? "none" : "iptables" # do not run kube-proxy for cilium
+      disable_default_cni = local.cilium_enabled                       # do not install kindnet for cilium
+      kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables" # do not run kube-proxy for cilium
     }
   }
 }
@@ -115,7 +116,7 @@ module "coredns" {
 
 # Bare minimum to get CNI up here (Won't work via flux)
 resource "helm_release" "cilium" {
-  count      = var.cilium_appset_path != null ? 1 : 0 # var.cilium_version != null ? 1 : 0
+  count      = local.cilium_enabled ? 1 : 0 # var.cilium_version != null ? 1 : 0
   name       = var.cilium_name
   repository = "https://helm.cilium.io"
   chart      = "cilium"
