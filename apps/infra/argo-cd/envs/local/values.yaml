@@ -240,6 +240,7 @@ notifications:
   notifiers:
     service.slack: |
       token: $slack-token
+      icon: ":rocket:"
   metrics:
     enabled: true
     serviceMonitor:
