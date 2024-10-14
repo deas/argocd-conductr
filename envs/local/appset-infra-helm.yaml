@@ -45,6 +45,7 @@ spec:
                     #  repoURL: https://submariner-io.github.io/submariner-charts/charts
                     #  namespace: submariner-operator
                     #  targetRevision: "0.18.*" # TODO Document targetRevision
+                -  #  TODO: Bootstrap using quay.io/submariner/subctl:0.18.1
                 - appName: crossplane
                   repoURL: https://charts.crossplane.io/stable
                   namespace: crossplane-system
