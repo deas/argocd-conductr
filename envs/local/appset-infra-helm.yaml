@@ -49,7 +49,6 @@ spec:
                   repoURL: https://charts.crossplane.io/stable
                   namespace: crossplane-system
                   targetRevision: "1.17.*"
-                - appName: submariner-k8s-broker
                 - appName: gatekeeper
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
