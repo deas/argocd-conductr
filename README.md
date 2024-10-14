@@ -5,6 +5,7 @@ The primary goal of this project is to exercise with ArgoCD based [GitOps](https
 The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
 
 YAML at scale is ... terrible.
+CI/CD usually horrible DX
 Naming ... is hard
 Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
 Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
@@ -57,6 +58,11 @@ should spin up an ArgoCD managed `kind` cluster.
 ## TODO
 - `terraform`? (just like in `tf-controller`)
 - crossplane
+- keycloak + sso (DNS) local trickery
+- `notify-send` desktop notifications (via webhook)
+- Aspire Dashboard? (ultralight oTel)
+- Customer Use Case Demo litmus?
+- helm job sample
 - ArgoCD Service Monitor (depends on prom)
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
