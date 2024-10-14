@@ -45,6 +45,11 @@ spec:
                     #  repoURL: https://submariner-io.github.io/submariner-charts/charts
                     #  namespace: submariner-operator
                     #  targetRevision: "0.18.*" # TODO Document targetRevision
+                - appName: crossplane
+                  repoURL: https://charts.crossplane.io/stable
+                  namespace: crossplane-system
+                  targetRevision: "1.17.*"
+                - appName: submariner-k8s-broker
                 - appName: gatekeeper
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
