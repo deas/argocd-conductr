@@ -49,7 +49,10 @@ spec:
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
                   targetRevision: "0.18.*"
-              # chart: sealed-secrets
+            #- appName: cilium
+            #  repoURL: https://helm.cilium.io
+            #  namespace: kube-system
+            #  targetRevision: "1.13.1" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip # HEAD

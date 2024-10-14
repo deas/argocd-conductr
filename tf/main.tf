@@ -1,13 +1,10 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
-  # [for app in [] : app if app.appName == "cilium"]
-  cilium_spec = try(yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"], null)
-  # cilium_spec         = try(yamldecode(file(var.cilium_appset_path))["spec"], null)
-  cilium_version      = try(local.cilium_spec["chart"]["spec"]["version"], null)
-  cilium_release_name = try(local.cilium_spec["releaseName"], null)
+  cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == "cilium"][0], null)
+  cilium_version = try(local.cilium_app["targetRevision"], null)
   cilium_values = try(yamlencode(merge(
-    local.cilium_spec["values"],
+    yamldecode(file("../apps/infra/cilium/envs/local/values.yaml")),
     {
       "hubble" = {
         "metrics" = { "serviceMonitor" = { "enabled" = false } },
