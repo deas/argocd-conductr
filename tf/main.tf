@@ -143,6 +143,18 @@ resource "helm_release" "sbm_k8s_broker" {
   values           = local.sbm_k8s_broker_values
 }
 
+data "kubernetes_resource" "sbm_k8s_broker_client_token" {
+  count       = local.sbm_k8s_broker_enabled ? 1 : 0
+  depends_on  = [helm_release.sbm_k8s_broker]
+  api_version = "v1"
+  kind        = "Secret"
+
+  metadata {
+    name      = "submariner-k8s-broker-client-token"
+    namespace = local.sbm_k8s_broker_ns
+  }
+}
+
 data "http" "metallb_native" {
   count = var.metallb ? 1 : 0
   url   = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
