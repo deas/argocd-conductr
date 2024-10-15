@@ -57,12 +57,16 @@ spec:
                 - appName: submariner-k8s-broker
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
-                  targetRevision:
-                    "0.18.1"
-                    #- appName: cilium
-                    #   repoURL: https://helm.cilium.io
-                    #   namespace: kube-system
-                    #   targetRevision: "1.16.2" # Must not be floating - used in terraform
+                  targetRevision: "0.18.1"
+            # TODO: Customized local charts need templatePath below
+            #- appName: submariner-operator
+            #  namespace: submariner-operator
+            #  targetRevision: "wip"
+            #  path:
+            #    "apps/infra/submariner-operator"
+            #   repoURL: https://helm.cilium.io
+            #   namespace: kube-system
+            #   targetRevision: "1.16.2" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip # HEAD

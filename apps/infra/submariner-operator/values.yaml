@@ -1,65 +1,65 @@
 ---
 submariner:
-  clusterId: "localhost"
-  #  token: ""
+  clusterId: ""
+  token: ""
   clusterCidr: ""
   serviceCidr: ""
-  #  globalCidr: ""
-  #  loadBalancerEnabled: false
-  #  natEnabled: false
-  #  colorCodes: blue
+  globalCidr: ""
+  loadBalancerEnabled: false
+  natEnabled: false
+  colorCodes: blue
   debug: false
-  #  serviceDiscovery: true
-  #  cableDriver: "libreswan"
-  #  healthcheckEnabled: true
-  #  coreDNSCustomConfig: {}
-  #  images:
-#    repository: quay.io/submariner
-#    tag: ""
+  serviceDiscovery: true
+  cableDriver: "libreswan"
+  healthcheckEnabled: true
+  coreDNSCustomConfig: {}
+  images:
+    repository: quay.io/submariner
+    tag: ""
 broker:
   server: example.k8s.apiserver
   token: test
-  namespace: submariner-k8s-broker
-  # insecure: false
+  namespace: xyz
+  insecure: false
   ca: ""
-  #  globalnet: false
-#rbac:
-#  create: true
-#images: {}
+  globalnet: false
+rbac:
+  create: true
+images: {}
 ipsec:
-  psk: "TNUqTmREXY5RMWDl2TBjPODJBjOtZVNpAt3FclPUvBopeaZabArrTmeynzYDZEsa"
-  #debug: false
-  #forceUDPEncaps: false
-  #ikePort: 500
-  #natPort: 4500
-#leadership:
-#  leaseDuration: 10
-#  renewDeadline: 5
-#  retryPeriod: 2
-#operator:
-#  image:
-#  repository: quay.io/submariner/submariner-operator
-#  tag: ""
-#  pullPolicy: IfNotPresent
-#resources: {}
-#tolerations: []
-#affinity: {}
+  psk: ""
+  debug: false
+  forceUDPEncaps: false
+  ikePort: 500
+  natPort: 4500
+leadership:
+  leaseDuration: 10
+  renewDeadline: 5
+  retryPeriod: 2
+operator:
+  image:
+    repository: quay.io/submariner/submariner-operator
+    tag: ""
+    pullPolicy: IfNotPresent
+  resources: {}
+  tolerations: []
+  affinity: {}
 serviceAccounts:
-  #operator:
-  #  create: true
-  #  name: ""
-  #gateway:
-  #  create: true
-  #  name: ""
-  #routeAgent:
-  #  create: true
-  #  name: ""
+  operator:
+    create: true
+    name: ""
+  gateway:
+    create: true
+    name: ""
+  routeAgent:
+    create: true
+    name: ""
   globalnet:
-    create: false # true
-    #  name: ""
-  #lighthouseAgent:
-  #create: true
-  #name: ""
-  #lighthouseCoreDns:
-  #create: true
-  #name: ""
+    create: true
+    name: ""
+  lighthouseAgent:
+    create: true
+    name: ""
+  lighthouseCoreDns:
+    create: true
+    name: ""
