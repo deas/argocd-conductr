@@ -1,29 +1,35 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
+  sbm_k8s_broker_app     = try([for app in yamldecode(file(var.sbm_k8s_broker_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.sbm_k8s_broker_name][0], null)
+  sbm_k8s_broker_version = try(local.sbm_k8s_broker_app["targetRevision"], null)
+  sbm_k8s_broker_ns      = try(local.sbm_k8s_broker_app["namespace"], null)
+  sbm_k8s_broker_enabled = local.sbm_k8s_broker_version != null
+  sbm_k8s_broker_values = try([
+    file("../apps/infra/submariner-k8s-broker/envs/${var.env}/values.yaml")
+  ])
+
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
   cilium_enabled = local.cilium_version != null
-  cilium_values = try(yamlencode(merge(
-    yamldecode(file("../apps/infra/cilium/envs/local/values.yaml")),
-    {
+  cilium_values = try([
+    file("../apps/infra/cilium/envs/${var.env}/values.yaml"),
+    yamlencode({
       "hubble" = {
-        "metrics" = { "serviceMonitor" = { "enabled" = false } },
-        "relay"   = { "prometheus" = { "serviceMonitor" = { "enabled" = false } } }
+        "metrics" = {
+          "dashboards"     = { "enabled" = false },
+          "serviceMonitor" = { "enabled" = false }
+        },
+        "relay" = { "prometheus" = { "serviceMonitor" = { "enabled" = false } } }
       }
-    }
-  )), null)
+    })
+  ], [])
 }
 
 #data "http" "argocd_operator" {
 #  url = "https://operatorhub.io/install/argocd-operator.yaml"
 #}
 
-# TODO: Remove me - helm should do
-#data "http" "argocd" {
-#  # kubectl create namespace argocd
-#  url = "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
-#}
 
 # TODO: could not apply (policy/v1beta1, Kind=PodSecurityPolicy) - Gone since 1.25 - 0.13.3 operator too old
 #data "http" "metallb_operator" {
@@ -58,8 +64,9 @@ resource "kind_cluster" "default" {
       # podSubnet: "10.244.0.0/16"
       # serviceSubnet: "10.96.0.0/12"
       # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
-      disable_default_cni = local.cilium_enabled                       # do not install kindnet for cilium
-      kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables" # do not run kube-proxy for cilium
+      disable_default_cni = local.cilium_enabled # do not install kindnet for cilium
+      # kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables"
+      # "none"  breaks cilium installation these days
     }
   }
 }
@@ -118,13 +125,22 @@ module "coredns" {
 resource "helm_release" "cilium" {
   count      = local.cilium_enabled ? 1 : 0 # var.cilium_version != null ? 1 : 0
   name       = var.cilium_name
-  repository = "https://helm.cilium.io"
+  repository = try(local.cilium_app["repoURL"], null)
   chart      = "cilium"
   version    = local.cilium_version # var.cilium_version
   namespace  = "kube-system"
-  values     = [local.cilium_values]
-  # file("../infrastructure/lib/config/cilium/values-cilium.yaml")]
-  # values     = [file("cilium-values.yaml")]
+  values     = local.cilium_values
+}
+
+resource "helm_release" "sbm_k8s_broker" {
+  count            = local.sbm_k8s_broker_enabled ? 1 : 0
+  name             = var.sbm_k8s_broker_name
+  create_namespace = true
+  repository       = try(local.sbm_k8s_broker_app["repoURL"], null)
+  chart            = "submariner-k8s-broker"
+  version          = local.sbm_k8s_broker_version
+  namespace        = local.sbm_k8s_broker_ns
+  values           = local.sbm_k8s_broker_values
 }
 
 data "http" "metallb_native" {

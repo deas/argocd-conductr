@@ -57,7 +57,8 @@ spec:
                 - appName: submariner-k8s-broker
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
-                  targetRevision: "0.18.*"
+                  targetRevision:
+                    "0.18.1"
                     #- appName: cilium
                     #   repoURL: https://helm.cilium.io
                     #   namespace: kube-system
