@@ -2,7 +2,6 @@ apiVersion: submariner.io/v1alpha1
 kind: Submariner
 metadata:
   name: submariner
-  namespace: "${BROKER_NS}"
 spec:
   broker: ""
   brokerK8sApiServer: "${SUBMARINER_BROKER_URL}"
