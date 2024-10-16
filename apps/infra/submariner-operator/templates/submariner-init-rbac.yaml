@@ -68,7 +68,7 @@ subjects:
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: endpoint-reader
+  name: "{{ template "submariner.fullname" . }}-manager"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -86,7 +86,7 @@ subjects:
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: submariner-manager
+  name: "{{ template "submariner.fullname" . }}-manager"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -104,5 +104,5 @@ subjects:
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: broker-secret-reader
+  name: "{{ template "submariner.fullname" . }}-manager"
   apiGroup: rbac.authorization.k8s.io
