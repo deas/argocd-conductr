@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  submariner-template.yaml: |
+    {{ (.Files.Get "assets/submariner-template.yaml" | indent 4) }}
+kind: ConfigMap
+metadata:
+  name: "{{ .Release.Name }}-templates"
+  namespace: submariner-operator
