@@ -64,7 +64,7 @@ metadata:
     app: {{ template "submariner.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: broker-reader
+    name: "{{ template "submariner.fullname" . }}-manager"
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
@@ -82,7 +82,7 @@ metadata:
     app: {{ template "submariner.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: submariner-manager
+    name: "{{ template "submariner.fullname" . }}-manager"
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
@@ -100,7 +100,7 @@ metadata:
     app: {{ template "submariner.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: broker-reader
+    name: "{{ template "submariner.fullname" . }}-manager"
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
