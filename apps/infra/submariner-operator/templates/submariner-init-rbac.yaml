@@ -79,7 +79,7 @@ metadata:
     app: {{ template "submariner.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: "{{ template "submariner.fullname" . }}-manager"
+    name: "{{ template "submariner.fullname" . }}-endpoint-reader"
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
@@ -119,5 +119,5 @@ subjects:
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: "{{ template "submariner.fullname" . }}-manager"
+  name: broker-secret-reader
   apiGroup: rbac.authorization.k8s.io
