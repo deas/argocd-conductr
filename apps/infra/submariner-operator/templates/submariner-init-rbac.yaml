@@ -79,7 +79,7 @@ metadata:
     app: {{ template "submariner.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: "{{ template "submariner.fullname" . }}-endpoint-reader"
+    name: "{{ template "submariner.fullname" . }}-manager"
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
