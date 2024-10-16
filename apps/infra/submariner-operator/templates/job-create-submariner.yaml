@@ -10,8 +10,6 @@ metadata:
     chart: {{ template "submariner.chart" . }}
     app: {{ template "submariner.fullname" . }}
   annotations:
-    # This is what defines this resource as a hook. Without this line, the
-    # job is considered part of the release.
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": hook-succeeded
@@ -31,7 +29,7 @@ spec:
           args: ["/assets/create-submariner.sh", "/assets/submariner-template.yaml"]
           volumeMounts:
             - name: assets
-              mountPath: /assets         # Specify the directory where the config map will be mounted
+              mountPath: /assets
       volumes:
         - name: assets
           configMap:
