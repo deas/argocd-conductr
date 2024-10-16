@@ -1,0 +1,30 @@
+apiVersion: submariner.io/v1alpha1
+kind: Submariner
+metadata:
+  name: submariner
+  namespace: submariner-operator
+spec:
+  broker: ""
+  brokerK8sApiServer: "${SUBMARINER_BROKER_URL}"
+  brokerK8sApiServerToken: "${SUBMARINER_BROKER_TOKEN}"
+  brokerK8sCA: "${SUBMARINER_BROKER_CA}"
+  brokerK8sRemoteNamespace: "${BROKER_NS}"
+  brokerK8sSecret: submariner-broker-secret
+  cableDriver: vxlan
+  ceIPSecDebug: false
+  ceIPSecNATTPort: 4500
+  ceIPSecPSK: none
+  ceIPSecPSKSecret: submariner-ipsec-psk
+  clusterCIDR: ""
+  clusterID: cluster1
+  connectionHealthCheck:
+    enabled: true
+    intervalSeconds: 1
+    maxPacketLossCount: 5
+  debug: false
+  namespace: ${SUBMARINER_NS}
+  natEnabled: false
+  repository: quay.io/submariner
+  serviceCIDR: ""
+  serviceDiscoveryEnabled: true
+  version: 0.18.1
