@@ -51,7 +51,7 @@ spec:
         helm:
           valueFiles:
             - "values.yaml"
-            # - "{{ .path.path }}/values.yaml"
+            - "envs/local/values.yaml"
       destination:
         server: https://kubernetes.default.svc
         # We don't stage/env at the ns level
