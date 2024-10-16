@@ -26,8 +26,8 @@ spec:
       containers:
         - name: setup-submariner
           image: bitnami/kubectl
-          command: ["/bin/sh", "-c"]
-          args: ["echo 'This job runs once after install!'"]
+          command: ["/bin/sh"]
+          args: ["/assets/create-submariner.sh", "/assets/submariner-template.yaml"]
           volumeMounts:
             - name: assets
               mountPath: /assets         # Specify the directory where the config map will be mounted
