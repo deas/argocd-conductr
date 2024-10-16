@@ -64,4 +64,4 @@ serviceAccounts:
     create: true
     name: ""
 postInstallJob:
-  enabled: false
+  enabled: true 
