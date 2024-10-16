@@ -63,3 +63,5 @@ serviceAccounts:
   lighthouseCoreDns:
     create: true
     name: ""
+postInstallJob:
+  enabled: true
