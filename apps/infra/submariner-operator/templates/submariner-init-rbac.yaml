@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: broker-reader
-  namespace: "{{ Release.Namespace }}"
+  namespace: "{{ .Release.Namespace }}"
   labels:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
@@ -13,7 +13,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: submariner-manager
-  namespace: "{{ Release.Namespace }}"
+  namespace: "{{ .Release.Namespace }}"
   labels:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
@@ -65,7 +65,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: broker-reader
-    namespace: "{{ Release.Namespace }}"
+    namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
   name: endpoint-reader
@@ -74,7 +74,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: manage-submariners
-  namespace: "{{ Release.Namespace }}"
+  namespace: "{{ .Release.Namespace }}"
   labels:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
@@ -83,7 +83,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: submariner-manager
-    namespace: "{{ Release.Namespace }}"
+    namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
   name: submariner-manager
@@ -101,7 +101,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: broker-reader
-    namespace: "{{ Release.Namespace }}"
+    namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
   name: broker-secret-reader

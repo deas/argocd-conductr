@@ -5,4 +5,4 @@ data:
 kind: ConfigMap
 metadata:
   name: "{{ .Release.Name }}-templates"
-  namespace: submariner-operator
+  namespace: "{{ .Release.Namespace }}"
