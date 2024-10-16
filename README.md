@@ -101,10 +101,11 @@ The primary goal of this project is to exercise with ArgoCD based [GitOps](https
 The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
 
 - YAML at scale is ... terrible.
-- CI/CD usually horrible DX
+- CI/CD usually horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
 - Naming ... is hard
 - Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
 - Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
+- Refs: Pin or Float?
 
 ### Goals
 - Speed 🚀 (-> Notifications)
