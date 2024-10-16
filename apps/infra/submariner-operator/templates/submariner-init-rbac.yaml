@@ -101,7 +101,7 @@ subjects:
     namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: "{{ template "submariner.fullname" . }}-manager"
+  name: submariner-manager
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
