@@ -1,4 +1,4 @@
-# {{- if .Values.postInstallJob.enabled }}
+{{- if .Values.postInstallJob.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -36,4 +36,4 @@ spec:
           configMap:
             name: "{{ .Release.Name }}-templates"
 
-# {{- end }}
+{{- end }}

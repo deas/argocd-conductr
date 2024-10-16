@@ -1,0 +1,4 @@
+submariner:
+  cableDriver: "vxlan"
+postInstallJob:
+  enabled: true
