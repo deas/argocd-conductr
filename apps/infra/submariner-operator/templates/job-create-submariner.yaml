@@ -1,0 +1,22 @@
+# {{- if .Values.postInstallJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-post-install-setup-submariner"
+  labels:
+    app: "{{ .Release.Name }}"
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-post-install-setup-submariner"
+      labels:
+        app: "{{ .Release.Name }}"
+    spec:
+      serviceAccountName: "{{ .Release.Name }}-job-sa"
+      restartPolicy: Never
+      containers:
+        - name: post-install-task
+          image: bitnami/kubectl
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'This job runs once after install!'"]
+# {{- end }}
