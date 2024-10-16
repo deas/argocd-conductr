@@ -2,19 +2,19 @@ apiVersion: submariner.io/v1alpha1
 kind: Submariner
 metadata:
   name: submariner
-  namespace: submariner-operator
+  namespace: "${BROKER_NS}"
 spec:
   broker: ""
   brokerK8sApiServer: "${SUBMARINER_BROKER_URL}"
   brokerK8sApiServerToken: "${SUBMARINER_BROKER_TOKEN}"
   brokerK8sCA: "${SUBMARINER_BROKER_CA}"
   brokerK8sRemoteNamespace: "${BROKER_NS}"
-  brokerK8sSecret: submariner-broker-secret
+  # brokerK8sSecret: submariner-broker-secret
   cableDriver: vxlan
   ceIPSecDebug: false
   ceIPSecNATTPort: 4500
   ceIPSecPSK: none
-  ceIPSecPSKSecret: submariner-ipsec-psk
+  # ceIPSecPSKSecret: submariner-ipsec-psk
   clusterCIDR: ""
   clusterID: cluster1
   connectionHealthCheck:
