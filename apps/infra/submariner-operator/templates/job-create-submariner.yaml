@@ -2,21 +2,38 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ .Release.Name }}-post-install-setup-submariner"
+  name: "{{ .Release.Name }}-setup-submariner"
   labels:
-    app: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.fullname" . }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
-      name: "{{ .Release.Name }}-post-install-setup-submariner"
+      name: "{{ .Release.Name }}-setup-submariner"
       labels:
         app: "{{ .Release.Name }}"
     spec:
-      serviceAccountName: "{{ .Release.Name }}-job-sa"
+      serviceAccountName: "{{ template "submariner.fullname" . }}-manager"
       restartPolicy: Never
       containers:
-        - name: post-install-task
+        - name: setup-submariner
           image: bitnami/kubectl
           command: ["/bin/sh", "-c"]
           args: ["echo 'This job runs once after install!'"]
+          volumeMounts:
+            - name: assets
+              mountPath: /assets         # Specify the directory where the config map will be mounted
+      volumes:
+        - name: assets
+          configMap:
+            name: "{{ .Release.Name }}-templates"
+
 # {{- end }}
