@@ -36,16 +36,6 @@ variable "cilium_appset_path" {
   default = null # "envs/local/appset-infra-helm.yaml"
 }
 
-variable "sbm_k8s_broker_name" {
-  type    = string
-  default = "submariner-k8s-broker"
-}
-
-variable "sbm_k8s_broker_appset_path" {
-  type    = string
-  default = null # "envs/local/appset-infra-helm.yaml"
-}
-
 variable "containerd_config_patches" {
   type    = list(string)
   default = []

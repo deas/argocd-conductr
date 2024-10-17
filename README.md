@@ -236,7 +236,9 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - ~~Proper self management of ArgoCD~~
 - metrics-server
 - contour?
-- cilium
+- ~~cilium~~
+- OPA Policies
+- ArgoCD +/vs ACM/open cluster management
 - Notifications Sync alerts slack/matrix
 - Environment propagation
 - Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.

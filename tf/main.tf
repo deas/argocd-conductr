@@ -1,14 +1,6 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
   # TODO: Whoa! The ultimate mess. Can we do better?
-  sbm_k8s_broker_app     = try([for app in yamldecode(file(var.sbm_k8s_broker_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.sbm_k8s_broker_name][0], null)
-  sbm_k8s_broker_version = try(local.sbm_k8s_broker_app["targetRevision"], null)
-  sbm_k8s_broker_ns      = try(local.sbm_k8s_broker_app["namespace"], null)
-  sbm_k8s_broker_enabled = local.sbm_k8s_broker_version != null
-  sbm_k8s_broker_values = try([
-    file("../apps/infra/submariner-k8s-broker/envs/${var.env}/values.yaml")
-  ])
-
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
   cilium_enabled = local.cilium_version != null
@@ -132,28 +124,6 @@ resource "helm_release" "cilium" {
   values     = local.cilium_values
 }
 
-resource "helm_release" "sbm_k8s_broker" {
-  count            = local.sbm_k8s_broker_enabled ? 1 : 0
-  name             = var.sbm_k8s_broker_name
-  create_namespace = true
-  repository       = try(local.sbm_k8s_broker_app["repoURL"], null)
-  chart            = "submariner-k8s-broker"
-  version          = local.sbm_k8s_broker_version
-  namespace        = local.sbm_k8s_broker_ns
-  values           = local.sbm_k8s_broker_values
-}
-
-data "kubernetes_resource" "sbm_k8s_broker_client_token" {
-  count       = local.sbm_k8s_broker_enabled ? 1 : 0
-  depends_on  = [helm_release.sbm_k8s_broker]
-  api_version = "v1"
-  kind        = "Secret"
-
-  metadata {
-    name      = "submariner-k8s-broker-client-token"
-    namespace = local.sbm_k8s_broker_ns
-  }
-}
 
 data "http" "metallb_native" {
   count = var.metallb ? 1 : 0
