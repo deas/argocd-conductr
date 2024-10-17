@@ -76,3 +76,5 @@ operator:
   enabled: true
   replicas: 1
 
+ipam:
+  mode: "kubernetes" # https://docs.cilium.io/en/latest/installation/kind/
