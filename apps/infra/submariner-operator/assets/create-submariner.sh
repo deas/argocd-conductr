@@ -14,4 +14,5 @@ export SUBMARINER_BROKER_CA=$(kubectl -n ${BROKER_NS} get secrets -o json | jq -
 
 export SUBMARINER_BROKER_URL=$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}:{.subsets[0].ports[?(@.name=='https')].port}")
 
-cat "${TEMPLATE}" | envsubst | tee | kubectl -n "${SUBMARINER_NS}" apply -f -
+cat "${TEMPLATE}" | envsubst | tee
+#| kubectl -n "${SUBMARINER_NS}" apply -f -
