@@ -1,4 +1,7 @@
 ---
+postInstallJob:
+  enabled: true
+# TODO: Support all of the following
 submariner:
   clusterId: ""
   token: ""
@@ -10,7 +13,7 @@ submariner:
   colorCodes: blue
   debug: false
   serviceDiscovery: true
-  cableDriver: "libreswan"
+  cableDriver: "vxlan" # "libreswan"
   healthcheckEnabled: true
   coreDNSCustomConfig: {}
   images:
@@ -63,5 +66,3 @@ serviceAccounts:
   lighthouseCoreDns:
     create: true
     name: ""
-postInstallJob:
-  enabled: true 
