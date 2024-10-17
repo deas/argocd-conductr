@@ -20,6 +20,7 @@ if [ -z "$resource" ] || [ -z "$namespace" ]; then
 fi
 
 seconds=0
+interval=5
 
 while true; do
   if kubectl get "$resource" -n "$namespace" &>/dev/null; then

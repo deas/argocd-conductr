@@ -16,9 +16,8 @@ locals {
       }
     })
   ], [])
-  # ignition_path = data.external.ignition.result.path # var.ignition_path
   broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
-"%s/tools/get-secret.sh
+"%s/tools/get-secret.sh"
 EOT
   , abspath(path.module))]
 }
@@ -73,14 +72,20 @@ resource "kind_cluster" "default" {
   }
 }
 
-data "external" "broker_secret" {
-  count   = var.kind_child_cluster_name != null ? 1 : 0
-  program = local.broker_secret_get
+data "external" "broker_secret" { # Should probably depend on argocd module o
+  # count   = var.kind_child_cluster_name != null ? 1 : 0
+  count      = var.env != null ? 1 : 0
+  program    = local.broker_secret_get
+  depends_on = [module.argocd]
   query = {
     resource  = "secret/submariner-k8s-broker-client-token"
     namespace = "submariner-k8s-broker"
     timeout   = "300"
   }
+}
+
+output "broker" {
+  value = data.external.broker_secret[0].result
 }
 
 resource "kind_cluster" "child" {
