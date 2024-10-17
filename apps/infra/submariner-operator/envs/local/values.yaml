@@ -1,4 +1,4 @@
 submariner:
   cableDriver: "vxlan"
-    #postInstallJob:
-    #  enabled: true
+postInstallJob:
+  enabled: true
