@@ -16,6 +16,11 @@ locals {
       }
     })
   ], [])
+  # ignition_path = data.external.ignition.result.path # var.ignition_path
+  broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
+"%s/tools/get-secret.sh
+EOT
+  , abspath(path.module))]
 }
 
 #data "http" "argocd_operator" {
@@ -32,6 +37,7 @@ locals {
 #  url = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
 #}
 
+
 resource "kind_cluster" "default" {
   name           = local.kind_cluster_name
   count          = var.kubeconfig_path == null ? 1 : 0
@@ -40,10 +46,12 @@ resource "kind_cluster" "default" {
     kind                      = "Cluster"
     api_version               = "kind.x-k8s.io/v1alpha4"
     containerd_config_patches = var.containerd_config_patches
+    feature_gates             = {}
     node {
-      role   = "control-plane"
-      labels = { "submariner.io/gateway" = true }
-      image  = var.kind_cluster_image
+      role                   = "control-plane"
+      labels                 = { "submariner.io/gateway" = true }
+      image                  = var.kind_cluster_image
+      kubeadm_config_patches = []
       dynamic "extra_mounts" {
         for_each = var.extra_mounts
         content {
@@ -52,14 +60,41 @@ resource "kind_cluster" "default" {
         }
       }
     }
-
+    runtime_config = {}
     networking {
+      dns_search = tolist([])
       # podSubnet: "10.244.0.0/16"
       # serviceSubnet: "10.96.0.0/12"
       # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
       disable_default_cni = local.cilium_enabled # do not install kindnet for cilium
       # kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables"
       # "none"  breaks cilium installation these days
+    }
+  }
+}
+
+data "external" "broker_secret" {
+  count   = var.kind_child_cluster_name != null ? 1 : 0
+  program = local.broker_secret_get
+  query = {
+    resource  = "secret/submariner-k8s-broker-client-token"
+    namespace = "submariner-k8s-broker"
+    timeout   = "300"
+  }
+}
+
+resource "kind_cluster" "child" {
+  name           = var.kind_child_cluster_name
+  count          = var.kind_child_cluster_name != null ? 1 : 0
+  wait_for_ready = true # !local.cilium_enabled
+  kind_config {
+    kind                      = "Cluster"
+    api_version               = "kind.x-k8s.io/v1alpha4"
+    containerd_config_patches = var.containerd_config_patches
+    node {
+      role   = "control-plane"
+      labels = { "submariner.io/gateway" = true }
+      image  = var.kind_cluster_image
     }
   }
 }

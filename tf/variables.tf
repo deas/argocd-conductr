@@ -9,7 +9,15 @@ variable "kind_cluster_name" {
   description = "Cluster name"
   default     = "argocd-conductr"
 }
-
+variable "kind_child_cluster_name" {
+  type        = string
+  description = "Child cluster name"
+  default     = null # "argocd-conductr-child"
+}
+variable "broker_secret_get" {
+  type    = list(string)
+  default = []
+}
 variable "kind_cluster_image" {
   type    = string
   default = "kindest/node:v1.31.0"
