@@ -41,8 +41,9 @@ resource "kind_cluster" "default" {
     api_version               = "kind.x-k8s.io/v1alpha4"
     containerd_config_patches = var.containerd_config_patches
     node {
-      role  = "control-plane"
-      image = var.kind_cluster_image
+      role   = "control-plane"
+      labels = { "submariner.io/gateway" = true }
+      image  = var.kind_cluster_image
       dynamic "extra_mounts" {
         for_each = var.extra_mounts
         content {
