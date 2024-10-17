@@ -16,6 +16,10 @@ locals {
       }
     })
   ], [])
+  submariner_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.submariner_name][0], null)
+  submariner_version = try(local.submariner_app["targetRevision"], null)
+  submariner_enabled = local.submariner_version != null
+  submariner_values  = try([file("../apps/infra/submariner-operator/envs/${var.env}/values.yaml")], [])
   broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
 "%s/tools/get-secret.sh"
 EOT
@@ -87,6 +91,18 @@ data "external" "broker_secret" { # Should probably depend on argocd module o
 output "broker" {
   value = data.external.broker_secret[0].result
 }
+
+/*
+resource "helm_release" "submariner_child" {
+  count      = local.cilium_enabled ? 1 : 0 # var.cilium_version != null ? 1 : 0
+  name       = var.cilium_name
+  repository = try(local.cilium_app["repoURL"], null)
+  chart      = "cilium"
+  version    = local.cilium_version # var.cilium_version
+  namespace  = "kube-system"
+  values     = local.cilium_values
+}
+*/
 
 resource "kind_cluster" "child" {
   name           = var.kind_child_cluster_name

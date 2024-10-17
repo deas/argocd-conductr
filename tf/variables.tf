@@ -34,6 +34,11 @@ variable "bootstrap_path" {
   description = "bootstrap path"
 }
 
+variable "submariner_name" {
+  type    = string
+  default = "submariner-operator"
+}
+
 variable "cilium_name" {
   type    = string
   default = "cilium"
