@@ -131,6 +131,7 @@ At the moment, we cover deployments of:
 - Argo-CD Image-Updater
 - Argo Rollouts
 - Argo Events
+- ArgoCD (self managed)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -237,7 +238,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - metrics-server
 - contour?
 - ~~cilium~~
-- OPA Policies
+- OPA Policies: _Gatekeeper vs usage in CI
 - ArgoCD +/vs ACM/open cluster management
 - Notifications Sync alerts slack/matrix
 - Environment propagation
