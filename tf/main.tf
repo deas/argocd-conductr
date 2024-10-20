@@ -103,7 +103,7 @@ resource "helm_release" "submariner_child" {
 */
 // Terraform does not support recursive modules
 module "submariner_child" {
-  source = "./modules/dummy/"
+  source = "./modules/linked-sumariner/"
   count  = 0
 }
 /*
