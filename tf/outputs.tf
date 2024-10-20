@@ -5,5 +5,5 @@ output "cluster" {
 }
 
 output "broker" {
-  value = data.external.broker_secret[0].result
+  value = try(data.external.broker_secret[0].result, null)
 }
