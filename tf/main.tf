@@ -16,10 +16,12 @@ locals {
       }
     })
   ], [])
+  /*
   submariner_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.submariner_name][0], null)
   submariner_version = try(local.submariner_app["targetRevision"], null)
   submariner_enabled = local.submariner_version != null
   submariner_values  = try([file("../apps/infra/submariner-operator/envs/${var.env}/values.yaml")], [])
+  */
   broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
 "%s/tools/get-secret.sh"
 EOT
@@ -99,7 +101,12 @@ resource "helm_release" "submariner_child" {
   values     = local.cilium_values
 }
 */
-
+// Terraform does not support recursive modules
+module "submariner_child" {
+  source = "./modules/dummy/"
+  count  = 0
+}
+/*
 resource "kind_cluster" "child" {
   name           = var.kind_child_cluster_name
   count          = var.kind_child_cluster_name != null ? 1 : 0
@@ -115,6 +122,7 @@ resource "kind_cluster" "child" {
     }
   }
 }
+*/
 
 module "kubeconfig" {
   source = "github.com/deas/terraform-modules//kubeconfig?ref=main"

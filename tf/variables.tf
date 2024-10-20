@@ -70,7 +70,7 @@ variable "additional_keys" {
 
 variable "metallb" {
   type        = bool
-  default     = true
+  default     = false
   description = "If we want to use MetallLb on kind"
 }
 

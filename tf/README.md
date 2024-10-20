@@ -24,7 +24,7 @@ terraform apply
 | kind\_cluster\_image | The kind image to use | `string` | `"kindest/node:v1.31.0"` | no |
 | kind\_cluster\_name | Cluster name | `string` | `"argocd-conductr"` | no |
 | kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
-| metallb | If we want to use MetallLb on kind | `bool` | `true` | no |
+| metallb | If we want to use MetallLb on kind | `bool` | `false` | no |
 | submariner\_name | Submariner ArgoCD application name where we create the Submariner linked its Broker | `string` | `"submariner-operator"` | no |
 
 ## Outputs
