@@ -88,10 +88,6 @@ data "external" "broker_secret" { # Should probably depend on argocd module o
   }
 }
 
-output "broker" {
-  value = data.external.broker_secret[0].result
-}
-
 /*
 resource "helm_release" "submariner_child" {
   count      = local.cilium_enabled ? 1 : 0 # var.cilium_version != null ? 1 : 0
