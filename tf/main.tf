@@ -105,6 +105,16 @@ resource "helm_release" "submariner_child" {
 module "submariner_child" {
   source = "./modules/linked-sumariner/"
   count  = 0
+  broker = {
+    k8s_apiserver = ""
+    k8s_ca        = ""
+    token         = ""
+    namespace     = ""
+  }
+  # namespace = 
+  providers = {
+    helm = helm
+  }
 }
 /*
 resource "kind_cluster" "child" {
