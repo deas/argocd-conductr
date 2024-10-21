@@ -5,7 +5,8 @@ metadata:
   annotations:
     # argocd.argoproj.io/hook: Sync
     # argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   addOnManagerImagePullSpec: "quay.io/open-cluster-management/addon-manager:v0.14.0"
   deployOption:

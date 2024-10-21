@@ -7,4 +7,5 @@ spec:
   channel: stable
   name: cluster-manager
   source: operatorhubio-catalog
+  installPlanApproval: Automatic
   sourceNamespace: olm

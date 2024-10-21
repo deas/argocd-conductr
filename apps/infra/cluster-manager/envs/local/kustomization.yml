@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
-#  - cluster-manager-hub.yaml
+  - cluster-manager-hub.yaml
 # patchesStrategicMerge:
 #- version.yml
 
