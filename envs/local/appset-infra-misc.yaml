@@ -36,13 +36,13 @@ spec:
       project: default
 
       # Source of the application manifests
-      sources:
+      source:
         # repoURL: https://github.com/deas/argocd-conductr.git
         # targetRevision: wip
         # path: "{{.path.path}}"
-        - repoURL: https://github.com/deas/argocd-conductr.git
-          targetRevision: wip
-          path: "{{.path.path}}"
+        repoURL: https://github.com/deas/argocd-conductr.git
+        targetRevision: wip
+        path: "{{.path.path}}"
       # Destination cluster and namespace to deploy the application
       destination:
         server: https://kubernetes.default.svc
