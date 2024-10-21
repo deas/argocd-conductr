@@ -6,5 +6,9 @@ resource "helm_release" "main" {
   version    = var.chart_version
   namespace  = var.namespace
   values     = var.values
+  #set_sensitive = {
+  #  name  = ""
+  #  value = ""
+  #}
 }
 

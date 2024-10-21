@@ -70,7 +70,7 @@ variable "additional_keys" {
 
 variable "metallb" {
   type        = bool
-  default     = false
+  default     = true # TODO argocd helm release readyness depends on service (currently type LB) being ready
   description = "If we want to use MetallLb on kind"
 }
 
