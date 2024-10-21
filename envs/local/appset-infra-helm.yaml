@@ -54,6 +54,10 @@ spec:
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
                   targetRevision: "3.17.*"
+                #  - appName: cluster-manager
+                #  repoURL: https://open-cluster-management.io/helm-charts
+                #  namespace: open-cluster-management
+                #  targetRevision: "0.15.0"
                 - appName: submariner-k8s-broker
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
