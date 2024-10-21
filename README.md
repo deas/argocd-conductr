@@ -256,6 +256,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)
+- [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Known Issues
