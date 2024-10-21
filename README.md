@@ -253,7 +253,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - oTel Sample
 - Dashboards
 - Consider migrating `make` to `just`
-
+- [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
