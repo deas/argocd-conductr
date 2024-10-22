@@ -113,7 +113,7 @@ module "submariner_child" {
   }
   # namespace = 
   providers = {
-    helm = helm
+    helm = helm.linked
   }
 }
 /*

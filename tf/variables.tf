@@ -32,6 +32,20 @@ variable "kubeconfig_path" {
   default     = null
 }
 
+variable "child_kubeconfig" {
+  type = object({
+    path    = string
+    context = string
+  })
+  nullable = true
+  default = {
+    path    = null
+    context = null
+  }
+  #type = string
+  description = "kubeconfig file and context for a cluster linked to this one."
+}
+
 variable "bootstrap_olm" {
   type        = bool
   default     = false
