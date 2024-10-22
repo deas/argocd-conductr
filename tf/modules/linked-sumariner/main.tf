@@ -1,4 +1,3 @@
-
 resource "helm_release" "main" {
   name       = var.name
   repository = var.repository

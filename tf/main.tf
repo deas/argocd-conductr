@@ -102,7 +102,8 @@ resource "helm_release" "submariner_child" {
 }
 */
 // Terraform does not support recursive modules
-module "submariner_child" {
+/*
+module "submariner_linked" {
   source = "./modules/linked-sumariner/"
   count  = 0
   broker = {
@@ -115,6 +116,20 @@ module "submariner_child" {
   providers = {
     helm = helm.linked
   }
+}
+*/
+resource "helm_release" "linked_submariner" {
+  count      = 0
+  name       = "submariner-operator"             # var.name
+  repository = "apps/infra/submariner-operator " # var.repository
+  chart      = "submariner-operator"             # var.name
+  # version    = var.chart_version
+  namespace = "submariner-operator" # var.namespace
+  values    = []                    #var.values
+  #set_sensitive = {
+  #  name  = ""
+  #  value = ""
+  #}
 }
 /*
 resource "kind_cluster" "child" {
