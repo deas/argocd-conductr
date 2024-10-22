@@ -120,6 +120,7 @@ module "submariner_linked" {
 */
 resource "helm_release" "linked_submariner" {
   count      = 0
+  provider   = helm.linked
   name       = "submariner-operator"             # var.name
   repository = "apps/infra/submariner-operator " # var.repository
   chart      = "submariner-operator"             # var.name
