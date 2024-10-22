@@ -141,6 +141,21 @@ module "kubeconfig" {
   kubeconfig = file(var.kubeconfig_path)
 }
 
+
+module "olm" {
+  source = "../../terraform-modules/olm"
+  count  = var.bootstrap_olm ? 1 : 0
+  # source    = "github.com/deas/terraform-modules//olm?ref=wip"
+  namespace = "olm"
+  /*
+  providers = {
+    kubernetes = kubernetes
+    kubectl    = kubectl
+    helm       = helm
+  }
+  */
+}
+
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
   # source = "../../terraform-modules/argocd"

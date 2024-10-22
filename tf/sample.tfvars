@@ -2,11 +2,12 @@
 # kubeconfig_path = "/home/deas/.kube/config"
 # bootstrap_path  = ../secret-sealed-secrets.yaml"
 # cilium_appset_path = "../envs/local/appset-infra-helm.yaml"
+# bootstrap_olm = true
 
-additional_keys = {
-  "sops-age" = { "keys.txt" = "../sample-key.txt" }
-  "sops-gpg" = { "sops.asc" = "../keys/argocd-conductr-priv.asc" }
-}
+#additional_keys = {
+#  "sops-age" = { "keys.txt" = "../sample-key.txt" }
+#  "sops-gpg" = { "sops.asc" = "../keys/argocd-conductr-priv.asc" }
+#}
 
 # extra_mounts = [{
 #   "container_path" = "/etc/ssl/certs/ca-certificates.crt"

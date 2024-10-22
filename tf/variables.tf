@@ -32,6 +32,11 @@ variable "kubeconfig_path" {
   default     = null
 }
 
+variable "bootstrap_olm" {
+  type        = bool
+  default     = false
+  description = "Should the cluster have OLM before ArgoCD? (Openshift like)"
+}
 variable "bootstrap_path" {
   type        = string
   default     = null
