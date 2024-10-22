@@ -12,10 +12,9 @@ spec:
           # - cluster: {}
           - list:
               elements:
-                - appName: olm
+                # - appName: olm
                 - appName: private
                 - appName: cluster-manager
-              # namespace: olm
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip # HEAD
