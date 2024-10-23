@@ -119,18 +119,18 @@ module "submariner_linked" {
 }
 */
 resource "helm_release" "linked_submariner" {
-  count    = 0
+  count    = 1
   provider = helm.linked
   # atomic           = true
   create_namespace = true
-  name             = "submariner-operator"               # var.name
-  repository       = "../apps/infra/submariner-operator" # var.repository
-  chart            = "submariner-operator"               # var.name
+  name             = "submariner-operator" # var.name
+  repository       = "../apps/infra"       # var.repository
+  chart            = "submariner-operator" # var.name
   # version    = var.chart_version
   namespace = "submariner-operator" # var.namespace
   values = [yamlencode({
     "broker" = {
-      "server"    = null
+      "server"    = data.external.broker_secret[0].result["broker_server"]
       "token"     = data.external.broker_secret[0].result["token"]
       "namespace" = data.external.broker_secret[0].result["namespace"]
       "ca"        = data.external.broker_secret[0].result["ca.crt"]

@@ -21,11 +21,12 @@ fi
 
 seconds=0
 interval=5
+broker_server=$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}:{.subsets[0].ports[?(@.name=='https')].port}")
 
 while true; do
   if kubectl get "$resource" -n "$namespace" &>/dev/null; then
     # echo "'$resource' found in namespace '$namespace'."
-    kubectl get "$resource" -n "$namespace" -o jsonpath='{.data}'
+    kubectl get "$resource" -n "$namespace" -o jsonpath='{.data}' | jq '. += {"broker_server":"'${broker_server}'"} | .namespace = (.namespace | @base64d)'
     exit 0
   fi
 
