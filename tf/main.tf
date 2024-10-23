@@ -136,6 +136,9 @@ resource "helm_release" "linked_submariner" {
       "ca"        = data.external.broker_secret[0].result["ca.crt"]
       # "globalnet" = null
     }
+    "postInstallJob" = {
+       "enabled" = false
+    }
     "submariner" = {
       "clusterId" = "linked"
       #"clusterCidr" = null
