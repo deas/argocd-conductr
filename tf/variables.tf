@@ -32,7 +32,7 @@ variable "kubeconfig_path" {
   default     = null
 }
 
-variable "child_kubeconfig" {
+variable "kubeconfig_linked" {
   type = object({
     path    = string
     context = string

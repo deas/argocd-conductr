@@ -8,7 +8,10 @@
 #  "sops-age" = { "keys.txt" = "../sample-key.txt" }
 #  "sops-gpg" = { "sops.asc" = "../keys/argocd-conductr-priv.asc" }
 #}
-
+#kubeconfig_linked = {
+#  path    = "~/.kube/config"
+#  context = "kind-kind"
+#}
 # extra_mounts = [{
 #   "container_path" = "/etc/ssl/certs/ca-certificates.crt"
 #   "host_path"      = "/etc/ssl/certs/ca-certificates.crt"

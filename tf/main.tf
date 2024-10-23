@@ -119,14 +119,33 @@ module "submariner_linked" {
 }
 */
 resource "helm_release" "linked_submariner" {
-  count      = 0
-  provider   = helm.linked
-  name       = "submariner-operator"             # var.name
-  repository = "apps/infra/submariner-operator " # var.repository
-  chart      = "submariner-operator"             # var.name
+  count    = 0
+  provider = helm.linked
+  # atomic           = true
+  create_namespace = true
+  name             = "submariner-operator"               # var.name
+  repository       = "../apps/infra/submariner-operator" # var.repository
+  chart            = "submariner-operator"               # var.name
   # version    = var.chart_version
   namespace = "submariner-operator" # var.namespace
-  values    = []                    #var.values
+  values = [yamlencode({
+    "broker" = {
+      "server"    = null
+      "token"     = data.external.broker_secret[0].result["token"]
+      "namespace" = data.external.broker_secret[0].result["namespace"]
+      "ca"        = data.external.broker_secret[0].result["ca.crt"]
+      # "globalnet" = null
+    }
+    "submariner" = {
+      "clusterId" = "linked"
+      #"clusterCidr" = null
+      #"serviceCidr" = null
+      #"globalCidr" = null
+      "natEnabled" = "true"
+    }
+    }
+
+  )] #var.values
   #set_sensitive = {
   #  name  = ""
   #  value = ""

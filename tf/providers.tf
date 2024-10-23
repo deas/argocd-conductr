@@ -46,8 +46,8 @@ provider "helm" {
 provider "helm" {
   alias = "linked"
   kubernetes {
-    config_path    = var.child_kubeconfig != null ? var.child_kubeconfig.path : null
-    config_context = var.child_kubeconfig != null ? var.child_kubeconfig.context : null
+    config_path    = var.kubeconfig_linked != null ? var.kubeconfig_linked.path : null
+    config_context = var.kubeconfig_linked != null ? var.kubeconfig_linked.context : null
   }
 }
 #provider "kustomization" {
