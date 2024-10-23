@@ -26,7 +26,7 @@ broker_server=$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subse
 while true; do
   if kubectl get "$resource" -n "$namespace" &>/dev/null; then
     # echo "'$resource' found in namespace '$namespace'."
-    kubectl get "$resource" -n "$namespace" -o jsonpath='{.data}' | jq '. += {"broker_server":"'${broker_server}'"} | .namespace = (.namespace | @base64d)'
+    kubectl get "$resource" -n "$namespace" -o jsonpath='{.data}' | jq '. += {"broker_server":"'${broker_server}'"} | .namespace = (.namespace | @base64d) | .token = (.token | @base64d)'
     exit 0
   fi
 

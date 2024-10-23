@@ -1,5 +1,0 @@
-/*
-output "xyz" {
-  value = 
-}
-*/
