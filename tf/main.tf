@@ -85,15 +85,14 @@ data "external" "broker_secret" { # Should probably depend on argocd module o
 }
 
 resource "helm_release" "linked_submariner" {
-  count    = 1
+  count    = var.kubeconfig_linked != null ? 1 : 0
   provider = helm.linked
   # atomic           = true
   create_namespace = true
-  name             = "submariner-operator" # var.name
-  repository       = "../apps/infra"       # var.repository
-  chart            = "submariner-operator" # var.name
-  # version    = var.chart_version
-  namespace = "submariner-operator" # var.namespace
+  name             = "submariner-operator"
+  repository       = "../apps/infra"
+  chart            = "submariner-operator"
+  namespace        = "submariner-operator"
   values = [yamlencode(
     {
       "broker" = {
@@ -124,6 +123,7 @@ resource "helm_release" "linked_submariner" {
   #  value = ""
   #}
 }
+
 /*
 resource "kind_cluster" "child" {
   name           = var.kind_child_cluster_name
@@ -152,7 +152,7 @@ module "kubeconfig" {
 
 module "olm" {
   source = "../../terraform-modules/olm"
-  count  = var.bootstrap_olm ? 1 : 0
+  count  = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
   # source    = "github.com/deas/terraform-modules//olm?ref=wip"
   namespace = "olm"
   /*
@@ -167,7 +167,7 @@ module "olm" {
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
   # source = "../../terraform-modules/argocd"
-  count         = var.env != null ? 1 : 0
+  count         = (var.env != null && var.argocd_install == "helm") ? 1 : 0
   source        = "github.com/deas/terraform-modules//argocd?ref=wip"
   namespace     = "argocd"
   chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision

@@ -4,17 +4,25 @@ variable "env" {
   default     = null # "local"
 }
 
+
+variable "argocd_install" {
+  description = "If/How to install ArgoCD"
+  type        = string
+
+  validation {
+    condition     = contains(["helm", "olm"], var.argocd_install)
+    error_message = "The argocd_install must be one of 'helm' or 'olm'."
+  }
+  default  = "helm"
+  nullable = true
+}
+
 variable "kind_cluster_name" {
   type        = string
   description = "Cluster name"
   default     = "argocd-conductr" # TODO: Use environment instead?
 }
 
-variable "kind_child_cluster_name" {
-  type        = string
-  description = "Child cluster name"
-  default     = null # "argocd-conductr-child"
-}
 variable "broker_secret_get" {
   type        = list(string)
   description = "The command to execute to obtain the submariner broker secret"
