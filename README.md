@@ -132,6 +132,7 @@ At the moment, we cover deployments of:
 - Argo Rollouts
 - Argo Events
 - ArgoCD (self managed)
+- Operator Lifecycle Management
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -230,7 +231,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - `notify-send` desktop notifications (via webhook)
 - Aspire Dashboard? (ultralight oTel)
 - Customer Use Case Demo litmus?
-- helm job sample
+- ~~helm job sample~~
 - ArgoCD Service Monitor (depends on prom)
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
@@ -248,6 +249,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/)(s. Known Issues)
 - Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with ArgoCD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
 - Openshift Proxy/Global Pull Secrets
+- [ArgoCD Bootstrap via OLM](https://argocd-operator.readthedocs.io/en/latest/install/olm/)
 - Improve Github Actions Quality Gates
 - Tracing Solution (zipkin, tempo) 
 - oTel Sample
@@ -257,6 +259,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
+- ArgoCD rbac/multi tenancy?
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
