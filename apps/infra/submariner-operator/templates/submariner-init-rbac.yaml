@@ -1,3 +1,4 @@
+{{- if .Values.postInstallJob.enabled }}
 ## TODO: Enable multi tenancy
 apiVersion: v1
 kind: ServiceAccount
@@ -158,3 +159,4 @@ roleRef:
   kind: Role
   name: broker-secret-reader
   apiGroup: rbac.authorization.k8s.io
+{{- end }}
