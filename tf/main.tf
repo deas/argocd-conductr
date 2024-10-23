@@ -171,7 +171,6 @@ module "argocd" {
   source        = "github.com/deas/terraform-modules//argocd?ref=wip"
   namespace     = "argocd"
   chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
-  # TODO: Should probly support two values files.
   values = [
     file("${path.module}/../apps/infra/argo-cd/values.yaml"),
     file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml")
@@ -188,11 +187,11 @@ module "argocd" {
   #  private = module.secrets.secret["id-rsa-fluxbot-ro"].secret_data
   #  public  = module.secrets.secret["id-rsa-fluxbot-ro-pub"].secret_data
   #}
-  providers = {
-    kubernetes = kubernetes
-    kubectl    = kubectl
-    helm       = helm
-  }
+  #providers = {
+  #  kubernetes = kubernetes
+  #  kubectl    = kubectl
+  #  helm       = helm
+  #}
 }
 
 # Be careful with this module. It will patch coredns configmap ;)
@@ -202,18 +201,18 @@ module "coredns" {
   source = "github.com/deas/terraform-modules//coredns?ref=main"
   hosts  = var.dns_hosts
   count  = var.dns_hosts != null ? 1 : 0
-  providers = {
-    kubectl = kubectl
-  }
+  #providers = {
+  #  kubectl = kubectl
+  #}
 }
 
-# Bare minimum to get CNI up here (Won't work via flux)
+# Bare minimum to get CNI up here (Won't work via argocd)
 resource "helm_release" "cilium" {
-  count      = local.cilium_enabled ? 1 : 0 # var.cilium_version != null ? 1 : 0
+  count      = local.cilium_enabled ? 1 : 0
   name       = var.cilium_name
   repository = try(local.cilium_app["repoURL"], null)
   chart      = "cilium"
-  version    = local.cilium_version # var.cilium_version
+  version    = local.cilium_version
   namespace  = "kube-system"
   values     = local.cilium_values
 }
@@ -230,9 +229,9 @@ module "metallb_config" {
 }
 
 module "metallb" {
-  count  = var.metallb ? 1 : 0
-  source = "github.com/deas/terraform-modules//metallb?ref=main"
   # source           = "../../terraform-modules/metallb"
+  count            = var.metallb ? 1 : 0
+  source           = "github.com/deas/terraform-modules//metallb?ref=main"
   install_manifest = data.http.metallb_native[0].response_body
   config_manifest  = module.metallb_config[0].manifest
 }
