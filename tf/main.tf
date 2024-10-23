@@ -112,6 +112,9 @@ resource "helm_release" "linked_submariner" {
       #"globalCidr" = null
       "natEnabled" = "true"
     }
+    "ipsec" = {
+      "psk" = "dummy"
+    }
     }
 
   )] #var.values
