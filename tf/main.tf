@@ -61,9 +61,9 @@ resource "kind_cluster" "default" {
     }
     runtime_config = {}
     networking {
-      dns_search = tolist([])
-      # podSubnet: "10.244.0.0/16"
-      # serviceSubnet: "10.96.0.0/12"
+      dns_search     = tolist([])
+      pod_subnet     = "10.243.0.0/16"
+      service_subnet = "10.95.0.0/12"
       # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
       disable_default_cni = local.cilium_enabled # do not install kindnet for cilium
       # kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables"
@@ -94,27 +94,28 @@ resource "helm_release" "linked_submariner" {
   chart            = "submariner-operator" # var.name
   # version    = var.chart_version
   namespace = "submariner-operator" # var.namespace
-  values = [yamlencode({
-    "broker" = {
-      "server"    = data.external.broker_secret[0].result["broker_server"]
-      "token"     = data.external.broker_secret[0].result["token"]
-      "namespace" = data.external.broker_secret[0].result["namespace"]
-      "ca"        = data.external.broker_secret[0].result["ca.crt"]
-      # "globalnet" = null
-    }
-    "postInstallJob" = {
-      "enabled" = false
-    }
-    "submariner" = {
-      "clusterId" = "linked"
-      #"clusterCidr" = null
-      #"serviceCidr" = null
-      #"globalCidr" = null
-      "natEnabled" = "true"
-    }
-    "ipsec" = {
-      "psk" = "dummy"
-    }
+  values = [yamlencode(
+    {
+      "broker" = {
+        "server"    = data.external.broker_secret[0].result["broker_server"]
+        "token"     = data.external.broker_secret[0].result["token"]
+        "namespace" = data.external.broker_secret[0].result["namespace"]
+        "ca"        = data.external.broker_secret[0].result["ca.crt"]
+        # "globalnet" = null
+      }
+      "postInstallJob" = {
+        "enabled" = false
+      }
+      "submariner" = {
+        "clusterId" = "linked"
+        #"clusterCidr" = null
+        #"serviceCidr" = null
+        #"globalCidr" = null
+        "natEnabled" = "true"
+      }
+      "ipsec" = {
+        "psk" = "dummy"
+      }
     }
 
   )] #var.values
