@@ -111,7 +111,7 @@ resource "helm_release" "linked_submariner" {
         #"clusterCidr" = null
         #"serviceCidr" = null
         #"globalCidr" = null
-        "natEnabled" = "true"
+        "natEnabled" = "false"
       }
       "ipsec" = {
         "psk" = "dummy"
