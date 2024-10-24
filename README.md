@@ -38,10 +38,10 @@
 <h3 align="center">ArgoCD Conductr - GitOps Everything 🧪</h3>
 
   <p align="center">
-    project_description
-    <br />
-    <a href="https://github.com/deas/argocd-conductr"><strong>Explore the docs »</strong></a>
-    <br />
+    <!--project_description
+    <br /-->
+    <!--a href="https://github.com/deas/argocd-conductr"><strong>Explore the docs »</strong></a>
+    <br /-->
     <br />
     <!-- a href="https://github.com/deas/argocd-conductr">View Demo</a>
     ·
@@ -96,28 +96,23 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 -->
 
-The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production do not have to conflict.
+The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production should not conflict.
 
-The change process starts at localhost. Hence, we consider localhost experience (kind and maybe k3s soon) very important. Given that, some elements may be useful in CI context. Most things however, should play nice on produtive environments as well.
-
-- YAML at scale is ... terrible.
-- CI/CD usually horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
-- Naming ... is hard
-- Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
-- Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
-- Refs: Pin or Float?
+The change process starts at localhost. Hence, we consider `kind` experience very important. Given that, some elements may be useful in CI context. Most things, should play nice  productive environments as well.
 
 ### Goals
-- Speed 🚀 (-> Notifications)
+- Speed : A fast cycle from localhost to production 🚀 
+- Fail early and loud (notifications)
 - Scalability
-- kind, vanilla, crc, openshift  
 - Simplicity (yes, really)
 - Composability
+- Target `kind`, vanilla `Kubernetes`, `crc`, Openshift
 
 ### Non Goals
 ### Decisions
-- Single level environment staging. Not reflected in names and namespaces. Because Matroka.
+- Single level environment staging. Not reflected in names and namespaces. Because Matrjoschka.
 
+### Features
 At the moment, we cover deployments of:
 - Caretta
 - Metallb
@@ -137,7 +132,6 @@ At the moment, we cover deployments of:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
 ### Built With
 
 * [![Docker][Docker]][Docker-url]
@@ -149,6 +143,14 @@ At the moment, we cover deployments of:
 
 <!-- GETTING STARTED -->
 ## Getting Started
+First things first:
+
+- YAML at scale is ... terrible.
+- CI/CD usually horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
+- Naming ... is hard
+- Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
+- Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
+- Refs: Pin or Float?
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
