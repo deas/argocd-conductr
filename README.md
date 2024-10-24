@@ -111,13 +111,14 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 ### Decisions
 We use a single long lived branch `main` and map environments with directories. Leveraging branches for environment propagation appears easy, but comes with its own set of issues. 
 
-Single level environment staging. One cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
+We use single level environment staging with one cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 
-Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles. 
+Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles. 
 
 
 ### Features
-At the moment, we cover deployments of:
+
+We cover deployments of:
 
 - Argo CD (self managed)
 - Argo CD Notifications
