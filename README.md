@@ -106,11 +106,13 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 - Scalability
 - Simplicity (yes, really)
 - Composability
-- Target `kind`, vanilla `Kubernetes`, `crc`, Openshift
+- Target `kind`, vanilla `Kubernetes` and Openshift including `crc`
 
 ### Non Goals
 ### Decisions
-- Single level environment staging. Not reflected in names and namespaces. Because Matrjoschka.
+We use a single long lived branch `main` and map environments with directories. Leveraging branches for environment propagation appears easy, but comes with its own set of issues. 
+
+Single level environment staging. One cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 
 ### Features
 At the moment, we cover deployments of:
