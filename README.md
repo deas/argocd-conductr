@@ -116,7 +116,13 @@ Single level environment staging. One cluster per environment. We do not use nam
 
 ### Features
 At the moment, we cover deployments of:
-- Caretta
+
+- Argo CD (self managed)
+- Argo CD Notifications
+- Argo-CD Image-Updater
+- Argo Rollouts
+- Argo Events
+- Operator Lifecycle Management
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
@@ -124,12 +130,7 @@ At the moment, we cover deployments of:
 - Sealed Secrets
 - SOPS Secrets
 - Submariner
-- Argo CD Notifications
-- Argo-CD Image-Updater
-- Argo Rollouts
-- Argo Events
-- Argo CD (self managed)
-- Operator Lifecycle Management
+- Caretta
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -150,6 +151,7 @@ Some opinions first:
 - YAML at scale is ... terrible. Unfortunately, there is no way around.
 - CI/CD usually comes with horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
 - Naming ... is hard
+- Joining clusters is hard (e.g. Submariner)
 - Beware of Magic 🎩🪄🐰 (e.g. Argo CD helm release changes when Prometheus CRDs become available)
 - Beware of helm shared values or kustomize base. We deploy `main` and shared bits kick in on all environments.
 - Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more in others and propagate frequently. 
