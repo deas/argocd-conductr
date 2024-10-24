@@ -35,7 +35,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a-->
 
-<h3 align="center">ArgoCD Conductr - GitOps Everything 🧪</h3>
+<h3 align="center">Argo CD Conductr - GitOps Everything 🧪</h3>
 
   <p align="center">
     <!--project_description
@@ -96,7 +96,7 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 -->
 
-The primary goal of this project is to exercise with ArgoCD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production should not conflict.
+The primary goal of this project is to exercise with Argo CD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production should not conflict.
 
 The change process starts at localhost. Hence, we consider `kind` experience very important. Given that, some elements may be useful in CI context. Most things, should play nice  productive environments as well.
 
@@ -124,11 +124,11 @@ At the moment, we cover deployments of:
 - Sealed Secrets
 - SOPS Secrets
 - Submariner
-- ArgoCD Notifications
+- Argo CD Notifications
 - Argo-CD Image-Updater
 - Argo Rollouts
 - Argo Events
-- ArgoCD (self managed)
+- Argo CD (self managed)
 - Operator Lifecycle Management
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -145,14 +145,14 @@ At the moment, we cover deployments of:
 
 <!-- GETTING STARTED -->
 ## Getting Started
-First things first:
+Some opinions first:
 
-- YAML at scale is ... terrible.
-- CI/CD usually horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
+- YAML at scale is ... terrible. Unfortunately, there is no way around.
+- CI/CD usually comes with horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
 - Naming ... is hard
-- Beware of Magic 🎩🪄🐰 (e.g. ArgoCD monitor apply)
-- Beware of helm shared values or kustomize base. We deploy usually deploy main and shared bits kick in on all envs.
-- Refs: Pin or Float?
+- Beware of Magic 🎩🪄🐰 (e.g. Argo CD helm release changes when Prometheus CRDs become available)
+- Beware of helm shared values or kustomize base. We deploy `main` and shared bits kick in on all environments.
+- Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more in others and propagate frequently. 
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
@@ -183,7 +183,7 @@ cp sample.tfvars terraform.tfvars
 # Set proper values in terraform.tfvars
 make apply
 ```
-should spin up an ArgoCD managed `kind` cluster.
+should spin up an Argo CD managed `kind` cluster.
 
 
 ### Installation
@@ -236,24 +236,24 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - Aspire Dashboard? (ultralight oTel)
 - Customer Use Case Demo litmus?
 - ~~helm job sample~~
-- ArgoCD Service Monitor (depends on prom)
+- Argo CD Service Monitor (depends on prom)
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
-- ~~Proper self management of ArgoCD~~
+- ~~Proper self management of Argo CD~~
 - metrics-server
 - contour?
 - ~~cilium~~
 - OPA Policies: _Gatekeeper vs usage in CI
-- ArgoCD +/vs ACM/open cluster management
+- Argo CD +/vs ACM/open cluster management
 - Notifications Sync alerts slack/matrix
 - Environment propagation
-- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
+- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
-- Proper cascaded removal. ArgoCD should be last. Will likely involve terraform. 
+- Proper cascaded removal. Argo CD should be last. Will likely involve terraform. 
 - [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/)(s. Known Issues)
-- Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with ArgoCD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
+- Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
 - Openshift Proxy/Global Pull Secrets
-- [ArgoCD Bootstrap via OLM](https://argocd-operator.readthedocs.io/en/latest/install/olm/)
+- [Argo CD Bootstrap via OLM](https://argocd-operator.readthedocs.io/en/latest/install/olm/)
 - Improve Github Actions Quality Gates
 - Tracing Solution (zipkin, tempo) 
 - oTel Sample
@@ -261,14 +261,14 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - Consider migrating `make` to `just`
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
-- [Manage Kubernetes Operators with ArgoCD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)
+- [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
-- ArgoCD rbac/multi tenancy?
+- Argo CD rbac/multi tenancy?
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Known Issues
-- [Wildcards in ArgoCD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
+- [Wildcards in Argo CD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 
 ### Speed / Registries
@@ -282,14 +282,14 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 ## References
 - [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)
 - [Bootstrapping: ApplicationSets vs App-of-apps vs Kustomize](https://github.com/argoproj/argo-cd/discussions/11892)
-- [ArgoCD 2.10: ApplicationSet full templating](https://medium.com/@geoffrey.muselli/argocd-2-10-applicationset-full-templating-b94ce90fde96)
+- [Argo CD 2.10: ApplicationSet full templating](https://medium.com/@geoffrey.muselli/argocd-2-10-applicationset-full-templating-b94ce90fde96)
 - [viaduct-ai/kustomize-sops](https://github.com/viaduct-ai/kustomize-sops)
-- [Introduction to GitOps with ArgoCD](https://blog.codecentric.de/gitops-argocd)
+- [Introduction to GitOps with Argo CD](https://blog.codecentric.de/gitops-argocd)
 - [3 patterns for deploying Helm charts with Argo CD](https://developers.redhat.com/articles/2023/05/25/3-patterns-deploying-helm-charts-argocd?sc_cid=7013a0000034Yq3AAE)
 - [Self Managed Argo CD — App Of Everything](https://medium.com/devopsturkiye/self-managed-argo-cd-app-of-everything-a226eb100cf0)
 - [Setting up Argo CD with Helm](https://www.arthurkoziel.com/setting-up-argocd-with-helm/)
 - [terraform-argocd-bootstrap](https://github.com/iits-consulting/terraform-argocd-bootstrap)
-- [ArgoCD with Kustomize and KSOPS using Age encryption](https://vikaspogu.dev/blog/argo-operator-ksops-age/)
+- [Argo CD with Kustomize and KSOPS using Age encryption](https://vikaspogu.dev/blog/argo-operator-ksops-age/)
 - https://blog.devgenius.io/argocd-with-kustomize-and-ksops-2d43472e9d3b
 - https://github.com/majinghe/argocd-sops
 - https://dev.to/callepuzzle/secrets-in-argocd-with-sops-fc9
