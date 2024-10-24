@@ -157,7 +157,8 @@ Some opinions first:
 - Joining clusters is hard (e.g. Submariner)
 - Beware of Magic 🎩🪄🐰 (e.g. Argo CD helm release changes when Prometheus CRDs become available)
 - Beware of helm shared values or kustomize base. We deploy `main` and shared bits kick in on all environments.
-- Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more in others and propagate frequently. 
+- Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more elsewhere
+- We should propagate to production frequently.
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
