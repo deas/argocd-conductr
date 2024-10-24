@@ -114,6 +114,9 @@ We use a single long lived branch `main` and map environments with directories. 
 
 Single level environment staging. One cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 
+Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles. 
+
+
 ### Features
 At the moment, we cover deployments of:
 
@@ -163,20 +166,39 @@ To get a local copy up and running follow these simple example steps.
 
 * make
 * docker
-  ```sh
-  make
-  ```
-### Bootrapping
-Generate encryption keys TODO:
 
-```shell
-./scripts/gen-keys.sh
+### Bootrapping
+
+First, you should choose where to start, specifically whether you want to use `terraform`.
+
+If you don't want to use terraform, you should be starting at the root folder. There is a [`Makefile`](./Makefile) with various ad hoc tasks. Simply running
+
+```sh
+make
 ```
 
-Optional: Add public deployment key to github. You may also want to disable github actions to start.
+should give you some help.
+
+If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder.
+
+Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./scripts/gen-keys.sh) in case you'd like to use `sops` instead). 
+
+If using github, you may want to disable github actions and/or add a public deployment key. 
+
 ```
 gh repo deploy-key add ...
 ```
+
+In the root folder (w/o terraform), you should be checking
+
+```
+make -n argocd-helm-install-basic argocd-apply-root
+```
+
+Run this without `-n` once you feel confident to get the ball rolling.
+
+The default `local` deployment  will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key).
+
 
 There is a `terraform` + `kind` based bootstrap in [`tf`](./tf):
 
@@ -272,6 +294,7 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 ## Known Issues
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
+- [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
 
 ### Speed / Registries
 We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
