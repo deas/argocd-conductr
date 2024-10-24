@@ -68,11 +68,10 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#todo">Todo</a></li>
+    <li><a href="#todo">TODO</a></li>
     <li><a href="#known-issues">Known Issues</a></li>
     <li><a href="#references">References</a></li>
     <li><a href="#license">License</a></li>
@@ -164,10 +163,14 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-* make
-* docker
+* `make`
+* `kubectl` 
+* `docker` (if using `kind`)
+* `terraform` (optional)
+* `helm` (if not using terraform) 
 
-### Bootrapping
+### Usage
+For basic demo purposes, you can use this public repo. If you want to run against your own, replace the git server reference with your own.
 
 First, you should choose where to start, specifically whether you want to use `terraform`.
 
@@ -179,9 +182,9 @@ make
 
 should give you some help.
 
-If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder.
+If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder. The terraform module supports deployment to `kind` clusters.
 
-Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./scripts/gen-keys.sh) in case you'd like to use `sops` instead). 
+Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./scripts/gen-keys.sh) in case you'd like to use `sops` instead).
 
 If using github, you may want to disable github actions and/or add a public deployment key. 
 
@@ -197,53 +200,17 @@ make -n argocd-helm-install-basic argocd-apply-root
 
 Run this without `-n` once you feel confident to get the ball rolling.
 
-The default `local` deployment  will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key).
+The default `local` deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret. 
 
 
-There is a `terraform` + `kind` based bootstrap in [`tf`](./tf):
+We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
 
-```shell
-cp sample.tfvars terraform.tfvars
-# Set proper values in terraform.tfvars
-make apply
-```
-should spin up an Argo CD managed `kind` cluster.
-
-
-### Installation
-
-1. Clone the repo
-   ```sh
-   git clone https://github.com/deas/argocd-conductr.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
-   ```
+- [Local Registry](https://kind.sigs.k8s.io/docs/user/local-registry/)
+- [Pull-through Docker registry on Kind clusters](https://maelvls.dev/docker-proxy-registry-kind/) (`registry:2` supports only one registry per instnance)
+- `kind load` may address some use cases
+- Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images). (s. `make argocd-destroy`)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- TODO -->
 ## TODO
@@ -252,8 +219,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
-
-- `terraform`? (just like in `tf-controller`)
+- There are `TODO` tags in code (to provide context)
+- `terraform` within Argo CD? (just like in `tf-controller`)
 - crossplane
 - keycloak + sso (DNS) local trickery
 - `notify-send` desktop notifications (via webhook)
@@ -269,12 +236,12 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - ~~cilium~~
 - OPA Policies: _Gatekeeper vs usage in CI
 - Argo CD +/vs ACM/open cluster management
-- Notifications Sync alerts slack/matrix
+- Notifications Sync alerts Slack/Matrix
 - Environment propagation
-- Try to make sense of olm in our context[redhat-na-ssa/demo-argocd-gitops](https://github.com/redhat-na-ssa/demo-argocd-gitops). Appears the basic reason for olm would be the fact that many off the shelf helm charts simply don't play with openshift because redhat is doing their own thing? [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)? No, honestly.
+- [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)?
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
 - Proper cascaded removal. Argo CD should be last. Will likely involve terraform. 
-- [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/)(s. Known Issues)
+- [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/) (s. Known Issues)
 - Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
 - Openshift Proxy/Global Pull Secrets
 - [Argo CD Bootstrap via OLM](https://argocd-operator.readthedocs.io/en/latest/install/olm/)
@@ -285,24 +252,15 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - Consider migrating `make` to `just`
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
-- [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
 - Argo CD rbac/multi tenancy?
-
+- Ship pull through bits
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Known Issues
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 - [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
-
-### Speed / Registries
-We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
-
-- [Local Registry](https://kind.sigs.k8s.io/docs/user/local-registry/)
-- [Pull-through Docker registry on Kind clusters](https://maelvls.dev/docker-proxy-registry-kind/) (`registry:2` supports only one registry per instnance)
-- `kind load` may address some use cases
-- Remove everything in `kind` installed by flux (so we can rebuild from cached images). (s. `make argocd-destroy`)
 
 ## References
 - [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)
