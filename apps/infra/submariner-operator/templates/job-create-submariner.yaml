@@ -1,0 +1,54 @@
+{{- if .Values.postInstallJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-setup-submariner"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.fullname" . }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-setup-submariner"
+      labels:
+        app: "{{ .Release.Name }}"
+    spec:
+      serviceAccountName: "{{ template "submariner.fullname" . }}-manager"
+      restartPolicy: Never
+      containers:
+        - name: setup-submariner
+          image: bitnami/kubectl
+          command: ["/bin/sh"]
+          args: ["/assets/create-submariner.sh", "/assets/submariner-template.yaml"]
+          env: # TODO: Support all of these
+            - name: BROKER
+              value: ""
+            - name: CABLE_DRIVER
+              value: "{{ .Values.submariner.cableDriver }}"
+            - name: CLUSTER_CIDR
+              value: "{{ .Values.submariner.clusterCidr }}"
+            - name: CLUSTER_ID
+              value: "{{ .Values.submariner.clusterId }}"
+            - name: SERVICE_CIDR
+              value: "{{ .Values.submariner.serviceCidr}}"
+            - name: SERVICE_DISCOVERY_ENABLED
+              value: "true"
+            - name: DEBUG
+              value: "true"
+            - name: NAT_ENABLED
+              value: "false"
+          volumeMounts:
+            - name: assets
+              mountPath: /assets
+      volumes:
+        - name: assets
+          configMap:
+            name: "{{ .Release.Name }}-templates"
+{{- end }}

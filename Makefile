@@ -1,7 +1,11 @@
 KUBECTL=kubectl
 CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
+GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
+ENV=local
+BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
+
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -23,7 +27,7 @@ image-summary: ## Show deployed images
 target:
 	mkdir target
 
-create_age_key:
+age-create-key:
 	age-keygen -o ./key.txt
 
 #create_gpg_secret:
@@ -31,26 +35,31 @@ create_age_key:
 #	gpg --export-secret-keys --armor "$(GPG_ID)" | \
 #		kubectl create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=/dev/stdin
 
-create_age_secret:
+create-age-secret:
 	cat ./key.txt | kubectl create secret generic sops-age --namespace=argocd \
 		--from-file=key.txt=/dev/stdin
 
 .PHONY:
-argocd_initial_admin_password: ## Show initial ArgoCD admin password
-	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d; echo
+argocd-initial-admin-password: ## Show initial ArgoCD admin password
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 # TODO: Pull Load-Balancer IP from Kubernetes
-argocd_admin_login:  ## ArgoCD admin login
+argocd-admin-login:  ## ArgoCD admin login
 	argocd login --insecure --username admin \
 		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n argocd get svc/argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-argocd_ensure_cluster_admin: ## Ensure ArgoCD sa can do anything
+argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
 	kubectl auth can-i create pod --as=system:serviceaccount:argocd:argocd-application-controller -n kube-system
 
-argocd_deploy: ## ArgoCD deploy guestbook
+argocd-deploy: ## ArgoCD deploy guestbook
 	argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
 
+.PHONY: argocd-generate-monitor-manifests
+argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
+	helm template --release-name argo-cd argo/argo-cd -n argocd --api-versions monitoring.coreos.com/v1 \
+		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ENV)/values.yaml \
+	| yq 'select(.kind == "ServiceMonitor")'
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
@@ -59,16 +68,16 @@ create-ca-res: target/manifest-ca-certs.yaml
 target/manifest-ca-certs.yaml: target ## Recreate ca certs manifests
 	cat $(CA_CERTS_FILE) | $(KUBECTL) create configmap ca-certs --from-file=ca-certificates.crt=/dev/stdin --dry-run=client -o yaml > target/manifest-ca-certs.yaml
 
-.PHONY: recreate-argocd-ca-res
-recreate-argocd-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca certs
+.PHONY: argocd-recreate-ca-res
+argocd-recreate-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca certs
 	$(KUBECTL) -n $(ARGOCD_NS) delete configmap ca-certs || true
 	$(KUBECTL) -n $(ARGOCD_NS) create -f target/manifest-ca-certs.yaml
 
-.PHONY: patch-argocd-openshift-auth
-patch-argocd-openshift-auth: ## Patch ArgoCD to use OpenShift auth
+.PHONY: argocd-patch-openshift-auth
+argocd-patch-openshift-auth: ## Patch ArgoCD to use OpenShift auth
 #  Deprecated since openshift 4.11: oc -n serviceaccounts get-token argocd-dex-server
 #  Needs secret in secrets property of serviceaccount
-	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
+	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argo-cd-argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
 	ns=$(ARGOCD_NS) \
 	sa=argocd-dex-server \
 	issuer=$$(oc whoami --show-server) && \
@@ -82,18 +91,32 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 	htpasswd -bBn admin admin | $(KUBECTL) create secret generic htpass --from-file=htpasswd=/dev/stdin -n openshift-config
 	$(KUBECTL) apply -f assets/oauth-cluster.yaml
 
-
-
-.PHONY: helm-install-basic-argocd
+.PHONY: argocd-helm-install-basic
 # TODO: A bit overlap with terraform 
-helm-install-basic-argocd: ## Install ArgoCD with Helm
+argocd-helm-install-basic: ## Install ArgoCD with Helm
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
-	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/argocd-conductr-priv.asc || true
+	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
+	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)
+	$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
+		--from-literal env=$(ENV) \
+		--from-literal repo=https://github.com/deas/argocd-conductr.git \
+		--from-literal server=https://kubernetes.default.svc \
+		--dry-run=client -o yaml | $(KUBECTL) apply -f -
+	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
+	$(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
-	$(KUBECTL) apply -f assets/scc-argocd.yaml
+#	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
-	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/local/argo-cd/values-argo-cd.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 5.36.1
+	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
+.PHONY: argocd-apply-root
+argocd-apply-root: ## Apply argocd root application
+	$(KUBECTL) apply -f envs/$(ENV)/app-root.yaml
+
+.PHONY: update-olm-manifests
+update-olm-manifests: ## Update olm manifests
+	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/crds.yaml -O components/olm/crd/crds.yaml
+	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml -O components/olm/non-crd/olm.yaml
 
 .PHONY: fmt
 fmt: ## Format

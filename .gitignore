@@ -16,5 +16,6 @@ bin/
 .idea/
 .vscode/
 ignore/
+target/
 .direnv/
-.devenv/
+keys/

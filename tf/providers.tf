@@ -1,13 +1,16 @@
 locals {
-  host                   = var.kubeconfig_path == null ? kind_cluster.default[0].endpoint : module.kubeconfig[0].host
-  client_certificate     = var.kubeconfig_path == null ? kind_cluster.default[0].client_certificate : module.kubeconfig[0].client_certificate
-  client_key             = var.kubeconfig_path == null ? kind_cluster.default[0].client_key : module.kubeconfig[0].client_key
-  cluster_ca_certificate = var.kubeconfig_path == null ? kind_cluster.default[0].cluster_ca_certificate : module.kubeconfig[0].cluster_ca_certificate
-  #kubeconfig             = try(kind_cluster.default[0].kubeconfig, null)
-  #load_config_file       = try(kind_cluster.default[0].endpoint, null) != null ? false : true
+  host                   = try(kind_cluster.default[0].endpoint, null)
+  client_certificate     = try(kind_cluster.default[0].client_certificate, null)
+  client_key             = try(kind_cluster.default[0].client_key, null)
+  cluster_ca_certificate = try(kind_cluster.default[0].cluster_ca_certificate, null)
+  # kubeconfig             = try(kind_cluster.default[0].kubeconfig, null)
+  load_config_file = try(kind_cluster.default[0].endpoint, null) != null ? false : true
+
+}
+# TODO: Awesome! three providers, three different env variables for the same thing
+provider "kind" {
 }
 
-# TODO: Awesome! three providers, three different env variables for the same thing
 provider "kubernetes" {
   # KUBE_CONFIG_PATH env
   # config_path = kind_cluster.default.kubeconfig
@@ -26,16 +29,9 @@ provider "kubectl" {
   client_certificate     = local.client_certificate
   client_key             = local.client_key
   cluster_ca_certificate = local.cluster_ca_certificate
-  load_config_file       = false
+  load_config_file       = local.load_config_file
 }
 
-#provider "kustomization" {
-#  # KUBECONFIG_PATH
-#  # kubeconfig_path = 
-#  kubeconfig_raw = local.kubeconfig
-#}
-
-# TODO Catchup with ka0s
 provider "helm" {
   kubernetes {
     # config_path = kind_cluster.default.kubeconfig
@@ -46,5 +42,17 @@ provider "helm" {
   }
 }
 
-provider "kind" {
+
+provider "helm" {
+  alias = "linked"
+  kubernetes {
+    config_path    = var.kubeconfig_linked != null ? var.kubeconfig_linked.path : null
+    config_context = var.kubeconfig_linked != null ? var.kubeconfig_linked.context : null
+  }
 }
+#provider "kustomization" {
+#  # KUBECONFIG_PATH
+#  # kubeconfig_path = 
+#  kubeconfig_raw = local.kubeconfig
+#}
+

@@ -1,0 +1,551 @@
+## Argo CD configuration
+## Ref: https://github.com/argoproj/argo-cd
+##
+## TODO: Does not appear to be needed, but redis still has the uid issue
+## openshift:
+# -- enables using arbitrary uid for argo repo server
+# enabled: false
+## Argo Configs
+configs:
+  params:
+    server.insecure: "true"
+  # General Argo CD configuration
+  ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+  cm:
+    configManagementPlugins: |
+      - name: kustomized-helm
+        init:
+          command: ["/bin/sh", "-c"]
+          args: ["helm dependency build || true"]
+        generate:
+          command: ["/bin/sh", "-c"]
+          args: ["helm template ../../helm_base --name-template $ARGOCD_APP_NAME --include-crds > ../../helm_base/all.yml && kustomize build"]
+    # https://github.com/argoproj/argo-cd/blob/master/docs/user-guide/kustomize.md
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
+    # TODO: Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
+    # https://github.com/argoproj/argo-cd/issues/7437
+    # https://argo-cd.readthedocs.io/en/stable/faq/#why-is-my-application-stuck-in-progressing-state
+    # https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/
+    resource.customizations.health.operators.coreos.com_Subscription: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.state ~= nil then
+          if obj.status.state == "AtLatestKnown" then
+            hs.message = obj.status.state .. " - " .. obj.status.currentCSV
+            hs.status = "Healthy"
+          end
+        end
+      end
+      return hs
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs
+    resource.customizations.health.networking.k8s.io_Ingress: |
+      hs = {}
+      if obj.status ~= nil then
+        hs.status = "Healthy"
+        hs.message = "Ingress Nginx Hack"
+      end
+      return hs
+    resource.customizations.health.bitnami.com_SealedSecret: |
+      hs = {}
+      hs.status = "Healthy"
+      hs.message = "Controller doesn't report resource status"
+      return hs
+  # Argo CD sensitive data
+  # Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
+  # secret:
+  # -- Bcrypt hashed admin password
+  ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+  ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+  # argocdServerAdminPassword: ""
+  # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+  # @default -- `""` (defaults to current time)
+  # argocdServerAdminPasswordMtime: ""
+#configs:
+# relies on .Capabilities.APIVersions.Has "monitoring.coreos.com/v1"
+# controller:
+#   metrics:
+#     enabled: true
+#     serviceMonitor:
+#       enabled: true
+
+repoServer:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  env:
+    - name: XDG_CONFIG_HOME
+      value: /.config
+    - name: SOPS_AGE_KEY_FILE
+      value: /.config/sops/age/keys.txt
+    - name: GNUPGHOME
+      value: /gnupg-home/.gnupg
+    #- name: HTTPS_PROXY
+    #  value: "192.168.1.121"
+    #- name: HTTP_PROXY
+    #  value:
+    #- name: NO_PROXY
+    #  value:
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.0.1
+      command: ["/bin/sh", "-c"]
+      args:
+        - echo "Installing KSOPS...";
+          mv ksops /custom-tools/;
+          mv $GOPATH/bin/kustomize /custom-tools/;
+          echo "Done.";
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+    - name: import-gpg-key
+      image: quay.io/argoproj/argocd:v2.12.4
+      command: ["gpg", "--import", "/sops-gpg/sops.asc"]
+      env:
+        - name: GNUPGHOME
+          value: /gnupg-home/.gnupg
+      volumeMounts:
+        - mountPath: /sops-gpg
+          name: sops-gpg
+        - mountPath: /gnupg-home
+          name: gnupg-home
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+    - name: sops-age
+      secret:
+        secretName: sops-age
+    - name: gnupg-home
+      emptyDir: {}
+    - name: sops-gpg
+      secret:
+        secretName: sops-gpg
+    #- name: ca-certs
+    #  configMap:
+    #    name: ca-certs
+  volumeMounts:
+    - mountPath: /usr/local/bin/kustomize
+      name: custom-tools
+      subPath: kustomize
+    - mountPath: /usr/local/bin/ksops
+      name: custom-tools
+      subPath: ksops
+    - mountPath: /.config/sops/age/keys.txt
+      name: sops-age
+      subPath: keys.txt
+    - mountPath: /gnupg-home/.gnupg
+      name: gnupg-home
+      subPath: .gnupg
+    #- mountPath: /etc/ssl/certs/ca-certificates.crt
+    #  name: ca-certs
+    #  subPath: ca-certificates.crt
+server:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  #configEnabled: true
+  #config:
+  #  repositories: |
+  #    - name: argo-helm
+  #      type: helm
+  #      url: https://argoproj.github.io/argo-helm
+  #additionalApplications:
+  #  - name: argocd
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      helm:
+  #        version: v3
+  #        valueFiles:
+  #        - values.yaml
+  #        - ../values-override.yaml
+  #      path: argocd-install/argo-cd
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #    syncPolicy:
+  #      syncOptions:
+  #      - CreateNamespace=true
+  #  - name: argocd-apps
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      path: argocd-apps
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #      directory:
+  #        recurse: true
+  #        jsonnet: {}
+  #    syncPolicy:
+  #      automated:
+  #        selfHeal: true
+  #        prune: true
+  #  - name: argocd-appprojects
+  #    namespace: argocd
+  #    destination:
+  #      namespace: argocd
+  #      server: https://kubernetes.default.svc
+  #    project: argocd
+  #    source:
+  #      path: argocd-appprojects
+  #      repoURL: https://github.com/kurtburak/argocd.git
+  #      targetRevision: HEAD
+  #      directory:
+  #        recurse: true
+  #        jsonnet: {}
+  #    syncPolicy:
+  #      automated:
+  #        selfHeal: true
+  #        prune: true
+  #additionalProjects:
+  #- name: argocd
+  #  namespace: argocd
+  #  additionalLabels: {}
+  #  additionalAnnotations: {}
+  #  description: Argocd Project
+  #  sourceRepos:
+  #  - '*'
+  #  destinations:
+  #  - namespace: argocd
+  #    server: https://kubernetes.default.svc
+  #  clusterResourceWhitelist:
+  #  - group: '*'
+  #    kind: '*'
+  #  orphanedResources:
+  #    warn: false
+  #  extraArgs:
+  #    - --insecure
+  #  configManagementPlugins: |
+  ingress:
+    enabled: true
+    # ingressClassName: nginx
+    hosts:
+      - argocd-server.apps-crc.testing
+    paths:
+      - /
+    annotations:
+      route.openshift.io/termination: edge
+  service:
+    type: LoadBalancer
+
+notifications:
+  secret:
+    create: false
+  notifiers:
+    service.slack: |
+      token: $slack-token
+      icon: ":rocket:"
+
+  # -- Contains centrally managed global application subscriptions
+  ## For more information: https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/subscriptions/
+  subscriptions:
+    []
+    # # subscription for on-sync-status-unknown trigger notifications
+    # - recipients:
+    #   - slack:test2
+    #   - email:test@gmail.com
+    #   triggers:
+    #   - on-sync-status-unknown
+    # # subscription restricted to applications with matching labels only
+    # - recipients:
+    #   - slack:test3
+    #   selector: test=true
+    #   triggers:
+    #   - on-sync-status-unknown
+
+  # -- The notification template is used to generate the notification content
+  ## For more information: https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/templates/
+  templates:
+    # {}
+    template.app-deployed: |
+      email:
+        subject: New version of an application {{.app.metadata.name}} is up and running.
+      message: |
+        {{if eq .serviceType "slack"}}:white_check_mark:{{end}} Application {{.app.metadata.name}} is now running new version of deployments manifests.
+      slack:
+        attachments: |
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#18be52",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            },
+            {
+              "title": "Revision",
+              "value": "{{.app.status.sync.revision}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+    template.app-health-degraded: |
+      email:
+        subject: Application {{.app.metadata.name}} has degraded.
+      message: |
+        {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} has degraded.
+        Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+      slack:
+        attachments: |-
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#f4c030",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+    template.app-sync-failed: |
+      email:
+        subject: Failed to sync application {{.app.metadata.name}}.
+      message: |
+        {{if eq .serviceType "slack"}}:exclamation:{{end}}  The sync operation of application {{.app.metadata.name}} has failed at {{.app.status.operationState.finishedAt}} with the following error: {{.app.status.operationState.message}}
+        Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      slack:
+        attachments: |-
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#E96D76",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+    template.app-sync-running: |
+      email:
+        subject: Start syncing application {{.app.metadata.name}}.
+      message: |
+        The sync operation of application {{.app.metadata.name}} has started at {{.app.status.operationState.startedAt}}.
+        Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      slack:
+        attachments: |-
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#0DADEA",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+    template.app-sync-status-unknown: |
+      email:
+        subject: Application {{.app.metadata.name}} sync status is 'Unknown'
+      message: |
+        {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} sync is 'Unknown'.
+        Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+        {{if ne .serviceType "slack"}}
+        {{range $c := .app.status.conditions}}
+            * {{$c.message}}
+        {{end}}
+        {{end}}
+      slack:
+        attachments: |-
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#E96D76",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+    template.app-sync-succeeded: |
+      email:
+        subject: Application {{.app.metadata.name}} has been successfully synced.
+      message: |
+        {{if eq .serviceType "slack"}}:white_check_mark:{{end}} Application {{.app.metadata.name}} has been successfully synced at {{.app.status.operationState.finishedAt}}.
+        Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      slack:
+        attachments: |-
+          [{
+            "title": "{{ .app.metadata.name}}",
+            "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+            "color": "#18be52",
+            "fields": [
+            {
+              "title": "Sync Status",
+              "value": "{{.app.status.sync.status}}",
+              "short": true
+            },
+            {
+              "title": "Repository",
+              "value": "{{.app.spec.source.repoURL}}",
+              "short": true
+            }
+            {{range $index, $c := .app.status.conditions}}
+            {{if not $index}},{{end}}
+            {{if $index}},{{end}}
+            {
+              "title": "{{$c.type}}",
+              "value": "{{$c.message}}",
+              "short": true
+            }
+            {{end}}
+            ]
+          }]
+
+  # -- The trigger defines the condition when the notification should be sent
+  ## For more information: https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/triggers/
+  triggers:
+    {}
+    #trigger.on-deployed: |
+    #  - description: Application is synced and healthy. Triggered once per commit.
+    #    oncePer: app.status.sync.revision
+    #    send:
+    #    - app-deployed
+    #    when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+    #trigger.on-health-degraded: |
+    #  - description: Application has degraded
+    #    send:
+    #    - app-health-degraded
+    #    when: app.status.health.status == 'Degraded'
+    #trigger.on-sync-failed: |
+    #  - description: Application syncing has failed
+    #    send:
+    #    - app-sync-failed
+    #    when: app.status.operationState.phase in ['Error', 'Failed']
+    #trigger.on-sync-running: |
+    #  - description: Application is being synced
+    #    send:
+    #    - app-sync-running
+    #    when: app.status.operationState.phase in ['Running']
+    #trigger.on-sync-status-unknown: |
+    #  - description: Application status is 'Unknown'
+    #    send:
+    #    - app-sync-status-unknown
+    #    when: app.status.sync.status == 'Unknown'
+    #trigger.on-sync-succeeded: |
+    #  - description: Application syncing has succeeded
+    #    send:
+    #    - app-sync-succeeded
+    #    when: app.status.operationState.phase in ['Succeeded']
+
+    # For more information: https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/triggers/#default-triggers
+    # defaultTriggers: |
+    #   - on-sync-status-unknown
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+applicationSet:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+redis:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+dex:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

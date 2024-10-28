@@ -1,0 +1,39 @@
+minio:
+  enabled: true
+loki:
+  auth_enabled: false
+  storage:
+    s3:
+      # enterprise-logs / supersecret
+      s3: null
+      endpoint: http://loki-minio:9000
+      region: null
+      # secretAccessKey: XXXXXXXXXXX
+      # accessKeyId: XXXXXXXXXX
+      s3ForcePathStyle: true
+      insecure: true
+  commonConfig:
+    replication_factor: 1
+#   storage:
+#     type: 'filesystem'
+# singleBinary: # TODO: Does not render grafana dashboards
+#   replicas: 1
+# # https://github.com/grafana/loki/issues/7907
+gateway:
+  service:
+    type: NodePort
+    nodePort: 30180
+
+memberlist:
+  service:
+    publishNotReadyAddresses: true
+write:
+  replicas: 1
+read:
+  replicas: 1
+backend:
+  replicas: 1
+monitoring:
+  serviceMonitor:
+    labels:
+      release: prometheus

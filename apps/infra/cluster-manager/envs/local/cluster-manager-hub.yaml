@@ -1,0 +1,20 @@
+apiVersion: operator.open-cluster-management.io/v1
+kind: ClusterManager
+metadata:
+  name: hub
+  annotations:
+    # argocd.argoproj.io/hook: Sync
+    # argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  addOnManagerImagePullSpec: "quay.io/open-cluster-management/addon-manager:v0.14.0"
+  deployOption:
+    mode: Default
+  placementImagePullSpec: "quay.io/open-cluster-management/placement:v0.14.0"
+  registrationConfiguration:
+    featureGates:
+      - feature: DefaultClusterSet
+        mode: Enable
+  registrationImagePullSpec: "quay.io/open-cluster-management/registration:v0.14.0"
+  workImagePullSpec: "quay.io/open-cluster-management/work:v0.14.0"

@@ -3,3 +3,7 @@ output "cluster" {
 
   description = "Object describing the whole created project"
 }
+
+output "broker" {
+  value = try(data.external.broker_secret[0].result, null)
+}

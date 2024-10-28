@@ -1,0 +1,162 @@
+{{- if .Values.postInstallJob.enabled }}
+## TODO: Enable multi tenancy
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ template "submariner.fullname" . }}-manager"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: submariner-manager
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: submariner-manager
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+rules:
+  - apiGroups:
+    - submariner.io
+    resources:
+    - brokers
+    - brokers/status
+    - submariners
+    - submariners/status
+    - servicediscoveries
+    - servicediscoveries/status
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: broker-secret-reader
+  namespace: submariner-k8s-broker
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "{{ template "submariner.fullname" . }}-endpoint-reader"
+  namespace: default
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+  name: submariner-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: submariner-manager
+subjects:
+- kind: ServiceAccount
+  name: "{{ template "submariner.fullname" . }}-manager"
+  namespace: "{{ .Release.Namespace }}"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-endpoints
+  namespace: default
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: "{{ template "submariner.fullname" . }}-manager"
+    namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: Role
+  name: "{{ template "submariner.fullname" . }}-endpoint-reader"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: manage-submariners
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: "{{ template "submariner.fullname" . }}-manager"
+    namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: Role
+  name: submariner-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-secrets
+  namespace: submariner-k8s-broker
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: {{ template "submariner.chart" . }}
+    app: {{ template "submariner.name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: "{{ template "submariner.fullname" . }}-manager"
+    namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: Role
+  name: broker-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

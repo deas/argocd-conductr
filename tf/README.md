@@ -11,19 +11,29 @@ terraform apply
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| additional\_keys | n/a | `map(any)` | `{}` | no |
-| bootstrap\_path | bootstrap path | `string` | `null` | no |
-| dns\_hosts | n/a | `map(string)` | `null` | no |
-| enable\_olm | n/a | `bool` | `false` | no |
-| extra\_mounts | n/a | `list(map(string))` | `[]` | no |
+| additional\_keys | Files to use to create secrets | `map(any)` | `{}` | no |
+| argocd\_install | If/How to install ArgoCD | `string` | `"helm"` | no |
+| bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `false` | no |
+| bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets. | `string` | `null` | no |
+| broker\_secret\_get | The command to execute to obtain the submariner broker secret | `list(string)` | `[]` | no |
+| cilium\_appset\_path | Path to the ArgoCD ApplicationSet to look up the Cilium Application. This is how we choose if we want the Cilium CNI in kind | `string` | `null` | no |
+| cilium\_name | Cilium ArgoCD application name in case we are using ArgoCD managed Cilium | `string` | `"cilium"` | no |
+| containerd\_config\_patches | Containerd patches to apply to kind nodes | `list(string)` | `[]` | no |
+| dns\_hosts | Additional Core DNS Entries we want in kind | `map(string)` | `null` | no |
+| env | The environment key to use to kickoff the ArgoCD deployments. | `string` | `null` | no |
+| extra\_mounts | Extra mount points we want in kind nodes | `list(map(string))` | `[]` | no |
+| kind\_cluster\_image | The kind image to use | `string` | `"kindest/node:v1.31.0"` | no |
 | kind\_cluster\_name | Cluster name | `string` | `"argocd-conductr"` | no |
-| kubeconfig\_path | n/a | `string` | `null` | no |
-| metallb | n/a | `bool` | `true` | no |
+| kubeconfig\_linked | kubeconfig file and context for a cluster linked to this one. | <pre>object({<br>    path    = string<br>    context = string<br>  })</pre> | <pre>{<br>  "context": null,<br>  "path": null<br>}</pre> | no |
+| kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
+| metallb | If we want to use MetallLb on kind | `bool` | `true` | no |
+| submariner\_name | Submariner ArgoCD application name where we create the Submariner linked its Broker | `string` | `"submariner-operator"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| broker | n/a |
 | cluster | Object describing the whole created project |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

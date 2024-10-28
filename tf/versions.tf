@@ -5,7 +5,7 @@ terraform {
   required_providers {
     kind = {
       source  = "tehcyx/kind"
-      version = "0.0.16"
+      version = ">= 0.0.16"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -23,6 +23,10 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = ">= 1.10.0"
     }
+    # kustomization = { # TODO: Should probably replace kubectl and kubernetes
+    # source  = "kbst/kustomization"
+    # version = ">= 0.9.6"
+    # }
   }
 }
 

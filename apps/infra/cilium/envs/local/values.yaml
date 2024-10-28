@@ -1,0 +1,80 @@
+#   create: false
+# serviceAccounts:
+#   cilium:
+#     create: false
+#   etcd:
+#     create: false
+#   operator:
+#     create: false
+#   preflight:
+#     create: false
+#   relay:
+#     create: true
+#   ui:
+#     create: true
+#   clustermeshApiserver:
+#     create: false
+#   clustermeshcertgen:
+#     create: false
+#   hubblecertgen:
+#     create: false
+#
+# agent: false
+#
+# cni:
+#   install: false
+
+#endpointStatus:
+#  enabled: false
+
+hubble:
+  enabled: true
+  metrics:
+    enabled: [dns:query;ignoreAAAA, drop, tcp, flow, icmp, http]
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: prometheus
+    dashboards:
+      enabled: true
+      namespace: monitoring
+  relay:
+    enabled: true
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        labels:
+          release: prometheus
+  ui:
+    enabled: true
+    #service:
+    #  type: NodePort
+    #  nodePort: 30580
+
+# # -- Configure the eBPF-based ip-masq-agent
+# ipMasqAgent:
+#   enabled: false
+# # the config of nonMasqueradeCIDRs
+# # config:
+#   # nonMasqueradeCIDRs: []
+#   # masqLinkLocal: false
+#
+# # iptablesLockTimeout defines the iptables "--wait" option when invoked from Cilium.
+# # iptablesLockTimeout: "5s"
+#
+# ipv4:
+#   # -- Enable IPv4 support.
+#   enabled: false
+#
+# ipv6:
+#   # -- Enable IPv6 support.
+#   enabled: false
+
+operator:
+  # -- Enable the cilium-operator component (required).
+  enabled: true
+  replicas: 1
+
+ipam:
+  mode: "kubernetes" # https://docs.cilium.io/en/latest/installation/kind/

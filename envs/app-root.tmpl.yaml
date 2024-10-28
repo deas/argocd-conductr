@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  # Add this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  #annotations:
+  #  env: ${env}
+  #  rev: wip
+  # Add labels to your application object.
+  #labels:
+  #  name: root
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/deas/argocd-conductr
+    targetRevision: wip
+    path: envs/${env}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
