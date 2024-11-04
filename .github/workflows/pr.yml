@@ -7,33 +7,50 @@ on:
       - main
 jobs:
   validate:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    #- name: Setup tools
-    #  uses: ./.github/actions/tools
-    # TODO: With `act` : Error response from daemon: pull access denied for act-github-actions-tools-dockeraction, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        # https://github.com/gruntwork-io/terratest/issues/706#issuecomment-733495166
-        terraform_wrapper: false
-    - uses: terraform-linters/setup-tflint@v3
-      name: Setup TFLint
-      with:
-        tflint_version: latest # v0.44.1
-    - uses: actions/cache@v3
-      name: Setup tflint Plugins Cache
-      with:
-        path: ~/.tflint.d/plugins
-        key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
-    - name: Check Format
-      run: make fmt
-    - name: Lint
-      run: make lint
+      - name: Checkout
+        uses: actions/checkout@v4
+      #- name: Setup tools
+      #  uses: ./.github/actions/tools
+      # TODO: With `act` : Error response from daemon: pull access denied for act-github-actions-tools-dockeraction, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+      - uses: jdx/mise-action@v2
+        with:
+          version: 2024.10.0 # [default: latest] mise version to install
+          install: true # [default: true] run `mise install`
+          # install_args: "bun" # [default: ""] additional arguments to `mise install`
+          # cache: true # [default: true] cache mise using GitHub's cache
+          # automatically write this .tool-versions file
+          experimental: true # [default: false] enable experimental features
+          log_level: debug # [default: info] log level
+          #tool_versions: |
+          #  shellcheck 0.9.0
+          # or, if you prefer .mise.toml format:
+          #mise_toml: |
+          #  [tools]
+          #  gator = "3.17.1"
+          # working_directory: app # [default: .] directory to run mise in
+      #- name: Setup Terraform
+      #  uses: hashicorp/setup-terraform@v1
+      #  with:
+      #    # https://github.com/gruntwork-io/terratest/issues/706#issuecomment-733495166
+      #    terraform_wrapper: false
+      #- uses: terraform-linters/setup-tflint@v3
+      #  name: Setup TFLint
+      #  with:
+      #    tflint_version: latest # v0.44.1
+      - uses: actions/cache@v3
+        name: Setup tflint Plugins Cache
+        with:
+          path: ~/.tflint.d/plugins
+          key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+      - name: Check Format
+        run: make fmt
+      - name: Lint
+        run: make lint
+      - name: Verify constraints
+        run: make gator-verify
     #- name: Validate
     #  run: make validate
     #- name: Run tests

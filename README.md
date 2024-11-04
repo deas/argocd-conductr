@@ -1,15 +1,5 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
-
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -60,9 +50,9 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
+      <!--ul>
         <li><a href="#built-with">Built With</a></li>
-      </ul>
+      </ul-->
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -135,9 +125,16 @@ We cover deployments of:
 - Submariner
 - Caretta
 
+-Beyond deployments, we feature:
+
+- `mise` aiming at a more uniform environment locally and in CI
+- `make` based tasks
+- Github Actions integration
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
+<!--
 ### Built With
 
 * [![Docker][Docker]][Docker-url]
@@ -146,6 +143,7 @@ We cover deployments of:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
+-->
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -229,6 +227,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Aspire Dashboard? (ultralight oTel)
 - Customer Use Case Demo litmus? Should probably bring the pure chaos bits to Argo CD [`deas/kaos`](https://github.com/deas/ka0s/)
 - ~~helm job sample~~
+- Argo CD Grafana Dashboard
 - Argo CD Service Monitor (depends on prom)
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
@@ -237,6 +236,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - contour?
 - ~~cilium~~
 - OPA Policies: _Gatekeeper vs usage in CI
+- kubeconform in CI
 - Argo CD +/vs ACM/open cluster management
 - Notifications Sync alerts Slack/Matrix
 - Environment propagation
@@ -256,7 +256,8 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
 - Argo CD rbac/multi tenancy?
-- Ship pull through bits
+- Go deeper with `nix`/`devenv` - maybe even replace `mise`
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Known Issues

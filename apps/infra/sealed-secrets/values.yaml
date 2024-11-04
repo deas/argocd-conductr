@@ -2,3 +2,5 @@ fullnameOverride: sealed-secrets-controller
 metrics:
   serviceMonitor:
     enabled: true
+      #    annotations:
+      #      hack: "mute_argocd_out_of_sync"

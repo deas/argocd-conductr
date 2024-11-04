@@ -16,11 +16,11 @@ spec:
                 - appName: submariner-operator
                   namespace: submariner-operator
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: "wip"
+                  targetRevision: "main"
                   chartPath: "apps/infra/submariner-operator"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip # HEAD
+              revision: main # HEAD
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
               # apps/*envs/local

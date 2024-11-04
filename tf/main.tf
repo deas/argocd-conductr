@@ -151,9 +151,9 @@ module "kubeconfig" {
 
 
 module "olm" {
-  source = "../../terraform-modules/olm"
-  count  = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
-  # source    = "github.com/deas/terraform-modules//olm?ref=wip"
+  source = "github.com/deas/terraform-modules//olm?ref=main"
+  # source = "../../terraform-modules/olm"
+  count     = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
   namespace = "olm"
   /*
   providers = {
@@ -168,7 +168,7 @@ module "olm" {
 module "argocd" {
   # source = "../../terraform-modules/argocd"
   count         = (var.env != null && var.argocd_install == "helm") ? 1 : 0
-  source        = "github.com/deas/terraform-modules//argocd?ref=wip"
+  source        = "github.com/deas/terraform-modules//argocd?ref=main"
   namespace     = "argocd"
   chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
   values = [

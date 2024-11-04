@@ -1,7 +1,7 @@
 variable "env" {
   type        = string
   description = "The environment key to use to kickoff the ArgoCD deployments."
-  default     = null # "local"
+  default     = "local"
 }
 
 
@@ -46,17 +46,15 @@ variable "kubeconfig_linked" {
     context = string
   })
   nullable = true
-  default = {
-    path    = null
-    context = null
-  }
+  default  = null
   #type = string
   description = "kubeconfig file and context for a cluster linked to this one."
 }
 
+# localhost (default) env deploys cluster-manager by default
 variable "bootstrap_olm" {
   type        = bool
-  default     = false
+  default     = true
   description = "Should the cluster have OLM before ArgoCD? (Openshift like)"
 }
 variable "bootstrap_path" {
@@ -65,11 +63,11 @@ variable "bootstrap_path" {
   description = "Path to and additional boostrap manifest. Use this to inject decryption secrets."
 }
 
-variable "submariner_name" {
-  type        = string
-  default     = "submariner-operator"
-  description = "Submariner ArgoCD application name where we create the Submariner linked its Broker"
-}
+#variable "submariner_name" {
+#  type        = string
+#  default     = "submariner-operator"
+#  description = "Submariner ArgoCD application name where we create the Submariner linked its Broker"
+#}
 
 variable "cilium_name" {
   type        = string

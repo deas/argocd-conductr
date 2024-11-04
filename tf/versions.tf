@@ -15,6 +15,10 @@ terraform {
       source  = "hashicorp/helm"
       version = ">= 2.7.1"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = ">= 2.3.0"
+    }
     http = {
       source  = "hashicorp/http"
       version = ">= 3.2.0"

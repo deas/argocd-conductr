@@ -27,7 +27,7 @@ spec:
                 - appName: kube-prometheus-stack
                   repoURL: https://prometheus-community.github.io/helm-charts
                   namespace: monitoring
-                  targetRevision: "45.7.1" # "65.1.0"
+                  targetRevision: "65.1.0" #"45.7.1"
                 - appName: sealed-secrets
                   repoURL: https://bitnami-labs.github.io/sealed-secrets
                   namespace: kube-system
@@ -69,7 +69,7 @@ spec:
             # TODO: Customized local charts need templatePath below
             #- appName: submariner-operator
             #  namespace: submariner-operator
-            #  targetRevision: "wip"
+            #  targetRevision: "main"
             #  path:
             #    "apps/infra/submariner-operator"
             #   repoURL: https://helm.cilium.io
@@ -77,13 +77,33 @@ spec:
             #   targetRevision: "1.16.2" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip # HEAD
+              revision: main # HEAD
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
-              # apps/*envs/local
-              # - path: apps/*/envs/local
-  #templatePatch: |
-  #  spec:
+  # Beware : group WITHOUT version
+  # TODO: : Those diffs should probably not exist and be fixed further upstream
+  templatePatch: |
+    spec:
+      ignoreDifferences:
+      {{- if eq .appName "sealed-secrets" }}
+      - jsonPointers:
+        - /metadata/annotations
+        kind: "ServiceMonitor"
+        group: "monitoring.coreos.com"
+      {{- else if eq .appName "loki" }}
+      - jsonPointers:
+        - /spec/volumeClaimTemplates
+        kind: "StatefulSet"
+        group: "apps"
+      - jqPathExpressions:
+        - .spec.relabelings[]
+        kind: "PodLogs"
+        group: "monitoring.grafana.com"
+      - jqPathExpressions:
+        - .spec.endpoints[].relabelings[]
+        kind: "ServiceMonitor"
+        group: "monitoring.coreos.com"
+      {{- end }}
   #    source:
   #      helm:
   #        valueFiles:
@@ -118,7 +138,7 @@ spec:
       # Source of the application manifests
       sources:
         # repoURL: https://github.com/deas/argocd-conductr.git
-        # targetRevision: wip
+        # targetRevision: main
         # path: "{{.path.path}}"
         - repoURL: "{{ .repoURL }}"
           chart: "{{ .appName }}"
@@ -130,7 +150,7 @@ spec:
               - "$values/{{ .path.path }}/../../values.yaml"
               - "$values/{{ .path.path }}/values.yaml"
         - repoURL: https://github.com/deas/argocd-conductr.git
-          targetRevision: wip
+          targetRevision: main
           ref: values
       # Destination cluster and namespace to deploy the application
       destination:
@@ -145,7 +165,7 @@ spec:
           # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
           - ServerSideApply=true
           - CreateNamespace=true
+          # - RespectIgnoreDifferences=true
         automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
           prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
           selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
-

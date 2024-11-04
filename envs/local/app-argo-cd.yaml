@@ -21,7 +21,7 @@ spec:
       targetRevision: 7.6.8
     - ref: values
       repoURL: https://github.com/deas/argocd-conductr.git
-      targetRevision: wip
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true

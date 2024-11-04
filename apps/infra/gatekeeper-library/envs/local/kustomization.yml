@@ -5,5 +5,10 @@ resources:
   #- github.com/open-policy-agent/gatekeeper-library/library
   # You can optionally install a subset by specifying a subfolder, or specify a commit SHA
   - ../../base
-  - github.com/open-policy-agent/gatekeeper-library/library/pod-security-policy?ref=0c82f402fb3594097a90d15215ae223267f5b955
+  - github.com/open-policy-agent/gatekeeper-library/library/general/disallowedrepos/?ref=da229ba0e2807341b41b7e6c5eec3c2141b25e59
+  - ./general/disallowedrepos/repo-must-not-be-k8s-gcr-io/constraint.yaml
+#- constraint-repo-must-not-be-k8s-gcr-io.yaml
 #- constraints.yaml
+#transformers:
+# TODO: kustomize order problem
+#  - add-sync-wave-annotation.yaml

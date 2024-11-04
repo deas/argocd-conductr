@@ -125,3 +125,8 @@ fmt: ## Format
 .PHONY: lint
 lint: ## Lint
 	tflint --recursive
+
+.PHONY: gator-verify
+gator-verify: target ## Gator verify templates and constraints
+	kustomize build apps/infra/gatekeeper-library/envs/$(ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
+	gator verify apps/infra/gatekeeper-library/...

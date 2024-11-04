@@ -8,7 +8,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   #annotations:
   #  env: ${env}
-  #  rev: wip
+  #  rev: main
   # Add labels to your application object.
   #labels:
   #  name: root
@@ -17,7 +17,7 @@ spec:
 
   source:
     repoURL: https://github.com/deas/argocd-conductr
-    targetRevision: wip
+    targetRevision: main
     path: envs/${env}
   destination:
     server: https://kubernetes.default.svc

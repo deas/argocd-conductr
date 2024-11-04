@@ -14,10 +14,11 @@ spec:
               elements:
                 # - appName: olm
                 - appName: private
+                - appName: gatekeeper-library
                 - appName: cluster-manager
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip # HEAD
+              revision: main # HEAD
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
               # apps/*envs/local
@@ -37,10 +38,10 @@ spec:
       # Source of the application manifests
       source:
         # repoURL: https://github.com/deas/argocd-conductr.git
-        # targetRevision: wip
+        # targetRevision: main
         # path: "{{.path.path}}"
         repoURL: https://github.com/deas/argocd-conductr.git
-        targetRevision: wip
+        targetRevision: main
         path: "{{.path.path}}"
       # Destination cluster and namespace to deploy the application
       destination:
