@@ -107,7 +107,7 @@ argocd-helm-install-basic: ## Install ArgoCD with Helm
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
-	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
+	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/local/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
 .PHONY: argocd-apply-root
 argocd-apply-root: ## Apply argocd root application
@@ -130,3 +130,18 @@ lint: ## Lint
 gator-verify: target ## Gator verify templates and constraints
 	kustomize build apps/infra/gatekeeper-library/envs/$(ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
 	gator verify apps/infra/gatekeeper-library/...
+
+.PHONY: set-gitops-branch
+set-gitops-branch: ## Set gitops branch to current
+	branch=$$(git rev-parse --abbrev-ref HEAD); find envs -iname "*.yaml" | while read f ; do sed -i "s/evision: \"*[a-z].*/evision: $${branch}/g" "$${f}"; done
+
+.PHONY: install-tools
+install-tools: ## Install all the tools
+	mise install
+
+.PHONY: create-dashboard-configmaps
+create-dashboard-configmaps: ## Create dashboard ConfigMaps
+	$(KUBECTL) -n monitoring create configmap dashboards-misc --from-file=./apps/infra/monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
+	@echo
+	@echo "Make sure to add label for grafana sidecar"
+	@echo

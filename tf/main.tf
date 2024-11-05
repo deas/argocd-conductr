@@ -173,7 +173,8 @@ module "argocd" {
   chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
   values = [
     file("${path.module}/../apps/infra/argo-cd/values.yaml"),
-    file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml")
+    file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml"),
+    file("${path.module}/../apps/infra/argo-cd/bootstrap-override-values.yaml")
   ]
   bootstrap_path   = var.bootstrap_path
   cluster_manifest = templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env })

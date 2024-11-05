@@ -1,0 +1,5 @@
+controller:
+  metrics:
+    # enabled: false 
+    serviceMonitor:
+      enabled: false

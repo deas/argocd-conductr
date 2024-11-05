@@ -16,9 +16,10 @@ spec:
                 - appName: private
                 - appName: gatekeeper-library
                 - appName: cluster-manager
+                - appName: monitoring
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: main # HEAD
+              revision: main
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
               # apps/*envs/local

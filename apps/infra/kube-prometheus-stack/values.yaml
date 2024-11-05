@@ -210,3 +210,9 @@ grafana:
       #  ## Argo CD configuration
       # - ../../argocd/values.yaml # TODO: move me here
   # https://argo-cd.readthedocs.io/en/stable/proposals/server-side-apply/
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false

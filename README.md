@@ -13,9 +13,10 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 -->
+<!--
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-
+-->
 
 
 <!-- PROJECT LOGO -->
@@ -125,7 +126,7 @@ We cover deployments of:
 - Submariner
 - Caretta
 
--Beyond deployments, we feature:
+Beyond deployments, we feature:
 
 - `mise` aiming at a more uniform environment locally and in CI
 - `make` based tasks
@@ -150,7 +151,8 @@ We cover deployments of:
 Some opinions first:
 
 - YAML at scale is ... terrible. Unfortunately, there is no way around.
-- CI/CD usually comes with horrible DX : “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
+- CI/CD usually comes with horrible DX: “.. it’s this amalgamation of scripts in YAML tied together with duct tape.”
+- CI/CD should enable basic inner loop local development. Should not be `git commit -m hoping-for-the-best && git push`
 - Naming ... is hard
 - Joining clusters is hard (e.g. Submariner)
 - Beware of Magic 🎩🪄🐰 (e.g. Argo CD helm release changes when Prometheus CRDs become available)
@@ -165,6 +167,7 @@ To get a local copy up and running follow these simple example steps.
 
 * `make`
 * `kubectl` 
+* `mise` (highly recommended)
 * `docker` (if using `kind`)
 * `terraform` (optional)
 * `helm` (if not using terraform) 
@@ -220,6 +223,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
     - [ ] Nested Feature
 -->
 - There are `TODO` tags in code (to provide context)
+- It takes too long for prometheus to get up
 - `terraform` within Argo CD? (just like in `tf-controller`)
 - crossplane
 - keycloak + sso (DNS) local trickery
@@ -301,7 +305,7 @@ Don't forget to give the project a star! Thanks again!
 ### Top contributors:
 
 <a href="https://github.com/deas/argocd-conductr/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=github_username/repo_name" alt="contrib.rocks image" />
+  <img src="https://contrib.rocks/image?repo=deas/argocd-conductor" alt="contrib.rocks image" />
 </a>
 -->
 
@@ -340,15 +344,15 @@ Project Link: [https://github.com/deas/argocd-conductr](https://github.com/deas/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/deas/argocd-conductor.svg?style=for-the-badge
 [contributors-url]: https://github.com/deas/argocd-conductr/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/deas/argocd-conductor.svg?style=for-the-badge
 [forks-url]: https://github.com/deas/argocd-conductr/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/deas/argocd-conductor.svg?style=for-the-badge
 [stars-url]: https://github.com/deas/argocd-conductr/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/deas/argocd-conductor.svg?style=for-the-badge
 [issues-url]: https://github.com/deas/argocd-conductr/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/deas/argocd-conductor.svg?style=for-the-badge
 [license-url]: https://github.com/deas/argocd-conductr/blob/master/LICENSE.txt
 [product-screenshot]: images/screenshot.png
 [Docker]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white

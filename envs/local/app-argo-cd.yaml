@@ -18,7 +18,7 @@ spec:
           - $values/apps/infra/argo-cd/envs/local/../../values.yaml
           - $values/apps/infra/argo-cd/envs/local/values.yaml
       repoURL: https://argoproj.github.io/argo-helm
-      targetRevision: 7.6.8
+      targetRevision: 7.6.8 
     - ref: values
       repoURL: https://github.com/deas/argocd-conductr.git
       targetRevision: main

@@ -76,11 +76,12 @@ configs:
   # argocdServerAdminPasswordMtime: ""
 #configs:
 # relies on .Capabilities.APIVersions.Has "monitoring.coreos.com/v1"
-# controller:
-#   metrics:
-#     enabled: true
-#     serviceMonitor:
-#       enabled: true
+
+controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 repoServer:
   metrics:

@@ -69,7 +69,7 @@ spec:
             # TODO: Customized local charts need templatePath below
             #- appName: submariner-operator
             #  namespace: submariner-operator
-            #  targetRevision: "main"
+            #  targetRevision: main
             #  path:
             #    "apps/infra/submariner-operator"
             #   repoURL: https://helm.cilium.io
@@ -77,7 +77,7 @@ spec:
             #   targetRevision: "1.16.2" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: main # HEAD
+              revision: main
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
   # Beware : group WITHOUT version
