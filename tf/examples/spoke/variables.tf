@@ -14,18 +14,6 @@ variable "service_subnet" {
   default = "10.96.0.0/12"
 }
 
-variable "argocd_install" {
-  description = "If/How to install ArgoCD"
-  type        = string
-
-  validation {
-    condition     = contains(["helm", "olm"], var.argocd_install)
-    error_message = "The argocd_install must be one of 'helm' or 'olm'."
-  }
-  default  = "helm"
-  nullable = true
-}
-
 variable "kind_cluster_name" {
   type        = string
   description = "Cluster name"
