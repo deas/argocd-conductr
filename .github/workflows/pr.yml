@@ -23,7 +23,7 @@ jobs:
           # cache: true # [default: true] cache mise using GitHub's cache
           # automatically write this .tool-versions file
           experimental: true # [default: false] enable experimental features
-          log_level: debug # [default: info] log level
+          # log_level: debug # [default: info] log level
           #tool_versions: |
           #  shellcheck 0.9.0
           # or, if you prefer .mise.toml format:
@@ -49,8 +49,10 @@ jobs:
         run: make fmt
       - name: Lint
         run: make lint
-      - name: Verify constraints
+      - name: Verify Constraints
         run: make gator-verify
+      - name: Test Prometheus Rules
+        run: make test-prom-rules
     #- name: Validate
     #  run: make validate
     #- name: Run tests

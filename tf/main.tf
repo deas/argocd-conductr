@@ -1,11 +1,12 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
+  version_env       = var.env != null ? var.env : "local"
   # TODO: Whoa! The ultimate mess. Can we do better?
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
   cilium_enabled = local.cilium_version != null
   cilium_values = try([
-    file("../apps/infra/cilium/envs/${var.env}/values.yaml"),
+    file("../apps/infra/cilium/envs/${local.version_env}/values.yaml"),
     yamlencode({
       "hubble" = {
         "metrics" = {
@@ -16,6 +17,7 @@ locals {
       }
     })
   ], [])
+  argocd_chart_version = yamldecode(file("${path.module}/../envs/${local.version_env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
   broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
 "%s/tools/get-secret.sh"
 EOT
@@ -62,8 +64,8 @@ resource "kind_cluster" "default" {
     runtime_config = {}
     networking {
       dns_search     = tolist([])
-      pod_subnet     = "10.243.0.0/16"
-      service_subnet = "10.95.0.0/12"
+      pod_subnet     = var.pod_subnet
+      service_subnet = var.service_subnet
       # By default, kind uses 10.244.0.0/16 pod subnet for IPv4 and fd00:10:244::/56 pod subnet for IPv6.
       disable_default_cni = local.cilium_enabled # do not install kindnet for cilium
       # kube_proxy_mode     = local.cilium_enabled ? "none" : "iptables"
@@ -74,7 +76,7 @@ resource "kind_cluster" "default" {
 
 data "external" "broker_secret" { # Should probably depend on argocd module o
   # count   = var.kind_child_cluster_name != null ? 1 : 0
-  count      = var.env != null ? 1 : 0
+  count      = var.export_submariner_broker_secret ? 1 : 0
   program    = local.broker_secret_get
   depends_on = [module.argocd]
   query = {
@@ -167,17 +169,17 @@ module "olm" {
 // Keep the flux bits around for reference - for the moment
 module "argocd" {
   # source = "../../terraform-modules/argocd"
-  count         = (var.env != null && var.argocd_install == "helm") ? 1 : 0
+  count         = var.argocd_install == "helm" ? 1 : 0
   source        = "github.com/deas/terraform-modules//argocd?ref=main"
   namespace     = "argocd"
-  chart_version = yamldecode(file("${path.module}/../envs/${var.env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
+  chart_version = local.argocd_chart_version
   values = [
     file("${path.module}/../apps/infra/argo-cd/values.yaml"),
-    file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml"),
+    var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml") : "",
     file("${path.module}/../apps/infra/argo-cd/bootstrap-override-values.yaml")
   ]
   bootstrap_path   = var.bootstrap_path
-  cluster_manifest = templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env })
+  cluster_manifest = var.env != null ? templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env }) : null
   additional_keys  = var.additional_keys
   # local.additional_keys
   # tls_key = {

@@ -13,11 +13,26 @@ spec:
           - list:
               elements:
                 # TODO: Customized local charts need templatePath below
+                - appName: registration-operator-hub
+                  namespace: open-cluster-management
+                  repoURL: https://github.com/deas/argocd-conductr.git
+                  targetRevision: main
+                  chartPath: "apps/infra/registration-operator-hub"
                 - appName: submariner-operator
                   namespace: submariner-operator
                   repoURL: https://github.com/deas/argocd-conductr.git
                   targetRevision: main
                   chartPath: "apps/infra/submariner-operator"
+                - appName: monitoring
+                  namespace: monitoring
+                  repoURL: https://github.com/deas/argocd-conductr.git
+                  targetRevision: main
+                  chartPath: "apps/infra/monitoring"
+                - appName: monitoring-webhook
+                  namespace: monitoring
+                  repoURL: https://github.com/deas/argocd-conductr.git
+                  targetRevision: main
+                  chartPath: "apps/infra/monitoring-webhook"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: main

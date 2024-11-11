@@ -73,8 +73,8 @@ alertmanager:
     ##
     # alertmanagerConfiguration: {}
     ## Example with select a global alertmanagerconfig
-    alertmanagerConfiguration:
-      name: global
+    # alertmanagerConfiguration:
+    #  name: global
     ## Defines the strategy used by AlertmanagerConfig objects to match alerts. eg:
     ##
     alertmanagerConfigMatcherStrategy: {}

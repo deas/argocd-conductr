@@ -1,0 +1,10 @@
+# namePrefix: olm-
+namespace: open-cluster-management-hub
+resources:
+  - https://raw.githubusercontent.com/open-cluster-management-io/governance-policy-propagator/v0.12.0/deploy/crds/policy.open-cluster-management.io_policies.yaml
+  - https://raw.githubusercontent.com/open-cluster-management-io/governance-policy-propagator/v0.12.0/deploy/crds/policy.open-cluster-management.io_placementbindings.yaml
+  - https://raw.githubusercontent.com/open-cluster-management-io/governance-policy-propagator/v0.12.0/deploy/crds/policy.open-cluster-management.io_policyautomations.yaml
+  - https://raw.githubusercontent.com/open-cluster-management-io/governance-policy-propagator/v0.12.0/deploy/crds/policy.open-cluster-management.io_policysets.yaml
+  - https://raw.githubusercontent.com/open-cluster-management-io/governance-policy-propagator/v0.12.0/deploy/operator.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

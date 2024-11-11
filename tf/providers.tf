@@ -8,8 +8,8 @@ locals {
 
 }
 # TODO: Awesome! three providers, three different env variables for the same thing
-provider "kind" {
-}
+#provider "kind" {
+#}
 
 provider "kubernetes" {
   # KUBE_CONFIG_PATH env

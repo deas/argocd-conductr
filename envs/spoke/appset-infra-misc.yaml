@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-misc
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          # - cluster: {}
+          - list:
+              elements:
+                # - appName: olm
+                - appName: klusterlet
+          - git:
+              repoURL: https://github.com/deas/argocd-conductr.git
+              revision: main
+              directories:
+                - path: "apps/infra/{{ .appName }}/envs/spoke"
+              # apps/*envs/spoke
+              # - path: apps/*/envs/spoke
+  template:
+    metadata:
+      # We don't env/stage at the name level
+      name: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+    spec:
+      # The project the application belongs to.
+      project: default
+
+      # Source of the application manifests
+      source:
+        # repoURL: https://github.com/deas/argocd-conductr.git
+        # targetRevision: main
+        # path: "{{.path.path}}"
+        repoURL: https://github.com/deas/argocd-conductr.git
+        targetRevision: main
+        path: "{{.path.path}}"
+      # Destination cluster and namespace to deploy the application
+      destination:
+        server: https://kubernetes.default.svc
+        # We don't stage/env at the ns level
+        # namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
+        # namespace: " .namespace "
+
+      # Sync policy
+      syncPolicy:
+        syncOptions:
+          # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+          - ServerSideApply=true
+          - CreateNamespace=true
+        automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+          prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+          selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+

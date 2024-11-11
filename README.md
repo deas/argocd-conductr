@@ -131,6 +131,9 @@ Beyond deployments, we feature:
 - `mise` aiming at a more uniform environment locally and in CI
 - `make` based tasks
 - Github Actions integration
+- Prometheus Rule Unit Testing
+- A [bare bones alerting application](./apps/infra/monitoring-webhook) in case want to send alerts to very custom receivers (like Matrix Chat Rooms)
+- Open Cluster Management / Submariner Hub and Spoke Setup (WIP)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -158,6 +161,7 @@ Some opinions first:
 - Beware of Magic 🎩🪄🐰 (e.g. Argo CD helm release changes when Prometheus CRDs become available)
 - Beware of helm shared values or kustomize base. We deploy `main` and shared bits kick in on all environments.
 - Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more elsewhere
+- Don't try too hard modeling deps and ordering. Failing to start a few times can be perfectly fine. Honor this modeling your alerts.
 - We should propagate to production frequently.
 
 This is an example of how you may give instructions on setting up your project locally.
@@ -222,6 +226,8 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
+- Prometheus based sync failure alerts (s. known issues)
+- It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
 - There are `TODO` tags in code (to provide context)
 - It takes too long for prometheus to get up
 - `terraform` within Argo CD? (just like in `tf-controller`)
@@ -231,15 +237,15 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Aspire Dashboard? (ultralight oTel)
 - Customer Use Case Demo litmus? Should probably bring the pure chaos bits to Argo CD [`deas/kaos`](https://github.com/deas/ka0s/)
 - ~~helm job sample~~
-- Argo CD Grafana Dashboard
-- Argo CD Service Monitor (depends on prom)
+- ~~Argo CD Grafana Dashboard~~
+- ~~Argo CD Service Monitor (depends on prom)~~
 - Canary-/Green/Blue Deployment (Rollouts)
 - ~~default to auto update everything~~?
 - ~~Proper self management of Argo CD~~
-- metrics-server
+- ~~metrics-server~~
 - contour?
 - ~~cilium~~
-- OPA Policies: _Gatekeeper vs usage in CI
+- ~~OPA Policies: _Gatekeeper vs usage in CI~~
 - kubeconform in CI
 - Argo CD +/vs ACM/open cluster management
 - Notifications Sync alerts Slack/Matrix
@@ -254,8 +260,9 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Improve Github Actions Quality Gates
 - Tracing Solution (zipkin, tempo) 
 - oTel Sample
-- Dashboards
+- More Grafana Dashboards
 - Consider migrating `make` to `just`
+- Dedupe/Modularize `Makefile`/`Justfile`
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
@@ -265,9 +272,11 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Known Issues
+- [Alert only if certain time passed](https://github.com/argoproj/notifications-engine/issues/99)
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 - [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
+- `argocd` with kind depends on Metallb
 
 ## References
 - [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)

@@ -4,6 +4,7 @@ SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
 ENV=local
+AMTOOL_OUTPUT=simple
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
 
 .DEFAULT_GOAL := help
@@ -60,6 +61,14 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 	helm template --release-name argo-cd argo/argo-cd -n argocd --api-versions monitoring.coreos.com/v1 \
 		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ENV)/values.yaml \
 	| yq 'select(.kind == "ServiceMonitor")'
+
+.PHONY: test-prom-rules
+test-prom-rules: target ## Unit test prometheus rules
+	helm template --release-name monitoring apps/infra/monitoring -n monitoring \
+		-f apps/infra/monitoring/values.yaml -f apps/infra/monitoring/envs/$(ENV)/values.yaml \
+	| yq 'select(.kind == "PrometheusRule")' \
+	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/monitoring/prom-test-rules.yaml
+	cd apps/infra/monitoring && promtool test rules test.yaml
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
@@ -145,3 +154,8 @@ create-dashboard-configmaps: ## Create dashboard ConfigMaps
 	@echo
 	@echo "Make sure to add label for grafana sidecar"
 	@echo
+
+.PHONY: show-alerts
+show-alerts: ## Show firing alerts
+	@$(KUBECTL) -n monitoring exec -it alertmanager-kube-prometheus-stack-alertmanager-0 -- amtool alert -o $(AMTOOL_OUTPUT) --alertmanager.url=http://alertmanager-operated:9093
+

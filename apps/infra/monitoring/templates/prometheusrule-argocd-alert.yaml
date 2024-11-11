@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: argocd-app-sync-alerts
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  groups:
+    - name: argocd-application-alerts
+      rules:
+        - alert: ArgoCDAppOutOfSync
+          expr: |
+            avg_over_time(argocd_app_info{sync_status!="Synced"}[{{ .Values.rule.argocdAppSyncs.for }}]) > 0
+          for: {{ .Values.rule.argocdAppSyncs.for }}
+          labels:
+            severity: critical
+            team: devops
+          annotations:
+            summary: "ArgoCD application '{{ printf "{{ $labels.name }}" }}' is OutOfSync"
+            description: |
+              ArgoCD application '{{ printf "{{ $labels.name }}" }}' has been in an OutOfSync state for more than 10 minutes.
+              Check the application in ArgoCD to identify any issues with the sync process.

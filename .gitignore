@@ -19,3 +19,7 @@ ignore/
 target/
 .direnv/
 keys/
+apps/infra/monitoring/prom-test-rules.yaml
+tf/examples/spoke/argocd-conductr-spoke-config
+tf/argocd-conductr-config
+.devenv/

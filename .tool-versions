@@ -5,3 +5,5 @@ gator       3.17.1
 kubeconform 0.6.7
 kustomize   5.4.3
 yq          4.44.3
+promtool    2.55.1
+helm        3.15.4

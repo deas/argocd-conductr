@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: v0.15.1
+description: The Cluster Manager provides the multi-cluster hub, which can manage
+  Kubernetes-based clusters across data centers,  public clouds, and private clouds.
+  This Helm Chart supports the installation and upgrade of ClusterManager.
+home: https://open-cluster-management.io/
+keywords:
+- open-cluster-management
+- clusterManager
+name: cluster-manager
+sources:
+- https://github.com/open-cluster-management-io/ocm
+type: application
+version: 0.15.1

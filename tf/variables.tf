@@ -4,14 +4,23 @@ variable "env" {
   default     = "local"
 }
 
+variable "pod_subnet" {
+  type    = string
+  default = "10.243.0.0/16"
+}
+
+variable "service_subnet" {
+  type    = string
+  default = "10.95.0.0/12"
+}
 
 variable "argocd_install" {
   description = "If/How to install ArgoCD"
   type        = string
 
   validation {
-    condition     = contains(["helm", "olm"], var.argocd_install)
-    error_message = "The argocd_install must be one of 'helm' or 'olm'."
+    condition     = var.argocd_install == null || var.argocd_install == "helm" || var.argocd_install == "olm"
+    error_message = "The argocd_install must be one of 'helm', 'olm' or null."
   }
   default  = "helm"
   nullable = true
@@ -23,6 +32,11 @@ variable "kind_cluster_name" {
   default     = "argocd-conductr" # TODO: Use environment instead?
 }
 
+variable "export_submariner_broker_secret" {
+  type        = bool
+  description = "Whether we want export/output submariner broker secrets"
+  default     = true
+}
 variable "broker_secret_get" {
   type        = list(string)
   description = "The command to execute to obtain the submariner broker secret"

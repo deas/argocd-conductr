@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: "{{ include "monitoring-webhook.fullname" . }}"
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    alertmanagerConfig: prometheus
+spec:
+  route:
+    receiver: "webhook-receiver"
+  receivers:
+    - name: "webhook-receiver"
+      webhookConfigs:
+        - url: "http://{{ include "monitoring-webhook.fullname" . }}:{{ .Values.service.port }}/alerts"
+          http_config:
+            enable_http2: false

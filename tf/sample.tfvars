@@ -10,7 +10,7 @@
 #}
 #kubeconfig_linked = {
 #  path    = "~/.kube/config"
-#  context = "kind-kind"
+#  context = "kind-argocd-conductr-spoke"
 #}
 # extra_mounts = [{
 #   "container_path" = "/etc/ssl/certs/ca-certificates.crt"
