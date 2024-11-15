@@ -246,8 +246,8 @@ server:
       - /
     annotations:
       route.openshift.io/termination: edge
-  #service:
-  #  type: LoadBalancer
+  service:
+    type: NodePort
 
 notifications:
   secret:

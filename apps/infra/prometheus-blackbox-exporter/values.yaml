@@ -1,0 +1,85 @@
+hostNetwork: false
+
+securityContext:
+  #runAsUser: 1000
+  #runAsGroup: 1000
+  #readOnlyRootFilesystem: true
+  #runAsNonRoot: true
+  #allowPrivilegeEscalation: false
+  capabilities:
+  #  drop: ["ALL"]
+  # Add NET_RAW to enable ICMP
+    add: ["NET_RAW"]
+
+config:
+  modules:
+    icmp:
+      prober: icmp
+      timeout: 1s
+
+# Number of port to expose on the host. If specified, this must be a valid port number, 0 < x < 65536. If zero, no port is exposed.
+# This is useful for communicating with Daemon Pods when kind is DaemonSet.
+# hostPort: 0
+
+## An Ingress resource can provide name-based virtual hosting and TLS
+## termination among other things for CouchDB deployments which are accessed
+## from outside the Kubernetes cluster.
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+
+replicas: 1
+
+serviceMonitor:
+  ## If true, a ServiceMonitor CRD is created for a prometheus operator
+  ## https://github.com/coreos/prometheus-operator for blackbox-exporter itself
+  ##
+  selfMonitor:
+    enabled: true
+    additionalMetricsRelabels: {}
+    additionalRelabeling: []
+    labels: {}
+    path: /metrics
+    scheme: http
+    tlsConfig: {}
+    interval: 30s
+    scrapeTimeout: 30s
+    ## Port can be defined by assigning a value for the port key below
+    ## port:
+
+  ## If true, a ServiceMonitor CRD is created for a prometheus operator
+  ## https://github.com/coreos/prometheus-operator for each target
+  ##
+  enabled: true
+
+  # Default values that will be used for all ServiceMonitors created by `targets`
+  defaults:
+    additionalMetricsRelabels: {}
+    additionalRelabeling: []
+    labels: {}
+    interval: 30s
+    scrapeTimeout: 30s
+    honorTimestamps: true
+    module: http_2xx
+
+  targets:
+    - name: http-example # Human readable URL that will appear in Prometheus / AlertManager
+      url: http://example.com/healthz # The URL that blackbox will scrape
+    - name: icmp-example
+      module: icmp
+      url: example.com
+#      hostname: example.com            # HTTP probes can accept an additional `hostname` parameter that will set `Host` header and TLS SNI
+#      labels: {}                       # Map of labels for ServiceMonitor. Overrides value set in `defaults`
+#      interval: 60s                    # Scraping interval. Overrides value set in `defaults`
+#      scrapeTimeout: 60s               # Scrape timeout. Overrides value set in `defaults`
+#      module: http_2xx                 # Module used for scraping. Overrides value set in `defaults`
+#      additionalMetricsRelabels: {}    # Map of metric labels and values to add
+#      additionalRelabeling: []         # List of metric relabeling actions to run
+
+## Custom PrometheusRules to be defined
+## ref: https://github.com/coreos/prometheus-operator#customresourcedefinitions
+prometheusRule:
+  enabled: false
+  additionalLabels: {}
+  namespace: ""
+  rules: []
+#configReloader:
+#  enabled: false

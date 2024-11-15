@@ -28,6 +28,10 @@ spec:
                   repoURL: https://prometheus-community.github.io/helm-charts
                   namespace: monitoring
                   targetRevision: "65.1.0" #"45.7.1"
+                - appName: prometheus-blackbox-exporter
+                  repoURL: https://prometheus-community.github.io/helm-charts
+                  namespace: monitoring
+                  targetRevision: "9.1.*"
                 - appName: sealed-secrets
                   repoURL: https://bitnami-labs.github.io/sealed-secrets
                   namespace: kube-system

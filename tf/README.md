@@ -21,6 +21,7 @@ terraform apply
 | containerd\_config\_patches | Containerd patches to apply to kind nodes | `list(string)` | `[]` | no |
 | dns\_hosts | Additional Core DNS Entries we want in kind | `map(string)` | `null` | no |
 | env | The environment key to use to kickoff the ArgoCD deployments. | `string` | `"local"` | no |
+| export\_ocm\_bootstrap\_secret | Whether we want export/output open cluster management secrets | `bool` | `false` | no |
 | export\_submariner\_broker\_secret | Whether we want export/output submariner broker secrets | `bool` | `true` | no |
 | extra\_mounts | Extra mount points we want in kind nodes | `list(map(string))` | `[]` | no |
 | kind\_cluster\_image | The kind image to use | `string` | `"kindest/node:v1.31.0"` | no |
@@ -28,6 +29,7 @@ terraform apply
 | kubeconfig\_linked | kubeconfig file and context for a cluster linked to this one. | <pre>object({<br>    path    = string<br>    context = string<br>  })</pre> | `null` | no |
 | kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
 | metallb | If we want to use MetallLb on kind | `bool` | `true` | no |
+| ocm\_bootstrap\_get | The command to execute to obtain the ocm bootstrapsecret | `list(string)` | `[]` | no |
 | pod\_subnet | n/a | `string` | `"10.243.0.0/16"` | no |
 | service\_subnet | n/a | `string` | `"10.95.0.0/12"` | no |
 

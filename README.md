@@ -104,6 +104,10 @@ We use a single long lived branch `main` and map environments with directories. 
 
 We use single level environment staging with one cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 
+We prefer Pull over Push.
+
+We focus on one "Platform Team" managing many clusters using a single repo. It should enable ArgoCD embedding for Application verticals.  
+
 Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles. 
 
 
@@ -163,6 +167,7 @@ Some opinions first:
 - Versions/Refs: Pin or Float? It depends. We should probably pin things in critical environments and keep things floating a bit more elsewhere
 - Don't try too hard modeling deps and ordering. Failing to start a few times can be perfectly fine. Honor this modeling your alerts.
 - We should propagate to production frequently.
+- Rebuilding whole things automatically from scratch matters a lot. Drift kicks in fast and it helps with Recovery.
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
@@ -226,6 +231,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
+- Improve Unit/Integration Test Coverage
 - Prometheus based sync failure alerts (s. known issues)
 - It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
 - There are `TODO` tags in code (to provide context)
@@ -233,7 +239,6 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - `terraform` within Argo CD? (just like in `tf-controller`)
 - crossplane
 - keycloak + sso (DNS) local trickery
-- `notify-send` desktop notifications (via webhook)
 - Aspire Dashboard? (ultralight oTel)
 - Customer Use Case Demo litmus? Should probably bring the pure chaos bits to Argo CD [`deas/kaos`](https://github.com/deas/ka0s/)
 - ~~helm job sample~~
@@ -255,18 +260,20 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Proper cascaded removal. Argo CD should be last. Will likely involve terraform. 
 - [Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/) (s. Known Issues)
 - Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
-- Openshift Proxy/Global Pull Secrets
+- Openshift Proxy/Global Pull Secrets, Global Pull Secrets, Ingress + API Server
+  Certs, IDP Integration
 - [Argo CD Bootstrap via OLM](https://argocd-operator.readthedocs.io/en/latest/install/olm/)
 - Improve Github Actions Quality Gates
 - Tracing Solution (zipkin, tempo) 
 - oTel Sample
-- More Grafana Dashboards
+- More Grafana Dashboards / Integrations with Openshift Console Plugin
 - Consider migrating `make` to `just`
 - Dedupe/Modularize `Makefile`/`Justfile`
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
 See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
 - Argo CD rbac/multi tenancy?
+- ACM appears to auto approve CSRs. Open source auto-approvers appear to specifically target cert-manager (CRD) or kubelet. Should we roll our own?
 - Go deeper with `nix`/`devenv` - maybe even replace `mise`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -276,8 +283,9 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation ](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 - [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
-- `argocd` with kind depends on Metallb
-
+- Appears there is not straight forward way to make OLM Deployments use one pod
+  per Deployment/Replica
+ 
 ## References
 - [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)
 - [Bootstrapping: ApplicationSets vs App-of-apps vs Kustomize](https://github.com/argoproj/argo-cd/discussions/11892)

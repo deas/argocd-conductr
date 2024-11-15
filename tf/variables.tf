@@ -42,6 +42,18 @@ variable "broker_secret_get" {
   description = "The command to execute to obtain the submariner broker secret"
   default     = []
 }
+variable "export_ocm_bootstrap_secret" {
+  type        = bool
+  description = "Whether we want export/output open cluster management secrets"
+  default     = false
+}
+
+variable "ocm_bootstrap_get" {
+  type        = list(string)
+  description = "The command to execute to obtain the ocm bootstrapsecret"
+  default     = []
+}
+
 variable "kind_cluster_image" {
   type        = string
   description = "The kind image to use"

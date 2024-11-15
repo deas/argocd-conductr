@@ -22,6 +22,12 @@ provider "kubernetes" {
   cluster_ca_certificate = local.cluster_ca_certificate
 }
 
+provider "kubernetes" {
+  alias          = "linked"
+  config_path    = var.kubeconfig_linked != null ? var.kubeconfig_linked.path : null
+  config_context = var.kubeconfig_linked != null ? var.kubeconfig_linked.context : null
+}
+
 provider "kubectl" {
   # KUBE_CONFIG_PATH or KUBECONFIG
   # token                  = data.aws_eks_cluster_auth.main.token
@@ -41,7 +47,6 @@ provider "helm" {
     cluster_ca_certificate = local.cluster_ca_certificate
   }
 }
-
 
 provider "helm" {
   alias = "linked"

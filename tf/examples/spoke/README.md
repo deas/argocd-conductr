@@ -11,7 +11,6 @@ terraform apply
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| argocd\_install | If/How to install ArgoCD | `string` | `"helm"` | no |
 | bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `true` | no |
 | bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets. | `string` | `null` | no |
 | containerd\_config\_patches | Containerd patches to apply to kind nodes | `list(string)` | `[]` | no |

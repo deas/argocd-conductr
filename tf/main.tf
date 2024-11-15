@@ -22,6 +22,10 @@ locals {
 "%s/tools/get-secret.sh"
 EOT
   , abspath(path.module))]
+  ocm_bootstrap_get = length(var.ocm_bootstrap_get) > 0 ? var.ocm_bootstrap_get : ["sh", "-c", format(<<EOT
+"%s/tools/get-ocm-bs.sh"
+EOT
+  , abspath(path.module))]
 }
 
 #data "http" "argocd_operator" {
@@ -74,8 +78,7 @@ resource "kind_cluster" "default" {
   }
 }
 
-data "external" "broker_secret" { # Should probably depend on argocd module o
-  # count   = var.kind_child_cluster_name != null ? 1 : 0
+data "external" "broker_secret" {
   count      = var.export_submariner_broker_secret ? 1 : 0
   program    = local.broker_secret_get
   depends_on = [module.argocd]
@@ -83,6 +86,74 @@ data "external" "broker_secret" { # Should probably depend on argocd module o
     resource  = "secret/submariner-k8s-broker-client-token"
     namespace = "submariner-k8s-broker"
     timeout   = "300"
+  }
+}
+
+data "external" "ocm_bootstrap" {
+  count      = var.export_ocm_bootstrap_secret ? 1 : 0
+  program    = local.ocm_bootstrap_get
+  depends_on = [module.argocd]
+  query = {
+    context   = local.kind_cluster_name
+    sa        = "cluster-bootstrap"
+    namespace = "open-cluster-management"
+    timeout   = "300"
+    server    = "https://${var.kind_cluster_name}-control-plane:6443"
+  }
+}
+
+resource "kubernetes_secret" "bootstrap_hub_kubeconfig" {
+  count    = var.export_ocm_bootstrap_secret ? 1 : 0
+  provider = kubernetes.linked
+  metadata {
+    name      = "bootstrap-hub-kubeconfig"
+    namespace = "open-cluster-management-agent"
+  }
+
+  data = {
+    # https://ocm-hub-control-plane:6443"
+    kubeconfig = yamlencode({
+      "clusters" = [
+        {
+          "cluster" = {
+            "certificate-authority-data" = data.external.ocm_bootstrap[0].result["certificate-authority-data"]
+            "server"                     = data.external.ocm_bootstrap[0].result["server"]
+          }
+          "name" = "hub"
+        }
+      ]
+
+      "contexts" = [
+        {
+          "context" = {
+            "cluster"   = "hub"
+            "namespace" = "default"
+            "user"      = "bootstrap"
+          }
+          "name" = "bootstrap"
+        }
+      ]
+      "current-context" = "bootstrap"
+      "preferences"     = {}
+      "users" = [
+        {
+          "name" = "bootstrap"
+          "user" = {
+            "token" = data.external.ocm_bootstrap[0].result["token"]
+          }
+        }
+      ]
+    })
+  }
+
+  type = "Opaque"
+}
+
+resource "null_resource" "ocm_hub_approval" {
+  count      = var.export_ocm_bootstrap_secret ? 1 : 0
+  depends_on = [kubernetes_secret.bootstrap_hub_kubeconfig]
+  provisioner "local-exec" {
+    command = "${path.module}/tools/approve-ocm-csr.sh spoke 300"
   }
 }
 
