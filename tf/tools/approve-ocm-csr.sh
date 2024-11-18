@@ -22,7 +22,7 @@ interval=5
 
 while true; do
   # kubectl -n open-cluster-management create token cluster-bootstrap
-  if [ $(kubectl get csr -l open-cluster-management.io/cluster-name=${cluster_name} -o name | wc -l) -eq 1 ]; then
+  if [ $(kubectl get csr -l open-cluster-management.io/cluster-name=${cluster_name} -o name | wc -l) -eq 1 ] && kubectl get managedclusters "${cluster_name}"; then
     kubectl get csr -l open-cluster-management.io/cluster-name=${cluster_name} -o name | xargs kubectl certificate approve
     kubectl patch managedclusters ${cluster_name} -p '{"spec":{"hubAcceptsClient":true}}' --type merge
     exit 0
