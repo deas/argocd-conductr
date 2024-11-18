@@ -22,7 +22,7 @@ provider "kubernetes" {
   cluster_ca_certificate = local.cluster_ca_certificate
 }
 
-provider "kubernetes" {
+provider "kubectl" {
   alias          = "linked"
   config_path    = var.kubeconfig_linked != null ? var.kubeconfig_linked.path : null
   config_context = var.kubeconfig_linked != null ? var.kubeconfig_linked.context : null

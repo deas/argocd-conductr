@@ -102,56 +102,64 @@ data "external" "ocm_bootstrap" {
   }
 }
 
-resource "kubernetes_secret" "bootstrap_hub_kubeconfig" {
+# kubectl more robust then kubernetes resource with regards to "make quick-destroy" leaving the linked resource in place
+resource "kubectl_manifest" "bootstrap_hub_kubeconfig" {
   count    = var.export_ocm_bootstrap_secret ? 1 : 0
-  provider = kubernetes.linked
-  metadata {
-    name      = "bootstrap-hub-kubeconfig"
-    namespace = "open-cluster-management-agent"
-  }
-
-  data = {
-    # https://ocm-hub-control-plane:6443"
-    kubeconfig = yamlencode({
-      "clusters" = [
-        {
-          "cluster" = {
-            "certificate-authority-data" = data.external.ocm_bootstrap[0].result["certificate-authority-data"]
-            "server"                     = data.external.ocm_bootstrap[0].result["server"]
+  provider = kubectl.linked
+  #metadata {
+  #  name      = "bootstrap-hub-kubeconfig"
+  #  namespace = "open-cluster-management-agent"
+  #}
+  yaml_body = yamlencode({
+    apiVersion = "v1"
+    kind       = "Secret"
+    metadata = {
+      name      = "bootstrap-hub-kubeconfig"
+      namespace = "open-cluster-management-agent"
+    }
+    data = {
+      # https://ocm-hub-control-plane:6443"
+      kubeconfig = base64encode(yamlencode({
+        "clusters" = [
+          {
+            "cluster" = {
+              "certificate-authority-data" = data.external.ocm_bootstrap[0].result["certificate-authority-data"]
+              "server"                     = data.external.ocm_bootstrap[0].result["server"]
+            }
+            "name" = "hub"
           }
-          "name" = "hub"
-        }
-      ]
+        ]
 
-      "contexts" = [
-        {
-          "context" = {
-            "cluster"   = "hub"
-            "namespace" = "default"
-            "user"      = "bootstrap"
+        "contexts" = [
+          {
+            "context" = {
+              "cluster"   = "hub"
+              "namespace" = "default"
+              "user"      = "bootstrap"
+            }
+            "name" = "bootstrap"
           }
-          "name" = "bootstrap"
-        }
-      ]
-      "current-context" = "bootstrap"
-      "preferences"     = {}
-      "users" = [
-        {
-          "name" = "bootstrap"
-          "user" = {
-            "token" = data.external.ocm_bootstrap[0].result["token"]
+        ]
+        "current-context" = "bootstrap"
+        "preferences"     = {}
+        "users" = [
+          {
+            "name" = "bootstrap"
+            "user" = {
+              "token" = data.external.ocm_bootstrap[0].result["token"]
+            }
           }
-        }
-      ]
-    })
-  }
-
-  type = "Opaque"
+        ]
+      }))
+    }
+    type = "Opaque"
+    }
+  )
 }
 
 resource "null_resource" "ocm_hub_approval" {
   count      = var.export_ocm_bootstrap_secret ? 1 : 0
-  depends_on = [kubernetes_secret.bootstrap_hub_kubeconfig]
+  depends_on = [kubectl_manifest.bootstrap_hub_kubeconfig]
   provisioner "local-exec" {
     command = "${path.module}/tools/approve-ocm-csr.sh spoke 300"
   }
@@ -166,6 +174,7 @@ resource "helm_release" "linked_submariner" {
   repository       = "../apps/infra"
   chart            = "submariner-operator"
   namespace        = "submariner-operator"
+  upgrade_install  = true # "make quick-destroy" does not remove linked helm release
   values = [yamlencode(
     {
       "broker" = {
@@ -225,16 +234,14 @@ module "kubeconfig" {
 
 module "olm" {
   source = "github.com/deas/terraform-modules//olm?ref=main"
-  # source = "../../terraform-modules/olm"
+  # source    = "../../terraform-modules/olm"
   count     = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
   namespace = "olm"
-  /*
   providers = {
-    kubernetes = kubernetes
-    kubectl    = kubectl
-    helm       = helm
+    # kubernetes = kubernetes
+    kubectl = kubectl
+    # helm       = helm
   }
-  */
 }
 
 // Keep the flux bits around for reference - for the moment
@@ -270,8 +277,7 @@ module "argocd" {
 
 # Be careful with this module. It will patch coredns configmap ;)
 module "coredns" {
-  # version
-  # source          = "../../terraform-modules/coredns"
+  # source = "../../terraform-modules/coredns"
   source = "github.com/deas/terraform-modules//coredns?ref=main"
   hosts  = var.dns_hosts
   count  = var.dns_hosts != null ? 1 : 0
@@ -303,7 +309,7 @@ module "metallb_config" {
 }
 
 module "metallb" {
-  # source           = "../../terraform-modules/metallb"
+  # source = "../../terraform-modules/metallb"
   count            = var.metallb ? 1 : 0
   source           = "github.com/deas/terraform-modules//metallb?ref=main"
   install_manifest = data.http.metallb_native[0].response_body

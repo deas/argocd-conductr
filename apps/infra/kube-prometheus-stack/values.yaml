@@ -77,10 +77,12 @@ alertmanager:
     #  name: global
     ## Defines the strategy used by AlertmanagerConfig objects to match alerts. eg:
     ##
-    alertmanagerConfigMatcherStrategy: {}
+    # alertmanagerConfigMatcherStrategy: {}
     ## Example with use OnNamespace strategy
-    # alertmanagerConfigMatcherStrategy:
-    #   type: OnNamespac
+    # https://github.com/prometheus-community/helm-charts/issues/4343
+    alertmanagerConfigMatcherStrategy:
+      type: None
+      # type: OnNamespace
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
@@ -212,6 +214,11 @@ grafana:
   # https://argo-cd.readthedocs.io/en/stable/proposals/server-side-apply/
 prometheus:
   prometheusSpec:
+    # EnableFeatures API enables access to Prometheus disabled features.
+    # ref: https://prometheus.io/docs/prometheus/latest/disabled_features/
+    enableFeatures:
+      - otlp-write-receiver # --web.enable-otlp-receiver in prometheus 3.0.0
+    # - exemplar-storage
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false

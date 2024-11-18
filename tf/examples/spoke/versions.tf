@@ -24,8 +24,8 @@ terraform {
       version = ">= 3.2.0"
     }
     kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = ">= 1.10.0"
+      source  = "alekc/kubectl"
+      version = ">= 2.1.0"
     }
     # kustomization = { # TODO: Should probably replace kubectl and kubernetes
     # source  = "kbst/kustomization"

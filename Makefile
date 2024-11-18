@@ -48,7 +48,7 @@ argocd-initial-admin-password: ## Show initial ArgoCD admin password
 argocd-admin-login:  ## ArgoCD admin login
 	argocd login --insecure --username admin \
 		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc argocd-server -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+		$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc argo-cd-argocd-server -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
 #		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
@@ -159,4 +159,20 @@ create-dashboard-configmaps: ## Create dashboard ConfigMaps
 .PHONY: show-alerts
 show-alerts: ## Show firing alerts
 	@$(KUBECTL) -n monitoring exec -it alertmanager-kube-prometheus-stack-alertmanager-0 -- amtool alert -o $(AMTOOL_OUTPUT) --alertmanager.url=http://alertmanager-operated:9093
+
+.PHONY: argocd-disable-sync
+argocd-disable-sync: ## Disable sync for all argo cd apps
+	argocd app set root --sync-policy none
+	for appset in $$(kubectl get applicationsets -n argocd -o name); do \
+		kubectl patch $$appset -n argocd --type merge -p '{"spec":{"template":{"spec":{"syncPolicy":{"automated": null}}}}}'; \
+	done
+
+.PHONY: argocd-enable-sync
+argocd-enable-sync: ## Enable sync for all argo cd apps
+	argocd app set root --sync-policy auto 
+	argocd app sync root
+
+.PHONY: get-mon-webhook-logs
+get-mon-webhook-logs: ## Get monitoring webhook	logs
+	$(KUBECTL) -n monitoring logs -l app.kubernetes.io/instance=monitoring-webhook
 

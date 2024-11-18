@@ -103,3 +103,9 @@ run-registry-proxy: ## Run pull through registry proxy/-ies
 run-registry: ## Run docker registry
 	docker run -d --name registry --restart=always --net=kind \
     	-p 5000:5000 registry:2
+
+.PHONY: show-connections
+show-connections: ## Show submariner/ocm connections
+	KUBECONFIG="argocd-conductr-config:examples/spoke/argocd-conductr-spoke-config" subctl show connections
+	KUBECONFIG="argocd-conductr-config:examples/spoke/argocd-conductr-spoke-config" kubectl --context kind-argocd-conductr get managedcluster
+
