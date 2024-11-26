@@ -8,4 +8,4 @@ spec:
   name: cluster-manager
   source: operatorhubio-catalog
   installPlanApproval: Automatic
-  sourceNamespace: olm
+  sourceNamespace: operator-lifecycle-manager # olm

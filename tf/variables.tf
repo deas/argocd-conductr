@@ -121,7 +121,7 @@ variable "additional_keys" {
 
 variable "metallb" {
   type        = bool
-  default     = true # TODO argocd helm release readyness depends on service (currently type LB) being ready
+  default     = false # TODO: kubectl version not reliable, depends on random order. Should move it over to helm. 
   description = "If we want to use MetallLb on kind"
 }
 

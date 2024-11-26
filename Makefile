@@ -48,7 +48,7 @@ argocd-initial-admin-password: ## Show initial ArgoCD admin password
 argocd-admin-login:  ## ArgoCD admin login
 	argocd login --insecure --username admin \
 		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc argo-cd-argocd-server -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+		$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].spec.ports[?(@.name=="http")].nodePort}')
 #		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
@@ -175,4 +175,8 @@ argocd-enable-sync: ## Enable sync for all argo cd apps
 .PHONY: get-mon-webhook-logs
 get-mon-webhook-logs: ## Get monitoring webhook	logs
 	$(KUBECTL) -n monitoring logs -l app.kubernetes.io/instance=monitoring-webhook
+
+.PHONY: olm-install
+olm-install: ## Ad hoc install olm
+	curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.30.0/install.sh | bash -s v0.30.0
 

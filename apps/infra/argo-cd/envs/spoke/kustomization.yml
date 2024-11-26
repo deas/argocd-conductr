@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - argocd-argocd.yaml
 # patchesStrategicMerge:
 #- version.yml
 

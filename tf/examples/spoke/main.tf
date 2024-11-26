@@ -7,7 +7,7 @@ module "spoke" {
   metallb                         = false
   export_submariner_broker_secret = false
   env                             = var.env
-  argocd_install                  = "helm"
+  argocd_install                  = "olm"
   kind_cluster_name               = var.kind_cluster_name
   bootstrap_olm                   = var.bootstrap_olm
   pod_subnet                      = var.pod_subnet

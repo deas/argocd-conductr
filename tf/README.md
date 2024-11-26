@@ -28,7 +28,7 @@ terraform apply
 | kind\_cluster\_name | Cluster name | `string` | `"argocd-conductr"` | no |
 | kubeconfig\_linked | kubeconfig file and context for a cluster linked to this one. | <pre>object({<br>    path    = string<br>    context = string<br>  })</pre> | `null` | no |
 | kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
-| metallb | If we want to use MetallLb on kind | `bool` | `true` | no |
+| metallb | If we want to use MetallLb on kind | `bool` | `false` | no |
 | ocm\_bootstrap\_get | The command to execute to obtain the ocm bootstrapsecret | `list(string)` | `[]` | no |
 | pod\_subnet | n/a | `string` | `"10.243.0.0/16"` | no |
 | service\_subnet | n/a | `string` | `"10.95.0.0/12"` | no |

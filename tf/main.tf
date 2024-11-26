@@ -17,7 +17,7 @@ locals {
       }
     })
   ], [])
-  argocd_chart_version = yamldecode(file("${path.module}/../envs/${local.version_env}/app-argo-cd.yaml")).spec.sources[0].targetRevision
+  argocd_chart_version = try(yamldecode(file("${path.module}/../envs/${local.version_env}/app-argo-cd.yaml")).spec.sources[0].targetRevision, null)
   broker_secret_get = length(var.broker_secret_get) > 0 ? var.broker_secret_get : ["sh", "-c", format(<<EOT
 "%s/tools/get-secret.sh"
 EOT
@@ -27,21 +27,6 @@ EOT
 EOT
   , abspath(path.module))]
 }
-
-#data "http" "argocd_operator" {
-#  url = "https://operatorhub.io/install/argocd-operator.yaml"
-#}
-
-
-# TODO: could not apply (policy/v1beta1, Kind=PodSecurityPolicy) - Gone since 1.25 - 0.13.3 operator too old
-#data "http" "metallb_operator" {
-#  url = "https://operatorhub.io/install/metallb-operator.yaml"
-#}
-
-#data "http" "metallb_native" {
-#  url = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
-#}
-
 
 resource "kind_cluster" "default" {
   name           = local.kind_cluster_name
@@ -79,9 +64,9 @@ resource "kind_cluster" "default" {
 }
 
 data "external" "broker_secret" {
-  count      = var.export_submariner_broker_secret ? 1 : 0
+  count      = var.export_submariner_broker_secret && var.argocd_install == "helm" ? 1 : 0
   program    = local.broker_secret_get
-  depends_on = [module.argocd]
+  depends_on = [module.argocd_helm]
   query = {
     resource  = "secret/submariner-k8s-broker-client-token"
     namespace = "submariner-k8s-broker"
@@ -92,7 +77,7 @@ data "external" "broker_secret" {
 data "external" "ocm_bootstrap" {
   count      = var.export_ocm_bootstrap_secret ? 1 : 0
   program    = local.ocm_bootstrap_get
-  depends_on = [module.argocd]
+  depends_on = [module.argocd_helm]
   query = {
     context   = local.kind_cluster_name
     sa        = "cluster-bootstrap"
@@ -106,10 +91,6 @@ data "external" "ocm_bootstrap" {
 resource "kubectl_manifest" "bootstrap_hub_kubeconfig" {
   count    = var.export_ocm_bootstrap_secret ? 1 : 0
   provider = kubectl.linked
-  #metadata {
-  #  name      = "bootstrap-hub-kubeconfig"
-  #  namespace = "open-cluster-management-agent"
-  #}
   yaml_body = yamlencode({
     apiVersion = "v1"
     kind       = "Secret"
@@ -157,6 +138,7 @@ resource "kubectl_manifest" "bootstrap_hub_kubeconfig" {
   )
 }
 
+# TODO: We should probably replace this with our very own crs-approver deployment/helm_release
 resource "null_resource" "ocm_hub_approval" {
   count      = var.export_ocm_bootstrap_secret ? 1 : 0
   depends_on = [kubectl_manifest.bootstrap_hub_kubeconfig]
@@ -206,24 +188,6 @@ resource "helm_release" "linked_submariner" {
   #}
 }
 
-/*
-resource "kind_cluster" "child" {
-  name           = var.kind_child_cluster_name
-  count          = var.kind_child_cluster_name != null ? 1 : 0
-  wait_for_ready = true # !local.cilium_enabled
-  kind_config {
-    kind                      = "Cluster"
-    api_version               = "kind.x-k8s.io/v1alpha4"
-    containerd_config_patches = var.containerd_config_patches
-    node {
-      role   = "control-plane"
-      labels = { "submariner.io/gateway" = true }
-      image  = var.kind_cluster_image
-    }
-  }
-}
-*/
-
 module "kubeconfig" {
   source = "github.com/deas/terraform-modules//kubeconfig?ref=main"
   count  = var.kubeconfig_path != null ? 1 : 0
@@ -231,21 +195,50 @@ module "kubeconfig" {
   kubeconfig = file(var.kubeconfig_path)
 }
 
-
-module "olm" {
-  source = "github.com/deas/terraform-modules//olm?ref=main"
-  # source    = "../../terraform-modules/olm"
-  count     = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
-  namespace = "olm"
-  providers = {
-    # kubernetes = kubernetes
-    kubectl = kubectl
-    # helm       = helm
-  }
+# TODO: Could wrap this in a module providing default values
+resource "helm_release" "olm" {
+  count      = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
+  name       = "olm"
+  repository = "oci://ghcr.io/cloudtooling/helm-charts"
+  chart      = "olm"
+  version    = "0.30.0"
+  # namespace  = "olm"
+  # values     = []
 }
 
-// Keep the flux bits around for reference - for the moment
-module "argocd" {
+# Needed as a dep when we we bootstrap both : OLM and ArgoCD OLM. The latter module depends on the subscription
+data "kubernetes_resource" "subscription_crd" {
+  count       = (var.bootstrap_olm || var.argocd_install == "olm") ? 1 : 0
+  api_version = "apiextensions.k8s.io/v1"
+  kind        = "CustomResourceDefinition"
+
+  metadata {
+    name = "subscriptions.operators.coreos.com"
+  }
+  depends_on = [helm_release.olm[0]]
+}
+
+module "argocd_olm" {
+  # source = "../../terraform-modules/argocd-olm"
+  count           = var.argocd_install == "olm" ? 1 : 0
+  source          = "github.com/deas/terraform-modules//argocd-olm?ref=main"
+  namespace       = "argocd"
+  argocd_instance = file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/argocd-argocd.yaml")
+  subscription = {
+    yaml_body    = file("${path.module}/../apps/infra/argo-cd-operator/base/subscription-argo-cd-operator.yaml")
+    crd_dep_hack = data.kubernetes_resource.subscription_crd[0].object.metadata.name
+  }
+  bootstrap_path   = var.bootstrap_path
+  cluster_manifest = var.env != null ? templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env }) : null
+  additional_keys  = var.additional_keys
+  # Beware of module level deps! Breads dynamic module internal bits (e.g. for_each) 
+  # depends_on       = [helm_release.olm[0]]
+  # local.bootstrap will be known only after apply
+  # local.argocd_cluster will be known only after apply
+}
+
+
+module "argocd_helm" {
   # source = "../../terraform-modules/argocd"
   count         = var.argocd_install == "helm" ? 1 : 0
   source        = "github.com/deas/terraform-modules//argocd?ref=main"
@@ -259,6 +252,7 @@ module "argocd" {
   bootstrap_path   = var.bootstrap_path
   cluster_manifest = var.env != null ? templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env }) : null
   additional_keys  = var.additional_keys
+  # Keep the flux bits around for reference - for the moment
   # local.additional_keys
   # tls_key = {
   #  private = file(var.id_rsa_fluxbot_ro_path)
@@ -298,20 +292,28 @@ resource "helm_release" "cilium" {
 }
 
 
-data "http" "metallb_native" {
-  count = var.metallb ? 1 : 0
-  url   = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
+resource "helm_release" "metallb" {
+  count      = var.metallb ? 1 : 0
+  name       = "metallb"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "metallb"
+  version    = "6.3.15"
+  namespace  = "metallb-system"
+  # values     = [] # local.cilium_values
 }
 
+# TODO: This module should depend on the helm_release and create the resources
 module "metallb_config" {
   count  = var.metallb ? 1 : 0
   source = "github.com/deas/terraform-modules//kind-metallb?ref=main"
 }
 
+# The Following module should be replaced by the bitnami helm chart
 module "metallb" {
   # source = "../../terraform-modules/metallb"
   count            = var.metallb ? 1 : 0
   source           = "github.com/deas/terraform-modules//metallb?ref=main"
-  install_manifest = data.http.metallb_native[0].response_body
+  install_manifest = "" # data.http.metallb_native[0].response_body
   config_manifest  = module.metallb_config[0].manifest
+  depends_on       = [helm_release.metallb]
 }
