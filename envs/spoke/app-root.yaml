@@ -17,7 +17,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/deas/argocd-conductr
-    targetRevision: wip
+    targetRevision: main
     path: envs/spoke
   destination:
     server: https://kubernetes.default.svc
