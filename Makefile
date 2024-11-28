@@ -42,13 +42,13 @@ create-age-secret:
 
 .PHONY:
 argocd-initial-admin-password: ## Show initial ArgoCD admin password
-	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" 2>/dev/null | jq -r '."password" | @base64d' ; kubectl -n argocd get secret argocd-cluster -o jsonpath="{.data}" 2>/dev/null | jq -r '."admin.password" | @base64d'; echo 
 
 # TODO: Pull Load-Balancer IP from Kubernetes
 argocd-admin-login:  ## ArgoCD admin login
-	argocd login --insecure --username admin \
-		--password $$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" | jq -r '."password"' | base64 -d) \
-		$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].spec.ports[?(@.name=="http")].nodePort}')
+	pass=$$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" 2>/dev/null | jq -r '."password" | @base64d' ; kubectl -n argocd get secret argocd-cluster -o jsonpath="{.data}" 2>/dev/null | jq -r '."admin.password" | @base64d') && \
+ 	k8s_ep=$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].spec.ports[?(@.name=="http")].nodePort}') && \
+	argocd login --insecure --username admin --password $${pass} $${k8s_ep}
 #		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything

@@ -70,6 +70,11 @@ spec:
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
                   targetRevision: "0.18.1"
+                - appName: csr-approver
+                  namespace: kube-system
+                  repoURL: https://github.com/deas/csr-approver.git
+                  targetRevision: main
+                  chartPath: charts/csr-approver
             # TODO: Customized local charts need templatePath below
             #- appName: submariner-operator
             #  namespace: submariner-operator
@@ -145,7 +150,8 @@ spec:
         # targetRevision: main
         # path: "{{.path.path}}"
         - repoURL: "{{ .repoURL }}"
-          chart: "{{ .appName }}"
+          path: '{{ index . "chartPath" | default "" }}'
+          chart: '{{ if hasKey . "chartPath" }}{{ else }}{{ .appName }}{{ end }}'
           targetRevision: "{{ .targetRevision }}"
           helm:
             # Helm values files for overriding values in the helm chart

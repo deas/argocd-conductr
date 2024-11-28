@@ -139,13 +139,13 @@ resource "kubectl_manifest" "bootstrap_hub_kubeconfig" {
 }
 
 # TODO: We should probably replace this with our very own crs-approver deployment/helm_release
-resource "null_resource" "ocm_hub_approval" {
-  count      = var.export_ocm_bootstrap_secret ? 1 : 0
-  depends_on = [kubectl_manifest.bootstrap_hub_kubeconfig]
-  provisioner "local-exec" {
-    command = "${path.module}/tools/approve-ocm-csr.sh spoke 300"
-  }
-}
+#resource "null_resource" "ocm_hub_approval" {
+#  count      = 0 # var.export_ocm_bootstrap_secret ? 1 : 0
+#  depends_on = [kubectl_manifest.bootstrap_hub_kubeconfig]
+#  provisioner "local-exec" {
+#    command = "${path.module}/tools/approve-ocm-csr.sh spoke 300"
+#  }
+#}
 
 resource "helm_release" "linked_submariner" {
   count    = var.kubeconfig_linked != null ? 1 : 0
