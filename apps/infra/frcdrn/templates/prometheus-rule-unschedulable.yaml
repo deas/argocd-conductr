@@ -1,0 +1,23 @@
+{{- if .Values.prometheusRule.create -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-unschedulable-alert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "frcdrn.labels" . | nindent 4 }}
+    #prometheus: kube-prometheus
+    #role: alert-rules
+spec:
+  groups:
+  - name: node-availability.rules
+    rules:
+    - alert: NodeUnschedulable
+      expr: kube_node_spec_unschedulable == 1
+      for: {{ .Values.minAge }}s 
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node {{ `{{ $labels.node }}` }} is unschedulable"
+        description: "Node {{ `{{ $labels.node }}` }} has been unschedulable for more than 10 minutes. Investigate node availability."
+{{- end}}

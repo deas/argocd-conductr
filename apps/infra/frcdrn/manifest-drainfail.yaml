@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drainfail
+  labels:
+    app: drainfail
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drainfail
+  template:
+    metadata:
+      labels:
+        app: drainfail
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: drainfail
+  labels:
+    app: drainfail
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: drainfail

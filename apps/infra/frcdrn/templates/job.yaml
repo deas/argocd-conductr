@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ template "frcdrn.fullname" . }}
+  labels:
+    app: {{ template "frcdrn.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+#  annotations:
+#    "helm.sh/hook": post-install,post-upgrade
+#    "helm.sh/hook-weight": "10"
+#    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  # schedule: "*/5 * * * *" # Every 5 minutes
+  schedule: "{{ .Values.schedule }}" # "* * * * *"
+  jobTemplate:
+    metadata:
+      name: {{ template "frcdrn.fullname" . }}
+      labels:
+        app: {{ template "frcdrn.name" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "frcdrn.serviceAccountName" . }}
+          containers:
+          - name: frcdrn
+            image: bitnami/kubectl
+            env:
+              - name: MIN_AGE
+                value: "{{ .Values.minAge }}"
+              - name: MAX_AGE 
+                value: "{{ .Values.maxAge }}"
+              - name: LABELS
+                value: "{{ .Values.labels }}"
+            command:
+            - "sh"
+            - "-c"
+            - |-
+{{ .Files.Get "src/frcdrn.sh" | indent 14}}
