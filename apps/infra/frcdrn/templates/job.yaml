@@ -33,7 +33,7 @@ spec:
           serviceAccountName: {{ include "frcdrn.serviceAccountName" . }}
           containers:
           - name: frcdrn
-            image: bitnami/kubectl
+            image: "{{ .Values.image.repository }}" # :{{ .Values.image.tag | default .Chart.AppVersion }}
             env:
               - name: MIN_AGE
                 value: "{{ .Values.minAge }}"

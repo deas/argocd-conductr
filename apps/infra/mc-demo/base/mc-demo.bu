@@ -1,0 +1,18 @@
+# butane mc-demo.bu -d .
+variant: openshift
+version: 4.16.0
+metadata:
+  name: 99-worker-demo
+  labels:
+    machineconfiguration.openshift.io/role: worker
+storage:
+  files:
+    - path: /usr/local/bin/mc-demo.sh
+      mode: 0755
+      contents:
+        local: ./mc-demo.sh
+systemd:
+  units:
+    - name: mc-demo.service
+      enabled: true
+      contents_local: ./mc-demo.service

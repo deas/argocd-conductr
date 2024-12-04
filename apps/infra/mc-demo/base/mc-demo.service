@@ -1,0 +1,9 @@
+[Unit]
+Description=Machine Config Demo
+After=network.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mc-demo.sh
+RemainAfterExit=true
+[Install]
+WantedBy=multi-user.target

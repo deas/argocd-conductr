@@ -1,0 +1,9 @@
+subscriptions:
+  - name: kiali-ossm
+    namespace: openshift-operators
+    channel: stable
+    source: redhat-operators
+  - name: servicemeshoperator
+    namespace: openshift-operators
+    channel: stable
+    source: redhat-operators

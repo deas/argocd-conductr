@@ -2,13 +2,11 @@
 
 ## Problem statement
 
-In Kubernetes, there are situations triggering node drainage that can easily get stuck ending up with nodes being `Ready` iand `unschedulable` while still running pods.
+In Kubernetes, there are situations triggering node drainage that can easily get stuck ending up with nodes being `Ready` and `unschedulable` while still running pods.
 
-We aim at automating away at least one common reason frequently hitting us: PodDisruptionBudgets
+We aim at automating away at least one common reason frequently hitting us: Unawareness of PodDisruptionBudgets
 
 [This manifest](./test/manifest-drainfail.yaml) illustrates the "trap".
-
-For us, this is often caused by unawareness.
 
 Openshift easily falls for it when machine config chooses to reboot. This usually happens when upgrading a cluster, but there are other situations as well. Another example is changing the global `Proxy` object.
 

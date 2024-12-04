@@ -4,7 +4,7 @@ set -e
 
 : ${MIN_AGE:="0"}
 : ${MAX_AGE:="1000000"}
-: ${LABELS:="!node-role.kubernetes.io/control-plane,!frcdrn/ignore""}
+: ${LABELS:="!node-role.kubernetes.io/control-plane,!frcdrn/ignore"}
 
 echo "Draining ready and unschedulable nodes labeled ${LABELS} stuck more than ${MIN_AGE} seconds and less than ${MAX_AGE} seconds"
 
