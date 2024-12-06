@@ -11,13 +11,13 @@ spec:
         generators:
           # - cluster: {}
           - list:
-              elements:
+              elements: []
                 # TODO: Customized local charts need templatePath below
-                - appName: operators
-                  namespace: operators
-                  repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: wip
-                  chartPath: "apps/infra/operators"
+                #- appName: operators
+                #  namespace: operators
+                #  repoURL: https://github.com/deas/argocd-conductr.git
+                #  targetRevision: wip
+                #  chartPath: "apps/infra/operators"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: wip
