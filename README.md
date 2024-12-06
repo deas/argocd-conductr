@@ -228,6 +228,8 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
+- Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
+- `kind` based testing
 - Improve Unit/Integration Test Coverage
 - Prometheus based sync failure alerts (s. known issues)
 - It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
@@ -281,8 +283,9 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 - [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
-- Appears there is not straight forward way to make OLM Deployments use one pod
-  per Deployment/Replica
+- Appears there is not straight forward way to make OLM Deployments use one pod per Deployment/Replica
+- [Create a dry run tool for ConfigurationPolicy](https://issues.redhat.com/browse/ACM-14161)
+- [RFE Create tools to assist in Policy development](https://issues.redhat.com/browse/ACM-4697)
 
 ## References
 
