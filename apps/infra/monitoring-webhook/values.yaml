@@ -56,19 +56,23 @@ tolerations: []
 
 affinity: {}
 
-volumes: []
-#  - name: tools
-#    emptyDir: {}
+volumes: # []
+  - name: tools
+    emptyDir: {}
 
-volumeMounts:
-  []
-  #  - name: tools
-  #    mountPath: /tools
+volumeMounts: # []
+  - name: tools
+    mountPath: /tools
 
-initContainers: []
-#  - name: monitoring-webhook
-#    image: "bitnami/kubectl:latest"
-#    imagePullPolicy: IfNotPresent
+initContainers: # []
+  - name: monitoring-webhook
+    image: "bitnami/kubectl:latest"
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/sh"]
+    args: ["cp", "/opt/bitnami/kubectl/bin/kubectl", "/tools"]
+    volumeMounts:
+      - name: tools
+        mountPath: /tools
 
 livenessProbe:
   httpGet:
