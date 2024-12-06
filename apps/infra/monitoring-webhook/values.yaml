@@ -65,11 +65,10 @@ volumeMounts: # []
     mountPath: /tools
 
 initContainers: # []
-  - name: monitoring-webhook
+  - name: copy-tools
     image: "bitnami/kubectl:latest"
     imagePullPolicy: IfNotPresent
-    command: ["/bin/sh"]
-    args: ["cp", "/opt/bitnami/kubectl/bin/kubectl", "/tools"]
+    command: ["/usr/bin/cp", "/opt/bitnami/kubectl/bin/kubectl", "/tools"]
     volumeMounts:
       - name: tools
         mountPath: /tools
