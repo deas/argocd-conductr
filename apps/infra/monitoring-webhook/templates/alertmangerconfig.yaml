@@ -1,3 +1,4 @@
+{{ if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1alpha/AlertmanagerConfig" -}}
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:
@@ -15,3 +16,4 @@ spec:
         - url: "http://{{ include "monitoring-webhook.fullname" . }}:{{ .Values.service.port }}/alerts"
           #httpConfig:
           #  enable_http2: false # Not supported by CRD
+{{- end}}

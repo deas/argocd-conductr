@@ -12,6 +12,8 @@ spec:
   name: {{ .name }}
   source: {{ .source }}
   sourceNamespace: {{ .sourceNamespace  }}
+  config:
+    {{- toYaml .config | nindent 4 }}
 ---
 {{- if ne .namespace $.Values.operatorsNamespace }}
 apiVersion: v1

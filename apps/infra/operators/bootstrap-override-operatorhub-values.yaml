@@ -1,0 +1,11 @@
+operatorsNamespace: operators
+# operatorsNamespace: openshift-operators
+subscriptions:
+  - channel: alpha
+    name: argocd-operator
+    source: operatorhubio-catalog
+    sourceNamespace: operator-lifecycle-manager
+    config:
+      env:
+        - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+          value: argocd
