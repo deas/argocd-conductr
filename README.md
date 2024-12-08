@@ -121,6 +121,7 @@ We cover deployments of:
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
+- Cert-Manager
 - AWS Credentials Sync
 - Sealed Secrets
 - SOPS Secrets
@@ -286,6 +287,7 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - Appears there is not straight forward way to make OLM Deployments use one pod per Deployment/Replica
 - [Create a dry run tool for ConfigurationPolicy](https://issues.redhat.com/browse/ACM-14161)
 - [RFE Create tools to assist in Policy development](https://issues.redhat.com/browse/ACM-4697)
+- [Operator cannot be upgraded with the error "Cannot update: CatalogSource was removed" while the CatalogSource exists in OpenShift 4](https://access.redhat.com/solutions/6603001)
 
 ## References
 
