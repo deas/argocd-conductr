@@ -66,6 +66,10 @@ spec:
                 #  repoURL: https://open-cluster-management.io/helm-charts
                 #  namespace: open-cluster-management
                 #  targetRevision: "0.15.0"
+                - appName: cert-manager
+                  repoURL: https://charts.jetstack.io
+                  namespace: cert-manager
+                  targetRevision: "1.16.*"
                 - appName: submariner-k8s-broker
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
