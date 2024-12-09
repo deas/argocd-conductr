@@ -26,6 +26,7 @@ terraform apply
 | extra\_mounts | Extra mount points we want in kind nodes | `list(map(string))` | `[]` | no |
 | kind\_cluster\_image | The kind image to use | `string` | `"kindest/node:v1.31.0"` | no |
 | kind\_cluster\_name | Cluster name | `string` | `"argocd-conductr"` | no |
+| kubeadm\_config\_patches | Kubeadm config patches | `list(string)` | `[]` | no |
 | kubeconfig\_linked | kubeconfig file and context for a cluster linked to this one. | <pre>object({<br>    path    = string<br>    context = string<br>  })</pre> | `null` | no |
 | kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
 | metallb | If we want to use MetallLb on kind | `bool` | `false` | no |

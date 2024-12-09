@@ -12,11 +12,17 @@
 #  path    = "~/.kube/config"
 #  context = "kind-argocd-conductr-spoke"
 #}
-# extra_mounts = [{
-#   "container_path" = "/etc/ssl/certs/ca-certificates.crt"
-#   "host_path"      = "/etc/ssl/certs/ca-certificates.crt"
-# }]
 
+#extra_mounts = [
+#  {
+#    "container_path" = "/etc/kubernetes/audit-policy.yaml"
+#    "host_path"      = "./assets/audit-policy.yaml"
+#  },
+#  {
+#    "container_path" = "/etc/ssl/certs/ca-certificates.crt"
+#    "host_path"      = "/etc/ssl/certs/ca-certificates.crt"
+#  }
+#]
 
 # cluster = "local"
 # extra_port_mappings = [
@@ -56,4 +62,28 @@
 #          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
 #            endpoint = ["http://registry:5000"]
 #          EOF
+#]
+#
+#kubeadm_config_patches = [
+#  <<-EOF
+#        kind: ClusterConfiguration
+#        apiServer:
+#          extraArgs:
+#            audit-log-path: "/var/log/k8s/audit.log"
+#            audit-log-maxage: "30"
+#            audit-log-maxbackup: "10"
+#            audit-log-maxsize: "100"
+#            audit-policy-file: "/etc/kubernetes/audit-policy.yaml"
+#          extraVolumes:
+#          - name: "audit-log"
+#            hostPath: "/var/log/k8s"
+#            mountPath: "/var/log/k8s"
+#            readOnly: false 
+#            pathType: DirectoryOrCreate
+#          - name: "audit-config"
+#            hostPath: "/etc/kubernetes/audit-policy.yaml"
+#            mountPath: "/etc/kubernetes/audit-policy.yaml"
+#            readOnly: true
+#            pathType: File
+#EOF
 #]

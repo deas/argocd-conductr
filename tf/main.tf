@@ -41,7 +41,7 @@ resource "kind_cluster" "default" {
       role                   = "control-plane"
       labels                 = { "submariner.io/gateway" = true }
       image                  = var.kind_cluster_image
-      kubeadm_config_patches = []
+      kubeadm_config_patches = var.kubeadm_config_patches
       dynamic "extra_mounts" {
         for_each = var.extra_mounts
         content {

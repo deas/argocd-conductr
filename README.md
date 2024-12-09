@@ -100,7 +100,7 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 
 We use a single long lived branch `main` and map environments with directories. Leveraging branches for environment propagation appears easy, but comes with its own set of issues.
 
-We use single level environment staging with one cluster per environment. We do not use names and namespaces in this context. This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
+We use single level environment staging with one cluster per environment. We do not use names and namespaces in this context, and we don't even dare to do multi-tenancy in a single cluster (OLMv1 drops it). This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 
 We prefer Pull over Push.
 
@@ -121,6 +121,7 @@ We cover deployments of:
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
+- Cert-Manager
 - AWS Credentials Sync
 - Sealed Secrets
 - SOPS Secrets
@@ -228,6 +229,9 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
+- [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
+- Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
+- `kind` based testing
 - Improve Unit/Integration Test Coverage
 - Prometheus based sync failure alerts (s. known issues)
 - It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
@@ -281,11 +285,14 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - [Wildcards in Argo CD sourceNamespaces prevent resource creation](https://github.com/argoproj-labs/argocd-operator/issues/849)
 - `argcocd` cli does not support apps with multiple sources.
 - [Support configuration of HTTP_PROXY, HTTPS_PROXY and NO_PROXY for Gateway DaemonSet](https://github.com/submariner-io/submariner/issues/3007)
-- Appears there is not straight forward way to make OLM Deployments use one pod
-  per Deployment/Replica
+- Appears there is not straight forward way to make OLM Deployments use one pod per Deployment/Replica
+- [Create a dry run tool for ConfigurationPolicy](https://issues.redhat.com/browse/ACM-14161)
+- [RFE Create tools to assist in Policy development](https://issues.redhat.com/browse/ACM-4697)
+- [Operator cannot be upgraded with the error "Cannot update: CatalogSource was removed" while the CatalogSource exists in OpenShift 4](https://access.redhat.com/solutions/6603001)
 
 ## References
 
+- [OLMv1 Design Decisions](https://github.com/operator-framework/operator-controller/blob/main/docs/project/olmv1_design_decisions.md)
 - [Kustomized Helm (Application plugin)](https://medium.com/dzerolabs/turbocharge-argocd-with-app-of-apps-pattern-and-kustomized-helm-ea4993190e7c)
 - [Bootstrapping: ApplicationSets vs App-of-apps vs Kustomize](https://github.com/argoproj/argo-cd/discussions/11892)
 - [Argo CD 2.10: ApplicationSet full templating](https://medium.com/@geoffrey.muselli/argocd-2-10-applicationset-full-templating-b94ce90fde96)

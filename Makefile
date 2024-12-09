@@ -42,13 +42,11 @@ create-age-secret:
 
 .PHONY:
 argocd-initial-admin-password: ## Show initial ArgoCD admin password
-	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" 2>/dev/null | jq -r '."password" | @base64d' ; kubectl -n argocd get secret argocd-cluster -o jsonpath="{.data}" 2>/dev/null | jq -r '."admin.password" | @base64d'; echo 
+	@./tools/argocd.sh show-pass
 
 # TODO: Pull Load-Balancer IP from Kubernetes
 argocd-admin-login:  ## ArgoCD admin login
-	pass=$$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data}" 2>/dev/null | jq -r '."password" | @base64d' ; kubectl -n argocd get secret argocd-cluster -o jsonpath="{.data}" 2>/dev/null | jq -r '."admin.password" | @base64d') && \
- 	k8s_ep=$$(kubectl -n default get endpoints kubernetes -o jsonpath="{.subsets[0].addresses[0].ip}"):$$(kubectl -n argocd get svc -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].spec.ports[?(@.name=="http")].nodePort}') && \
-	argocd login --insecure --username admin --password $${pass} $${k8s_ep}
+	./tools/argocd.sh login
 #		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
@@ -123,10 +121,10 @@ argocd-helm-install-basic: ## Install ArgoCD with Helm
 argocd-apply-root: ## Apply argocd root application
 	$(KUBECTL) apply -f envs/$(ENV)/app-root.yaml
 
-.PHONY: update-olm-manifests
-update-olm-manifests: ## Update olm manifests
-	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/crds.yaml -O components/olm/crd/crds.yaml
-	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml -O components/olm/non-crd/olm.yaml
+#.PHONY: update-olm-manifests
+#update-olm-manifests: ## Update olm manifests
+#	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/crds.yaml -O components/olm/crd/crds.yaml
+#	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml -O components/olm/non-crd/olm.yaml
 
 .PHONY: fmt
 fmt: ## Format
@@ -176,7 +174,10 @@ argocd-enable-sync: ## Enable sync for all argo cd apps
 get-mon-webhook-logs: ## Get monitoring webhook	logs
 	$(KUBECTL) -n monitoring logs -l app.kubernetes.io/instance=monitoring-webhook
 
-.PHONY: olm-install
-olm-install: ## Ad hoc install olm
+.PHONY: olmv0-install
+olmv0-install: ## Ad hoc install olmv0
 	curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.30.0/install.sh | bash -s v0.30.0
 
+.PHONY: olmv1-install
+olmv1-install: ## Ad hoc install olmv1
+	curl -L -s https://github.com/operator-framework/operator-controller/releases/latest/download/install.sh | bash -s

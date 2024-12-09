@@ -113,6 +113,13 @@ variable "containerd_config_patches" {
   default     = []
 }
 
+
+variable "kubeadm_config_patches" {
+  type        = list(string)
+  description = "Kubeadm config patches"
+  default     = []
+}
+
 variable "additional_keys" {
   type        = map(any)
   description = "Files to use to create secrets "
