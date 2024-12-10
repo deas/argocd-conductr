@@ -7,11 +7,11 @@
 (defn load-yaml-stream [rdr]
   "Loads a YAML stream into a sequence of resources."
   ;; (with-open [rdr (io/reader file-path)]
-    (doall (yaml/parse-stream rdr {:load-all true})))
+  (doall (yaml/parse-stream rdr {:load-all true})))
 
 (defn save-yaml [file-path data]
   "Writes YAML data to a file."
-  (println file-path " " (sequential? data))
+  ;; (println file-path " " (sequential? data))
   (with-open [wrtr (io/writer file-path)]
     (.write wrtr
            (if (sequential? data)
@@ -48,7 +48,8 @@
 (defn -main [& args]
   (let [;; input-file (first args)
         suffix (or (first args) "")
-        resources (load-yaml-stream *in* #_(io/reader input-file)) ]
+        resources (->> (load-yaml-stream *in* #_(io/reader input-file))
+                       (filter some?))] ;; Not quite sure where those nile come from in cert-manager.yaml
     (process-resources resources suffix)))
 
 (when (= *file* (System/getProperty "babashka.file"))
