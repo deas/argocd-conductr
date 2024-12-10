@@ -1,3 +1,4 @@
+#!/usr/bin/env bb
 (ns split-k8s-manifests
   (:require [clojure.java.io :as io]
             [clj-yaml.core :as yaml]))
@@ -5,7 +6,7 @@
 (defn load-yaml-stream [file-path]
   "Loads a YAML stream into a sequence of resources."
   (with-open [rdr (io/reader file-path)]
-    (doall (yaml/parse-stream rdr))))
+    (yaml/parse-stream rdr)))
 
 (defn save-yaml [file-path data]
   "Writes YAML data to a file."
@@ -39,8 +40,11 @@
 (defn -main [& args]
   (let [input-file (first args)
         output-dir (or (second args) ".")
-        resources (load-yaml-stream input-file)]
-    (process-resources resources output-dir)))
+        resources (load-yaml-stream input-file) ]
+    ;; (println args)
+    ;; (println input-file)
+    (process-resources resources output-dir)
+    ))
 
 (when (= *file* (System/getProperty "babashka.file"))
-  (-main *command-line-args*))
+  (apply -main *command-line-args*))
