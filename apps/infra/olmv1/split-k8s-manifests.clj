@@ -4,10 +4,10 @@
             [clojure.string :as str]
             [clj-yaml.core :as yaml]))
 
-(defn load-yaml-stream [file-path]
+(defn load-yaml-stream [rdr]
   "Loads a YAML stream into a sequence of resources."
-  (with-open [rdr (io/reader file-path)]
-    (doall (yaml/parse-stream rdr {:load-all true}))))
+  ;; (with-open [rdr (io/reader file-path)]
+    (doall (yaml/parse-stream rdr {:load-all true})))
 
 (defn save-yaml [file-path data]
   "Writes YAML data to a file."
@@ -20,10 +20,11 @@
                  (str/join "---\n"))
               (yaml/generate-string data :dumper-options {:flow-style :block})))))
 
-(defn process-resources [resources output-dir suffix]
+(defn process-resources [resources suffix]
   "Processes the resources and writes them into categorized files."
-  #_(println resources)
-  (let [crds (filter #(= "CustomResourceDefinition" (:kind %)) resources)
+  (let [crds-dir "./crds"
+        templates-dir "./templates"
+        crds (filter #(= "CustomResourceDefinition" (:kind %)) resources)
         rbac-kinds #{"Role" "ClusterRole" "RoleBinding" "ClusterRoleBinding"}
         rbac (filter #(contains? rbac-kinds (:kind %)) resources)
         others (remove #(or (= "CustomResourceDefinition" (:kind %))
@@ -31,27 +32,24 @@
 
     ;; Save CRDs
     (when (seq crds)
-      (save-yaml (str output-dir "/crds" suffix ".yaml") crds))
+      (save-yaml (str crds-dir "/crds" suffix ".yaml") crds))
 
     ;; Save RBAC resources
     (when (seq rbac)
-      (save-yaml (str output-dir "/rbac" suffix ".yaml") rbac))
+      (save-yaml (str templates-dir "/rbac" suffix ".yaml") rbac))
 
     ;; Save other resources individually
     (doseq [resource others]
       (let [kind (:kind resource)
             name (get-in resource [:metadata :name])
-            file-path (str output-dir "/" kind "-" name ".yaml")]
+            file-path (str templates-dir "/" kind "-" name ".yaml")]
         (save-yaml file-path resource)))))
 
 (defn -main [& args]
-  (let [input-file (first args)
-        suffix (or (second args) "")
-        resources (load-yaml-stream input-file) ]
-    ;; (println args)
-    ;; (println input-file)
-    (process-resources resources "." suffix)
-    ))
+  (let [;; input-file (first args)
+        suffix (or (first args) "")
+        resources (load-yaml-stream *in* #_(io/reader input-file)) ]
+    (process-resources resources suffix)))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))

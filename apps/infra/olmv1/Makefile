@@ -22,8 +22,7 @@ download-manifests: ## Download manifests
 .PHONY: split-manifests
 split-manifests: crds ## Split manifests
 	for file in catalogd cert-manager operator-controller; do \
-		cat tmp/$${file}.yaml | yq 'select(.kind == "CustomResourceDefinition")' > crds/crds-$${file}.yaml ; \
-		cat tmp/$${file}.yaml | yq 'select(.kind != "CustomResourceDefinition")' > templates/manifests-$${file}.yaml ; \
+		cat tmp/$${file}.yaml | ./split-k8s-manifests.clj -$${file}; \
 	done
 
 # | yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/monitoring/prom-test-rules.yaml
