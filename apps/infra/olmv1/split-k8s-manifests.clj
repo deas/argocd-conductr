@@ -1,6 +1,7 @@
 #!/usr/bin/env bb
 (ns split-k8s-manifests
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clj-yaml.core :as yaml]))
 
 (defn load-yaml-stream [file-path]
@@ -10,8 +11,14 @@
 
 (defn save-yaml [file-path data]
   "Writes YAML data to a file."
+  (println file-path " " (sequential? data))
   (with-open [wrtr (io/writer file-path)]
-    (.write wrtr (yaml/generate-string data :dumper-options {:flow-style :block}))))
+    (.write wrtr
+           (if (sequential? data)
+             (->> data
+                 (map #(yaml/generate-string % :dumper-options {:flow-style :block}))
+                 (str/join "---\n"))
+              (yaml/generate-string data :dumper-options {:flow-style :block})))))
 
 (defn process-resources [resources output-dir suffix]
   "Processes the resources and writes them into categorized files."
