@@ -11,9 +11,9 @@
 (defn save-yaml [file-path data]
   "Writes YAML data to a file."
   (with-open [wrtr (io/writer file-path)]
-    (.write wrtr (yaml/generate-string data))))
+    (.write wrtr (yaml/generate-string data :dumper-options {:flow-style :block}))))
 
-(defn process-resources [resources output-dir]
+(defn process-resources [resources output-dir suffix]
   "Processes the resources and writes them into categorized files."
   #_(println resources)
   (let [crds (filter #(= "CustomResourceDefinition" (:kind %)) resources)
@@ -24,11 +24,11 @@
 
     ;; Save CRDs
     (when (seq crds)
-      (save-yaml (str output-dir "/crds.yaml") crds))
+      (save-yaml (str output-dir "/crds" suffix ".yaml") crds))
 
     ;; Save RBAC resources
     (when (seq rbac)
-      (save-yaml (str output-dir "/rbac.yaml") rbac))
+      (save-yaml (str output-dir "/rbac" suffix ".yaml") rbac))
 
     ;; Save other resources individually
     (doseq [resource others]
@@ -39,11 +39,11 @@
 
 (defn -main [& args]
   (let [input-file (first args)
-        output-dir (or (second args) ".")
+        suffix (or (second args) "")
         resources (load-yaml-stream input-file) ]
     ;; (println args)
     ;; (println input-file)
-    (process-resources resources output-dir)
+    (process-resources resources "." suffix)
     ))
 
 (when (= *file* (System/getProperty "babashka.file"))
