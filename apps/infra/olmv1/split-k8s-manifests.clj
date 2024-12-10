@@ -14,6 +14,7 @@
 
 (defn process-resources [resources output-dir]
   "Processes the resources and writes them into categorized files."
+  (println resources)
   (let [crds (filter #(= "CustomResourceDefinition" (:kind %)) resources)
         rbac-kinds #{"Role" "ClusterRole" "RoleBinding" "ClusterRoleBinding"}
         rbac (filter #(contains? rbac-kinds (:kind %)) resources)
@@ -41,3 +42,5 @@
         resources (load-yaml-stream input-file)]
     (process-resources resources output-dir)))
 
+(when (= *file* (System/getProperty "babashka.file"))
+  (-main *command-line-args*))
