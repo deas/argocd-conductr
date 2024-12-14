@@ -121,6 +121,7 @@ We cover deployments of:
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
+- External Ceph + Ceph Service Limbo (XXS sized)
 - Cert-Manager
 - AWS Credentials Sync
 - Sealed Secrets
@@ -275,6 +276,7 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
 - Argo CD rbac/multi tenancy?
 - ACM appears to auto approve CSRs. Open source auto-approvers appear to specifically target cert-manager (CRD) or kubelet. Introduce [`csr-approver`](https://github.com/deas/csr-approver)
+- Introduce IPv6 with `crc`/kvm
 - Go deeper with `nix`/`devenv` - maybe even replace `mise`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
