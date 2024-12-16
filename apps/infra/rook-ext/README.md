@@ -1,5 +1,7 @@
 # Ceph CSI
 
+Disclaimer: Messy af. But it works. Most of the time.
+
 ## Problem statement
 
 We want to use the Ceph CSI driver to consume from an external cluster. Wiring this is is a bit tricky, as it involves building a trust relationship including key exchange.
@@ -20,3 +22,5 @@ Hence, we start by borrowing proven things and adapting them as we go. Naturally
 ## Known Issues
 
 - ["To sum up: the Docker daemon does not currently support multiple registry mirrors ..."](https://blog.alexellis.io/how-to-configure-multiple-docker-registry-mirrors/) -> `minikube start --registry-mirror="http://yourmirror"`
+- kvm network dns(masq) slow from minikube kubernetes. Times out for s3.
+  Patching coredns gets around the issue.
