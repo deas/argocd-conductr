@@ -16,11 +16,11 @@ spec:
                 #- appName: operators
                 #  namespace: operators
                 #  repoURL: https://github.com/deas/argocd-conductr.git
-                #  targetRevision: main
+                #  targetRevision: wip
                 #  chartPath: "apps/infra/operators"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: main
+              revision: wip
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/spoke"
               # apps/*envs/spoke
@@ -46,7 +46,7 @@ spec:
 
       source:
         repoURL: "{{ .repoURL }}"
-        targetRevision: main
+        targetRevision: wip
         chart: ""
         path: "{{ .chartPath }}"
         helm:
