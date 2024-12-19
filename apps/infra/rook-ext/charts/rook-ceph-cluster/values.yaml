@@ -22,3 +22,10 @@ cephFileSystems: {}
 # -- A list of CephObjectStore configurations to deploy
 # @default -- See [below](#ceph-object-stores)
 cephObjectStores: {}
+
+monitoring:
+  # -- Enable Prometheus integration, will also create necessary RBAC rules to allow Operator to create ServiceMonitors.
+  # Monitoring requires Prometheus to be pre-installed
+  enabled: true
+  # -- Whether to create the Prometheus rules for Ceph alerts
+  createPrometheusRules: true

@@ -21,17 +21,13 @@ configOverride:
 #   osd_pool_default_min_size = 2
 
 csi:
-  #  # -- Set CephFS Kernel mount options to use https://docs.ceph.com/en/latest/man/8/mount.ceph/#options.
-  # # Set to "ms_mode=secure" when connections.encrypted is enabled in CephCluster CR
-  #  cephFSKernelMountOptions: "ms_mode=crc"
-  serviceMonitor:
-    # -- Enable ServiceMonitor for Ceph CSI drivers
-    enabled: true
+  enableRbdDriver: false
+  enableCephfsDriver: false
 
 # Installs a debugging toolbox deployment
 toolbox:
   # -- Enable Ceph debugging pod deployment. See [toolbox](../Troubleshooting/ceph-toolbox.md)
-  enabled: false
+  enabled: true
   # -- Toolbox image, defaults to the image used by the Ceph cluster
   image: #quay.io/ceph/ceph:v18.2.4
   # -- Toolbox tolerations

@@ -74,6 +74,11 @@ spec:
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
                   targetRevision: "0.18.1"
+                # For velero snapshots on kind
+                #- appName: snapshot-controller
+                #  repoURL: https://piraeus.io/helm-charts
+                #  namespace: snapshot-controller
+                #  targetRevision: "4.0.*"
                 - appName: csr-approver
                   namespace: kube-system
                   repoURL: https://github.com/deas/csr-approver.git

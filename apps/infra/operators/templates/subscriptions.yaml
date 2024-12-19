@@ -3,7 +3,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: {{ .name }}
-  namespace: {{ .namespace }}
+  namespace: {{ .namespace | default $.Values.operatorsNamespace }}
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -15,7 +15,7 @@ spec:
   config:
     {{- toYaml .config | nindent 4 }}
 ---
-{{- if ne .namespace $.Values.operatorsNamespace }}
+{{- if and (ne .namespace $.Values.operatorsNamespace) .namespace }}
 apiVersion: v1
 kind: Namespace
 metadata:

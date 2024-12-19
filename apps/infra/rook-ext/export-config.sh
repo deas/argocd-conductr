@@ -15,6 +15,7 @@ cat ${create_script} | kubectl exec -i -n ${ns} deploy/rook-ceph-tools -- \
   --namespace ${ns} \
   --format bash \
   >config.ini
-
+# If encryption or compression on the wire is needed, specify the
+# --v2-port-enable
 #  --monitoring-endpoint ${exporter_ep} \
 #  --monitoring-endpoint-port ${exporter_ep_port} \

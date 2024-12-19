@@ -3,6 +3,10 @@ CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
+OPERATORS_NS=operators
+# OPERATORS_NS=openshift-operators
+OLM_NS=olm
+# OLM_NS=openshift-operator-lifecycle-manager
 ENV=local
 AMTOOL_OUTPUT=simple
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
@@ -82,7 +86,7 @@ argocd-recreate-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca cer
 	$(KUBECTL) -n $(ARGOCD_NS) create -f target/manifest-ca-certs.yaml
 
 .PHONY: argocd-patch-openshift-auth
-argocd-patch-openshift-auth: ## Patch ArgoCD to use OpenShift auth
+argocd-patch-openshift-auth: ## Patch ArgoCD to use apenShift auth
 #  Deprecated since openshift 4.11: oc -n serviceaccounts get-token argocd-dex-server
 #  Needs secret in secrets property of serviceaccount
 	export argocd_host=$$($(KUBECTL) -n $(ARGOCD_NS) get ing argo-cd-argocd-server -o=jsonpath='{ .spec.rules[0].host }') \
@@ -99,9 +103,9 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 	htpasswd -bBn admin admin | $(KUBECTL) create secret generic htpass --from-file=htpasswd=/dev/stdin -n openshift-config
 	$(KUBECTL) apply -f assets/oauth-cluster.yaml
 
-.PHONY: argocd-helm-install-basic
-# TODO: A bit overlap with terraform 
-argocd-helm-install-basic: ## Install ArgoCD with Helm
+
+.PHONY: argocd-install-basic-common
+argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
 	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
 	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)
@@ -115,7 +119,21 @@ argocd-helm-install-basic: ## Install ArgoCD with Helm
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
+
+.PHONY: argocd-helm-install-basic
+# TODO: A bit overlap with terraform 
+argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with Helm
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/local/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
+
+
+.PHONY: argcd-olm-install-basic
+argcd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
+	helm upgrade --install --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml \
+		--set subscriptions[0].sourceNamespace=olm
+	kubectl -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
+	kustomize build apps/infra/argo-cd/envs/spoke | kubectl apply -f - # TODO $(ENV)
+	kubectl -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
+#	--set operatorsNamespace=openshift-operators --set subscriptions[0].sourceNamespace=openshift-operator-lifecycle-manager
 
 .PHONY: argocd-apply-root
 argocd-apply-root: ## Apply argocd root application
