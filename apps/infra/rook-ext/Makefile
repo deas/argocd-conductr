@@ -4,7 +4,6 @@ TOOLS_DIR=.
 STORAGE_CLASSES=ceph-rbd cephfs
 CEPH_SERVICE_PROFILE=ceph-service
 CEPH_CONSUMER_PROFILE=ceph-consumer
-CEPH_SANDBOX_PROFILE=ceph-sandbox
 
 # TODO: Beware of the two k8s contexts!
 .DEFAULT_GOAL := help
@@ -13,17 +12,6 @@ CEPH_SANDBOX_PROFILE=ceph-sandbox
 .PHONY: help
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-
-.PHONY: create-ceph-sandbox-cluster
-create-ceph-sandbox-cluster: ## Create Ceph Service Cluster (deprecated)
-	ROOK_PROFILE_NAME=$(CEPH_SANDBOX_PROFILE) ./create-ceph-service.sh -m # -r (orchestrator via tools)
-	./configure-ceph-service.sh
-	 kubectl -n rook-ceph wait --for=jsonpath='{.status.phase}'=Ready cephblockpool/replicapool
-	 kubectl -n rook-ceph wait --for=jsonpath='{.status.phase}'=Ready cephobjectstore/my-store
-	 kubectl -n rook-ceph wait --for=jsonpath='{.status.phase}'=Ready cephfilesystem/myfs
-	 kubectl -n rook-ceph wait --timeout=180s --for=jsonpath='{.subsets[0].addresses[0].nodeName}'=$(CEPH_SERVICE_PROFILE) ep/rook-ceph-rgw-my-store
-	$(TOOLS_DIR)/export-config.sh
-
 
 .PHONY: create-ceph-service-cluster
 create-ceph-service-cluster: ## Create Ceph Service Cluster
