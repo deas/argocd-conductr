@@ -34,7 +34,7 @@ create-ceph-service-cluster: ## Create Ceph Service Cluster
 	./configure-ceph-service.sh
 	 kubectl -n rook-ceph wait --timeout=180s --for=jsonpath='{.status.phase}'=Ready cephblockpool/replicapool
 	 kubectl -n rook-ceph wait --timeout=180s --for=jsonpath='{.status.phase}'=Ready cephobjectstore/my-store
-	 kubectl -n rook-ceph wait --timeout=180s  -for=jsonpath='{.status.phase}'=Ready cephfilesystem/myfs
+	 kubectl -n rook-ceph wait --timeout=180s --for=jsonpath='{.status.phase}'=Ready cephfilesystem/myfs
 	 kubectl -n rook-ceph wait --timeout=180s --for=jsonpath='{.subsets[0].addresses[0].nodeName}'=$(CEPH_SERVICE_PROFILE) ep/rook-ceph-rgw-my-store
 	$(TOOLS_DIR)/export-config.sh
 
