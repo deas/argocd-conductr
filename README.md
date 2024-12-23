@@ -121,7 +121,6 @@ We cover deployments of:
 - Metallb
 - Kube-Prometheus
 - Loki/Promtail
-- [External Ceph + Ceph Service Limbo (XXS sized)](./apps/infra/rook-ext/)
 - Velero
 - Cert-Manager
 - AWS Credentials Sync
