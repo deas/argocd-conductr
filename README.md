@@ -85,6 +85,14 @@ The primary goal of this project is to exercise with Argo CD based [GitOps](http
 
 The change process starts at localhost. Hence, we consider `kind` experience very important. Given that, some elements may be useful in CI context. Most things, should play nice  productive environments as well.
 
+<!-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections -->
+<details>
+<summary>Demo using terraform bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state
+</summary>
+
+![Demo](./assets/demo.gif)
+</details>
+
 ### Goals
 
 - Speed : A fast cycle from localhost to production 🚀
@@ -108,6 +116,8 @@ We focus on one "Platform Team" managing many clusters using a single repo. It s
 
 Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
 
+OLM footprint has a bigger footprint than helm. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM)  `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens.
+
 ### Features
 
 We cover deployments of:
@@ -128,6 +138,7 @@ We cover deployments of:
 - SOPS Secrets
 - Submariner
 - Caretta
+- LitmusChaos
 
 Beyond deployments, we feature:
 

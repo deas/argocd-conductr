@@ -1,0 +1,33 @@
+portal:
+  server:
+    graphqlServer:
+      genericEnv:
+        CHAOS_CENTER_UI_ENDPOINT: "http://chaos-litmus-frontend-service.litmus.svc.cluster.local:9091"
+#  frontend:
+#    service: type
+
+# OpenShift specific configuration
+openshift:
+  # If service should be exposed using an OpenShift route
+  route:
+    enabled: false
+    name: litmus-portal
+    customLabels: {}
+    annotations: {}
+    host: ""
+
+# -- Configure the Bitnami MongoDB subchart
+# see values at https://github.com/bitnami/charts/blob/master/bitnami/mongodb/values.yaml
+mongodb:
+  replicaCount: 1
+  persistence:
+    enabled: true
+  metrics:
+    enabled: false
+    prometheusRule:
+      enabled: false
+  # Required when using Mac M1 - https://github.com/bitnami/containers/issues/40947#issuecomment-1968364385
+  # arbiter:
+  # extraEnvVars:
+  #   - name: EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU
+  #     value: "1"

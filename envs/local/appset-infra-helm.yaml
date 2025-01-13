@@ -66,6 +66,10 @@ spec:
                 #  repoURL: https://open-cluster-management.io/helm-charts
                 #  namespace: open-cluster-management
                 #  targetRevision: "0.15.0"
+                # - appName: litmus
+                #   repoURL: https://litmuschaos.github.io/litmus-helm/
+                #   namespace: litmus
+                #   targetRevision: "3.14.*"
                 - appName: cert-manager
                   repoURL: https://charts.jetstack.io
                   namespace: cert-manager
