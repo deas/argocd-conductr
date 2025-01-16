@@ -1,0 +1,120 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  # TODO: Not quite sure whether both of the following are needed for the Service Monitors
+  prometheus:
+    enabled: true
+  # TODO: The operator does not detect the creation of the prometheus crds. Needs restart if prometheus comes in late
+  monitoring:
+    enabled: true
+  # defaultClusterScopedRoleDisabled: false
+  applicationSet:
+    enabled: True # Should have been enabled by default?
+  server:
+    insecure: true
+    enableRolloutsUI: true
+    host: argocd-server.apps-crc.testing # TODO
+    ingress:
+      enabled: true
+      # IngressClassName: nginx
+      path: /
+      annotations:
+        route.openshift.io/termination: edge
+    service:
+      type: NodePort # LoadBalancer
+  kustomizeBuildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
+  configManagementPlugins: |
+    - name: kustomized-helm
+      init:
+        command: ["/bin/sh", "-c"]
+        args: ["helm dependency build || true"]
+      generate:
+        command: ["/bin/sh", "-c"]
+        args: ["helm template ../../helm_base --name-template $ARGOCD_APP_NAME --include-crds > ../../helm_base/all.yml && kustomize build"]
+  #resourceIgnoreDifferences:
+  #  all:
+  #    jsonPointers:
+  #      - /spec/replicas
+  #    managedFieldsManagers:
+  #      - kube-controller-manager
+  #  resourceIdentifiers:
+  #    - group: admissionregistration.k8s.io
+  #      kind: MutatingWebhookConfiguration
+  #      customization:
+  #        jqPathExpressions:
+  #          - ".webhooks[]?.clientConfig.caBundle"
+  #    - group: apps
+  #      kind: Deployment
+  #      customization:
+  #        managedFieldsManagers:
+  #          - kube-controller-manager
+  #        jsonPointers:
+  #          - /spec/replicas
+  resourceHealthChecks:
+    - group: operators.coreos.com
+      kind: Subscription
+      check: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.state ~= nil then
+            if obj.status.state == "AtLatestKnown" then
+              hs.message = obj.status.state .. " - " .. obj.status.currentCSV
+              hs.status = "Healthy"
+            end
+          end
+        end
+        return hs
+    - group: argoproj.io
+      kind: Application
+      check: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.health ~= nil then
+            hs.status = obj.status.health.status
+            if obj.status.health.message ~= nil then
+              hs.message = obj.status.health.message
+            end
+          end
+        end
+        return hs
+    - group: networking.k8s.io
+      kind: Ingress
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          hs.status = "Healthy"
+          hs.message = "Ingress Nginx Hack"
+        end
+        return hs
+    - group: bitnami.com
+      kind: SealedSecret
+      check: |
+        hs = {}
+        hs.status = "Healthy"
+        hs.message = "Controller doesn't report resource status"
+        return hs
+  #resourceActions:
+  #      discovery.lua: |
+  #      actions = {}
+  #      actions["restart"] = {}
+  #      return actions
+  #      definitions:
+  #      - name: restart
+  #        # Lua Script to modify the obj
+  #        action.lua: |
+  #          local os = require("os")
+  #          if obj.spec.template.metadata == nil then
+  #              obj.spec.template.metadata = {}
+  #          end
+  #          if obj.spec.template.metadata.annotations == nil then
+  #              obj.spec.template.metadata.annotations = {}
+  #          end
+  #          obj.spec.template.metadata.annotations["kubectl.kubernetes.io/restartedAt"] = os.date("!%Y-%m-%dT%XZ")
+  #          return obj

@@ -44,6 +44,7 @@ pass=$(kubectl -n ${ns} get secret ${secret} -o jsonpath="{.data}" 2>/dev/null |
 if [ "${action}" == "show-pass" ]; then
   echo "${pass}"
 elif [ "${action}" == "login" ]; then
+  # --plaintext is required for http to prevent confirmation
   argocd login ${argocd_args} --plaintext --username admin --password ${pass} ${argocd_ep}
 else
   echo "Unknown action \"${action}\""

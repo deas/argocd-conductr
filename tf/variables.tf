@@ -22,7 +22,7 @@ variable "argocd_install" {
     condition     = var.argocd_install == null || var.argocd_install == "helm" || var.argocd_install == "olm"
     error_message = "The argocd_install must be one of 'helm', 'olm' or null."
   }
-  default  = "helm"
+  default  = "olm"
   nullable = true
 }
 

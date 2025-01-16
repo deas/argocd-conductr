@@ -12,7 +12,7 @@ terraform apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | additional\_keys | Files to use to create secrets | `map(any)` | `{}` | no |
-| argocd\_install | If/How to install ArgoCD | `string` | `"helm"` | no |
+| argocd\_install | If/How to install ArgoCD | `string` | `"olm"` | no |
 | bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `true` | no |
 | bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets. | `string` | `null` | no |
 | broker\_secret\_get | The command to execute to obtain the submariner broker secret | `list(string)` | `[]` | no |

@@ -12,8 +12,12 @@ spec:
   name: {{ .name }}
   source: {{ .source }}
   sourceNamespace: {{ .sourceNamespace  }}
+{{- if .config }}
+# Dont' get this via helm directly?
+# Invalid value: "null": spec.config in body must be of type object: "null"'
   config:
     {{- toYaml .config | nindent 4 }}
+{{- end }}
 ---
 {{- if and (ne .namespace $.Values.operatorsNamespace) .namespace }}
 apiVersion: v1

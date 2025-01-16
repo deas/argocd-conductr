@@ -11,10 +11,17 @@ spec:
     namespace: argocd
     server: https://kubernetes.default.svc
   project: default
-  source:
-    path: apps/infra/argo-cd/envs/local
-    repoURL: https://github.com/deas/argocd-conductr.git
-    targetRevision: main
+  sources:
+    - chart: argo-cd
+      helm:
+        valueFiles:
+          - $values/apps/infra/argo-cd/envs/local-helm/../../values.yaml
+          - $values/apps/infra/argo-cd/envs/local-helm/values.yaml
+      repoURL: https://argoproj.github.io/argo-helm
+      targetRevision: 7.6.8
+    - ref: values
+      repoURL: https://github.com/deas/argocd-conductr.git
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true

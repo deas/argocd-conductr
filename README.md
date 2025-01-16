@@ -116,7 +116,7 @@ We focus on one "Platform Team" managing many clusters using a single repo. It s
 
 Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
 
-OLM footprint has a bigger footprint than helm. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM)  `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens.
+OLM footprint has a bigger footprint than helm and it comes with its own set of issues as well. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM)  `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens. Hence, we default  to bring in OLM when it is not there initially (such as on `kind`).
 
 ### Features
 

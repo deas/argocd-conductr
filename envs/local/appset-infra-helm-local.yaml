@@ -13,6 +13,11 @@ spec:
           - list:
               elements:
                 # TODO: Customized local charts need templatePath below
+                - appName: operators
+                  namespace: operators
+                  repoURL: https://github.com/deas/argocd-conductr.git
+                  targetRevision: main
+                  chartPath: "apps/infra/operators"
                 - appName: registration-operator-hub
                   namespace: open-cluster-management
                   repoURL: https://github.com/deas/argocd-conductr.git
