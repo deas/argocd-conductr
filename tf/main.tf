@@ -203,7 +203,7 @@ resource "helm_release" "olm" {
   chart      = "olm"
   version    = "0.30.0"
   # namespace  = "olm"
-  # values     = []
+  values = [yamlencode({ "operator_namespace" = "openshift-operators" })]
 }
 
 # Needed as a dep when we we bootstrap both : OLM and ArgoCD OLM. The latter module depends on the subscription

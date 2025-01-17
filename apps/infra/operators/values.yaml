@@ -1,5 +1,5 @@
-operatorsNamespace: operators
-# operatorsNamespace: openshift-operators
+# operatorsNamespace: operators
+operatorsNamespace: openshift-operators
 subscriptions:
   []
   #  - name: kiali-ossm

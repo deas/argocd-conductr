@@ -244,6 +244,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
 - Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
 - Introduce proper GitOps time travel support (tags/hashes)
+- Improve Openshift harmonization (esp. with regards to naming/namespaces)
 - `kind` based testing
 - Improve Unit/Integration Test Coverage
 - Prometheus based sync failure alerts (s. known issues)

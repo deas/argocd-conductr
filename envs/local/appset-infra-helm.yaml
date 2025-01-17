@@ -18,19 +18,19 @@ spec:
                   targetRevision: "4.7.1"
                 - appName: metrics-server
                   repoURL: https://kubernetes-sigs.github.io/metrics-server
-                  namespace: monitoring
+                  namespace: openshift-user-workload-monitoring
                   targetRevision: "3.12.*"
                 - appName: loki
                   repoURL: https://grafana.github.io/helm-charts
-                  namespace: monitoring
+                  namespace: openshift-user-workload-monitoring
                   targetRevision: "4.8.0" # "5.0.0" is out
                 - appName: kube-prometheus-stack
                   repoURL: https://prometheus-community.github.io/helm-charts
-                  namespace: monitoring
+                  namespace: openshift-user-workload-monitoring
                   targetRevision: "65.1.0" #"45.7.1"
                 - appName: prometheus-blackbox-exporter
                   repoURL: https://prometheus-community.github.io/helm-charts
-                  namespace: monitoring
+                  namespace: openshift-user-workload-monitoring
                   targetRevision: "9.1.*"
                 - appName: sealed-secrets
                   repoURL: https://bitnami-labs.github.io/sealed-secrets

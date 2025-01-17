@@ -1,5 +1,4 @@
-operatorsNamespace: operators
-# operatorsNamespace: openshift-operators
+operatorsNamespace: openshift-operators
 subscriptions:
   #  - name: kiali-ossm
   #    namespace: openshift-operators
@@ -7,12 +6,18 @@ subscriptions:
   #    source: redhat-operators
   #    sourceNamespace: openshift-marketplace
   - name: loki-operator
-    namespace: operators
+    namespace: openshift-operators
     channel: alpha
     source: operatorhubio-catalog
     sourceNamespace: operator-lifecycle-manager
   - channel: stable
+    namespace: openshift-operators
     name: cluster-manager
+    source: operatorhubio-catalog
+    sourceNamespace: operator-lifecycle-manager
+  - name: grafana-operator
+    namespace: openshift-operators
+    channel: v5
     source: operatorhubio-catalog
     sourceNamespace: operator-lifecycle-manager
 #  channel: stable
