@@ -3,8 +3,8 @@ CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
-OPERATORS_NS=operators
-# OPERATORS_NS=openshift-operators
+MONITORING_NS=openshift-user-workload-monitoring
+OPERATORS_NS=openshift-operators
 OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
 ENV=local
@@ -67,7 +67,7 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
-	helm template --release-name monitoring apps/infra/monitoring -n monitoring \
+	helm template --release-name monitoring apps/infra/monitoring -n $(MONITORING_NS)  \
 		-f apps/infra/monitoring/values.yaml -f apps/infra/monitoring/envs/$(ENV)/values.yaml \
 	| yq 'select(.kind == "PrometheusRule")' \
 	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/monitoring/prom-test-rules.yaml
@@ -167,14 +167,14 @@ install-tools: ## Install all the tools
 
 .PHONY: create-dashboard-configmaps
 create-dashboard-configmaps: ## Create dashboard ConfigMaps
-	$(KUBECTL) -n monitoring create configmap dashboards-misc --from-file=./apps/infra/monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
+	$(KUBECTL) -n $(MONITORING_NS) create configmap dashboards-misc --from-file=./apps/infra/monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
 	@echo
 	@echo "Make sure to add label for grafana sidecar"
 	@echo
 
 .PHONY: show-alerts
 show-alerts: ## Show firing alerts
-	@$(KUBECTL) -n monitoring exec -it alertmanager-kube-prometheus-stack-alertmanager-0 -- amtool alert -o $(AMTOOL_OUTPUT) --alertmanager.url=http://alertmanager-operated:9093
+	@$(KUBECTL) -n $(MONITORING_NS) exec -it alertmanager-kube-prometheus-stack-alertmanager-0 -- amtool alert -o $(AMTOOL_OUTPUT) --alertmanager.url=http://alertmanager-operated:9093
 
 .PHONY: argocd-disable-sync
 argocd-disable-sync: ## Disable sync for all argo cd apps
@@ -190,7 +190,7 @@ argocd-enable-sync: ## Enable sync for all argo cd apps
 
 .PHONY: get-mon-webhook-logs
 get-mon-webhook-logs: ## Get monitoring webhook	logs
-	$(KUBECTL) -n monitoring logs -l app.kubernetes.io/instance=monitoring-webhook
+	$(KUBECTL) -n $(MONITORING_NS) logs -l app.kubernetes.io/instance=monitoring-webhook
 
 .PHONY: olmv0-install
 olmv0-install: ## Ad hoc install olmv0

@@ -4,7 +4,7 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
-  # TODO: Not quite sure whether both of the following are needed for the Service Monitors
+  # TODO: Needed for the Service Monitors. Appears it brings in an prometheus-argocd sts we don't want :/
   prometheus:
     enabled: true
   # TODO: The operator does not detect the creation of the prometheus crds. Needs restart if prometheus comes in late

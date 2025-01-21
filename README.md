@@ -87,7 +87,7 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections -->
 <details>
-<summary>Demo using terraform bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state
+<summary>Demo using terraform bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state 🪄🎩🐰
 </summary>
 
 ![Demo](./assets/demo.gif)
