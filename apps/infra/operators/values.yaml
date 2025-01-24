@@ -10,4 +10,4 @@ subscriptions:
 #  channel: stable
 #  name: klusterlet
 #  source: operatorhubio-catalog
-#  sourceNamespace: operator-lifecycle-manager # olm
+#  sourceNamespace: openshift-operator-lifecycle-manager # olm

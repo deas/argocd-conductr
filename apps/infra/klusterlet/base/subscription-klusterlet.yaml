@@ -2,9 +2,9 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: klusterlet
-  namespace: operators
+  namespace: openshift-operators
 spec:
   channel: stable
   name: klusterlet
   source: operatorhubio-catalog
-  sourceNamespace: operator-lifecycle-manager # olm
+  sourceNamespace: openshift-operator-lifecycle-manager # olm

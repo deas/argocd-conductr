@@ -9,18 +9,18 @@ subscriptions:
     namespace: openshift-operators
     channel: alpha
     source: operatorhubio-catalog
-    sourceNamespace: operator-lifecycle-manager
+    sourceNamespace: openshift-operator-lifecycle-manager
   - channel: stable
     namespace: openshift-operators
     name: cluster-manager
     source: operatorhubio-catalog
-    sourceNamespace: operator-lifecycle-manager
+    sourceNamespace: openshift-operator-lifecycle-manager
   - name: grafana-operator
     namespace: openshift-operators
     channel: v5
     source: operatorhubio-catalog
-    sourceNamespace: operator-lifecycle-manager
+    sourceNamespace: openshift-operator-lifecycle-manager
 #  channel: stable
 #  name: klusterlet
 #  source: operatorhubio-catalog
-#  sourceNamespace: operator-lifecycle-manager # olm
+#  sourceNamespace: openshift-operator-lifecycle-manager # olm

@@ -32,4 +32,4 @@ jobs:
           #  gator = "3.17.1"
           # working_directory: app # [default: .] directory to run mise in
       - name: Validate manifests
-        run: ./scripts/validate.sh
+        run: ./tools/validate.sh

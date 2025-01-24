@@ -5,7 +5,7 @@ GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
 MONITORING_NS=openshift-user-workload-monitoring
 OPERATORS_NS=openshift-operators
-OLM_NS=olm
+# OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
 ENV=local
 AMTOOL_OUTPUT=simple
@@ -19,7 +19,7 @@ help:  ## Display this help
 
 .PHONY: gen-keys
 gen-keys: ## Generate ssh keys
-	./script/gen-keys.sh
+	./tools/gen-keys.sh
 
 .PHONY: gh-add-deploy-key
 gh-add-deploy-key: ## Add Deployment key to github
@@ -108,14 +108,14 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
 	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
-	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST)
+	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST) || true
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
 		--from-literal env=$(ENV) \
 		--from-literal repo=https://github.com/deas/argocd-conductr.git \
 		--from-literal server=https://kubernetes.default.svc \
 		--dry-run=client -o yaml | $(KUBECTL) apply -f -
 	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
-	$(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster
+	$(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster || true
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
@@ -128,10 +128,9 @@ argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with H
 
 .PHONY: argcd-olm-install-basic
 argcd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
-	helm upgrade --install --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml \
-		--set subscriptions[0].sourceNamespace=olm
+	helm upgrade -i --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml
 	kubectl -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
-	kustomize build apps/infra/argo-cd/envs/spoke | kubectl apply -f - # TODO $(ENV)
+	kustomize build apps/infra/argo-cd/envs/$(ENV) | kubectl apply -f -
 	kubectl -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
 #	--set operatorsNamespace=openshift-operators --set subscriptions[0].sourceNamespace=openshift-operator-lifecycle-manager
 
@@ -194,7 +193,9 @@ get-mon-webhook-logs: ## Get monitoring webhook	logs
 
 .PHONY: olmv0-install
 olmv0-install: ## Ad hoc install olmv0
-	curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.30.0/install.sh | bash -s v0.30.0
+	helm upgrade -i olm oci://ghcr.io/cloudtooling/helm-charts/olm --version 0.30.0 -f tf/values-olm.yaml
+	# Shell based install not in harmony with openshift
+	# curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.30.0/install.sh | bash -s v0.30.0
 
 .PHONY: olmv1-install
 olmv1-install: ## Ad hoc install olmv1

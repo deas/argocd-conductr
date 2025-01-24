@@ -207,7 +207,7 @@ should give you some help.
 
 If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder. The terraform module supports deployment to `kind` clusters.
 
-Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./scripts/gen-keys.sh) in case you'd like to use `sops` instead).
+Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./tools/gen-keys.sh) in case you'd like to use `sops` instead).
 
 If using github, you may want to disable github actions and/or add a public deployment key.
 

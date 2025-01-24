@@ -7,7 +7,7 @@ spec:
   channel: alpha
   name: argocd-operator
   source: operatorhubio-catalog
-  sourceNamespace: operator-lifecycle-manager # olm
+  sourceNamespace: openshift-operator-lifecycle-manager
   config:
     env:
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
