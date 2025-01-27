@@ -9,10 +9,14 @@ OPERATORS_NS=openshift-operators
 # OLM_NS=openshift-operator-lifecycle-manager
 ENV=local
 AMTOOL_OUTPUT=simple
+# # Use the bootstrap manifest for secrets which are not in git
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
+BOOTSTRAP_SEALED_SECRET=apps/infra/private/base/sealedsecret-argocd-repo.yaml
 
 .DEFAULT_GOAL := help
 
+# TODO: Unify naming of targets wrt verbs/nouns
+#
 .PHONY: help
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -107,22 +111,27 @@ patch-openshift-htpass: ## Patch OpenShift OAuth (Beware: Nukes default auth on 
 .PHONY: argocd-install-basic-common
 argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
-	[ -e "keys/$(GPG_KEY)-priv.asc" ] && $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc || true
-	[ -e "$(BOOTSTRAP_MANIFEST)" ] && $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST) || true
-	$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
-		--from-literal env=$(ENV) \
-		--from-literal repo=https://github.com/deas/argocd-conductr.git \
-		--from-literal server=https://kubernetes.default.svc \
-		--dry-run=client -o yaml | $(KUBECTL) apply -f -
+	if [ -e "keys/$(GPG_KEY)-priv.asc" ] ; then $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc ; fi 
+	if [ -e "$(BOOTSTRAP_MANIFEST)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST) ; fi
+	# TODO: Unsure whether we want env-config for AppSets in repo
+	#$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
+	#	--from-literal env=$(ENV) \
+	#	--from-literal repo=https://github.com/deas/argocd-conductr.git \
+	#	--from-literal server=https://kubernetes.default.svc \
+	#	--dry-run=client -o yaml | $(KUBECTL) apply -f -
 	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
-	$(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster || true
+	# $(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster || true
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
-#	$(KUBECTL) apply -f assets/scc-argocd.yaml
-#   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
+	# TODO: DRY: Could pull sealed secrets bits from ArgoCD appset
+	# helm upgrade -i --repo https://bitnami-labs.github.io/sealed-secrets sealed-secrets sealed-secrets -n kube-system --version 2.16.1 -f apps/infra/sealed-secrets/values.yaml \
+	#	--set metrics.serviceMonitor.enabled=false
+	# if [ -e "$(BOOTSTRAP_SEALED_SECRET)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_SEALED_SECRET) ; fi 
 
 .PHONY: argocd-helm-install-basic
 # TODO: A bit overlap with terraform 
 argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with Helm
+#	$(KUBECTL) apply -f assets/scc-argocd.yaml
+#   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/local/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
 
@@ -132,7 +141,10 @@ argcd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
 	kubectl -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
 	kustomize build apps/infra/argo-cd/envs/$(ENV) | kubectl apply -f -
 	kubectl -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
-#	--set operatorsNamespace=openshift-operators --set subscriptions[0].sourceNamespace=openshift-operator-lifecycle-manager
+
+.PHONY: argocd-sealed-secret-create
+argocd-sealed-secret-create: ## Create sealed secret for argo cd repo
+	kubeseal -n $(ARGOCD_NS) --cert assets/kubeseal.pem --format yaml < keys/secret-argocd-repo.yaml > apps/infra/private/base/sealedsecret-argocd-repo.yaml
 
 .PHONY: argocd-apply-root
 argocd-apply-root: ## Apply argocd root application
@@ -156,9 +168,15 @@ gator-verify: target ## Gator verify templates and constraints
 	kustomize build apps/infra/gatekeeper-library/envs/$(ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
 	gator verify apps/infra/gatekeeper-library/...
 
-.PHONY: set-gitops-branch
-set-gitops-branch: ## Set gitops branch to current
-	branch=$$(git rev-parse --abbrev-ref HEAD); find envs -iname "*.yaml" | while read f ; do sed -i "s/evision: \"*[a-z].*/evision: $${branch}/g" "$${f}"; done
+.PHONY: set-gitops-rev
+set-gitops-rev: ## Set gitops REV - defaults to current
+	if [ -n "$(REV)" ] ; then rev=$(REV); else rev=$$(git rev-parse --abbrev-ref HEAD); fi ; \
+	find envs -iname "*.yaml" | while read f ; do sed -i "s/evision: \"*[a-z].*/evision: $${rev}/g" "$${f}"; done
+
+.PHONY:set-gitops-repo
+set-gitops-repo: ## Set gitops repo to NEW_URL
+	if [ -z "$(NEW_URL)" ] ; then echo "NEW_URL must not be empty"; exit 1; fi
+	old_url=$$(grep repoURL: envs/local/app-root.yaml | sed -e s,'.*repoURL: ',,g); find envs -iname "*.yaml" | while read f ; do sed -i "s,$${old_url},$(NEW_URL),g" "$${f}"; done
 
 .PHONY: install-tools
 install-tools: ## Install all the tools
