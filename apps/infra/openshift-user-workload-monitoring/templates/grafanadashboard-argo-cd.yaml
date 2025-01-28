@@ -8,6 +8,6 @@ spec:
     matchLabels:
       dashboards: "grafana"
   configMapRef:
-    name: dashboards-misc
-    key: dashboard-argo-cd.json
+    name: misc-dashboards
+    key: argo-cd-dashboard.json
 {{- end }}

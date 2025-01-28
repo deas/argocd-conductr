@@ -1,9 +1,0 @@
-operator: true
-openshift: false
-
-# Default values for monitoring.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-rule:
-  argocdAppSyncs:
-    for: "10m"

@@ -1,0 +1,7 @@
+operator: true
+openshift: false
+nameOverride: ""
+fullnameOverride: ""
+rule:
+  argocdAppSyncs:
+    for: "10m"

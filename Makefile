@@ -72,10 +72,10 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
 	helm template --release-name monitoring apps/infra/monitoring -n $(MONITORING_NS)  \
-		-f apps/infra/monitoring/values.yaml -f apps/infra/monitoring/envs/$(ENV)/values.yaml \
+		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ENV)/values.yaml \
 	| yq 'select(.kind == "PrometheusRule")' \
-	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/monitoring/prom-test-rules.yaml
-	cd apps/infra/monitoring && promtool test rules test.yaml
+	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/openshift-user-workload-monitoring/prom-test-rules.yaml
+	cd apps/infra/openshift-user-workload-monitoring && promtool test rules test.yaml
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
@@ -182,12 +182,12 @@ set-gitops-repo: ## Set gitops repo to NEW_URL
 install-tools: ## Install all the tools
 	mise install
 
-.PHONY: create-dashboard-configmaps
-create-dashboard-configmaps: ## Create dashboard ConfigMaps
-	$(KUBECTL) -n $(MONITORING_NS) create configmap dashboards-misc --from-file=./apps/infra/monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
-	@echo
-	@echo "Make sure to add label for grafana sidecar"
-	@echo
+#.PHONY: create-dashboard-configmaps
+#create-dashboard-configmaps: ## Create dashboard ConfigMaps
+#	$(KUBECTL) -n $(MONITORING_NS) create configmap dashboards-misc --from-file=./apps/infra/openshift-user-workload-monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
+#	@echo
+#	@echo "Make sure to add label for grafana sidecar"
+#	@echo
 
 .PHONY: show-alerts
 show-alerts: ## Show firing alerts
