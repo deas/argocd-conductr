@@ -71,7 +71,7 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
-	helm template --release-name monitoring apps/infra/monitoring -n $(MONITORING_NS)  \
+	helm template --release-name monitoring apps/infra/openshift-user-workload-monitoring -n $(MONITORING_NS)  \
 		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ENV)/values.yaml \
 	| yq 'select(.kind == "PrometheusRule")' \
 	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/openshift-user-workload-monitoring/prom-test-rules.yaml
