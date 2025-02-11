@@ -15,6 +15,11 @@ subscriptions:
     name: cluster-manager
     source: operatorhubio-catalog
     sourceNamespace: openshift-operator-lifecycle-manager
+  - name: cert-manager
+    namespace: openshift-operators
+    channel: stable
+    source: operatorhubio-catalog
+    sourceNamespace: openshift-operator-lifecycle-manager
   - name: grafana-operator
     namespace: openshift-operators
     channel: v5

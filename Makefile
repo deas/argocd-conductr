@@ -135,10 +135,11 @@ argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with H
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/local/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
 
 
-.PHONY: argcd-olm-install-basic
-argcd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
+.PHONY: argocd-olm-install-basic
+argocd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
 	helm upgrade -i --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml
 	kubectl -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
+	./tools/wait-for-k8s.sh crd/argocds.argoproj.io banane 60 # TODO : There should be a better way
 	kustomize build apps/infra/argo-cd/envs/$(ENV) | kubectl apply -f -
 	kubectl -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
 
@@ -195,15 +196,26 @@ show-alerts: ## Show firing alerts
 
 .PHONY: argocd-disable-sync
 argocd-disable-sync: ## Disable sync for all argo cd apps
-	argocd app set root --sync-policy none
+	for app in argo-cd root; do \
+		argocd app set $$app --sync-policy none; \
+	done
 	for appset in $$(kubectl get applicationsets -n argocd -o name); do \
 		kubectl patch $$appset -n argocd --type merge -p '{"spec":{"template":{"spec":{"syncPolicy":{"automated": null}}}}}'; \
 	done
 
 .PHONY: argocd-enable-sync
 argocd-enable-sync: ## Enable sync for all argo cd apps
-	argocd app set root --sync-policy auto 
-	argocd app sync root
+	for app in argo-cd root; do \
+		argocd app set $$app --sync-policy auto ; \
+		argocd app sync $$app; \
+	done
+
+.PHONY: argocd-remove-appsets-only
+argocd-remove-appsets-only: ## Remove appsets only
+	$(KUBECTL) -n $(ARGOCD_NS) patch argocd argocd --type=merge -p='{"spec":{"applicationSet":{"enabled":false}}}'
+	$(KUBECTL) -n $(ARGOCD_NS) wait --for=jsonpath='{.status.applicationSetController}'=Unknown argocd/argocd
+	$(KUBECTL) -n $(ARGOCD_NS) get applications -o name | xargs -r -I {} kubectl -n $(ARGOCD_NS) patch {} --type=json -p='{"metadata":{"ownerReferences":null}}' --type merge
+	$(KUBECTL) -n $(ARGOCD_NS) get applicationset -o name | xargs -r kubectl -n $(ARGOCD_NS) delete
 
 .PHONY: get-mon-webhook-logs
 get-mon-webhook-logs: ## Get monitoring webhook	logs

@@ -70,10 +70,10 @@ spec:
                 #   repoURL: https://litmuschaos.github.io/litmus-helm/
                 #   namespace: litmus
                 #   targetRevision: "3.14.*"
-                - appName: cert-manager
-                  repoURL: https://charts.jetstack.io
-                  namespace: cert-manager
-                  targetRevision: "1.16.*"
+                #- appName: cert-manager
+                #  repoURL: https://charts.jetstack.io
+                #  namespace: cert-manager
+                #  targetRevision: "1.16.*"
                 - appName: submariner-k8s-broker
                   repoURL: https://submariner-io.github.io/submariner-charts/charts
                   namespace: submariner-k8s-broker
