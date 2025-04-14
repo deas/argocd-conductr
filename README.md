@@ -1,5 +1,7 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a id="readme-top"></a>
+
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -71,6 +73,7 @@
 </details>
 
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 <!--
@@ -83,7 +86,7 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 The primary goal of this project is to exercise with Argo CD based [GitOps](https://gitops.tech) deployment covering the full cycle - up to production via promotion, if you want to. Experimentation and production should not conflict.
 
-The change process starts at localhost. Hence, we consider `kind` experience very important. Given that, some elements may be useful in CI context. Most things, should play nice  productive environments as well.
+The change process starts at localhost. Hence, we consider `kind` experience very important. Given that, some elements may be useful in CI context. Most things, should play nice productive environments as well.
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections -->
 <details>
@@ -91,6 +94,7 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 </summary>
 
 ![Demo](./assets/demo.gif)
+
 </details>
 
 ### Goals
@@ -112,11 +116,11 @@ We use single level environment staging with one cluster per environment. We do 
 
 We prefer Pull over Push.
 
-We focus on one "Platform Team" managing many clusters using a single repo. It should enable ArgoCD embedding for Application verticals.  
+We focus on one "Platform Team" managing many clusters using a single repo. It should enable ArgoCD embedding for Application verticals.
 
 Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
 
-OLM footprint has a bigger footprint than helm and it comes with its own set of issues as well. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM)  `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens. Hence, we default  to bring in OLM when it is not there initially (such as on `kind`).
+OLM footprint has a bigger footprint than helm and it comes with its own set of issues as well. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM) `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens. Hence, we default to bring in OLM when it is not there initially (such as on `kind`).
 
 ### Features
 
@@ -162,6 +166,7 @@ Beyond deployments, we feature:
 -->
 
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 Some opinions first:
@@ -179,8 +184,8 @@ Some opinions first:
 - Rebuilding whole things automatically from scratch matters a lot. Drift kicks in fast and it helps with Recovery.
 - Bootstrapping OLM is painful - thanks god, there is a [helm chart](https://github.com/CloudTooling/k8s-olm) these days.
 - Using Kubernetes bits in Terraform (e.g. `helm`, `kustomize`, `kubectl`, `kubernetes` providers), only use the bare minimum (because deps are painful)
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+  This is an example of how you may give instructions on setting up your project locally.
+  To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
@@ -235,12 +240,15 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- TODO -->
+
 ## TODO
+
 <!--
 - [ ] Feature 1
 - [ ] Feature 3
     - [ ] Nested Feature
 -->
+
 - [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
 - Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
 - ~~Introduce proper GitOps time travel support (tags/hashes)~~
@@ -266,7 +274,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - ~~metrics-server~~
 - contour?
 - ~~cilium~~
-- ~~OPA Policies: _Gatekeeper vs usage in CI~~
+- ~~OPA Policies: \_Gatekeeper vs usage in CI~~
 - kubeconform in CI
 - Argo CD +/vs ACM/open cluster management
 - Notifications Sync alerts Slack/Matrix
@@ -285,7 +293,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Consider migrating `make` to `just`
 - Dedupe/Modularize `Makefile`/`Justfile`
 - [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
-See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
+  See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
 - [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
 - Argo CD rbac/multi tenancy?
 - ACM appears to auto approve CSRs. Open source auto-approvers appear to specifically target cert-manager (CRD) or kubelet. Introduce [`csr-approver`](https://github.com/deas/csr-approver)
@@ -323,8 +331,10 @@ See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full
 - <https://dev.to/callepuzzle/secrets-in-argocd-with-sops-fc9>
 - [Argo CD Application Dependencies](https://codefresh.io/blog/argo-cd-application-dependencies/)
 - [Progressive Syncs (alpha)](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/)
+- [Custom Root CAs in OpenShift](https://kenmoini.com/post/2022/02/custom-root-ca-in-openshift/)
 
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -348,6 +358,7 @@ Don't forget to give the project a star! Thanks again!
 -->
 
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.

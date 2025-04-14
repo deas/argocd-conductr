@@ -88,6 +88,11 @@ spec:
                   repoURL: https://github.com/deas/csr-approver.git
                   targetRevision: main
                   chartPath: charts/csr-approver
+                # Using kustomize native helm for reflector due to openshift scc augmentation
+                #- appName: reflector
+                #  repoURL: https://emberstack.github.io/helm-charts
+                #  namespace: reflector
+                #  targetRevision: "9.0.*"
             # TODO: Customized local charts need templatePath below
             #- appName: submariner-operator
             #  namespace: submariner-operator

@@ -1,0 +1,9 @@
+helmCharts:
+  - name: reflector
+    repo: https://emberstack.github.io/helm-charts
+    version: 9.0.322
+    releaseName: reflector
+    namespace: reflector
+    valuesFile: values.yaml
+resources:
+  - ./ns.yaml

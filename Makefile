@@ -1,5 +1,6 @@
 KUBECTL=kubectl
-CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
+# CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
+CA_FILES_ROOT=apps/infra/openshift-config
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
@@ -79,10 +80,19 @@ test-prom-rules: target ## Unit test prometheus rules
 
 # /usr/local/share/ca-certificates/extra/mitmproxy-ca-cert.crt
 .PHONY: create-ca-res
-create-ca-res: target/manifest-ca-certs.yaml
+create-ca-res: $(CA_FILES_ROOT)/base/configmap-user-ca-bundle.yaml
 
+.PHONY: create-user-ca-certs-res
+create-user-ca-certs-res: $(CA_FILES_ROOT)/base/configmap-user-ca-bundle.yaml ## Create User CA bundle
+
+# TODO: Don't dupe certs things
 target/manifest-ca-certs.yaml: target ## Recreate ca certs manifests
-	cat $(CA_CERTS_FILE) | $(KUBECTL) create configmap ca-certs --from-file=ca-certificates.crt=/dev/stdin --dry-run=client -o yaml > target/manifest-ca-certs.yaml
+	cat $(CA_FILES_ROOT)/*.crt | $(KUBECTL) create configmap ca-certs --from-file=ca-certificates.crt=/dev/stdin --dry-run=client -o yaml > target/manifest-ca-certs.yaml
+
+$(CA_FILES_ROOT)/base/configmap-user-ca-bundle.yaml: target ## Create openshift user ca cert manifests bundle
+	cat $(CA_FILES_ROOT)/*.crt | $(KUBECTL) -n openshift-config create configmap user-ca-bundle --dry-run=client -o yaml --from-file=ca-bundle.crt=/dev/stdin \
+		| yq eval '.metadata.annotations += {"reflector.v1.k8s.emberstack.com/reflection-allowed": "true","reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true", "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces": ".*"}' \
+	  > $@
 
 .PHONY: argocd-recreate-ca-res
 argocd-recreate-ca-res: target/manifest-ca-certs.yaml ## Re-create ArgoCD ca certs
