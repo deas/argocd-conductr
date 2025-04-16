@@ -1,0 +1,37 @@
+apiVersion: v1
+data:
+  ca-bundle.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIEIzCCAwugAwIBAgIUPF+mB/2LYpYKH5/up1gT/BBcZTkwDQYJKoZIhvcNAQEL
+    BQAwWzELMAkGA1UEBhMCREUxEDAOBgNVBAgMB0hhbWJ1cmcxEDAOBgNVBAcMB0hh
+    bWJ1cmcxEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCk15IFJvb3QgQ0Ew
+    HhcNMjUwNDE2MDQ1NjQ2WhcNMzUwNDE0MDQ1NjQ2WjBbMQswCQYDVQQGEwJERTEQ
+    MA4GA1UECAwHSGFtYnVyZzEQMA4GA1UEBwwHSGFtYnVyZzETMBEGA1UECgwKTXkg
+    Q29tcGFueTETMBEGA1UEAwwKTXkgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQAD
+    ggEPADCCAQoCggEBAJKwAQExzcNXPXOpTB4Oup6yacmhXUjG38oHraVfX+K3883+
+    DS2URhlTc57qFgeRU0t2wD9+FQX0JQHnS1L3d/1NFj6q/1oDhi3iBr0Ju51fGcL+
+    KDxaoshzDzj4qBp13sfqIgnjh1pXOM7rHECoToSIyoS/3o2OsnlNC73XGT2AiFQJ
+    7ic1s7T6KHrGAvgyDm4B7VPwRdWpgDTPrGMvdjD/28j0bTxutk88l9tz2mlTqARX
+    9qoPSUulXI/ljqH4cqet2XsUOyfzuhy0cD+Bp+Bq4AMmsgUC1tID7+lMhbQuuilM
+    s44gbSaRvogg2cpGrLmYKeR8Rg3s153ADaHZQnsCAwEAAaOB3jCB2zAdBgNVHQ4E
+    FgQUSq++kV2kml75S2vM/jCIlKNBzE8wgZgGA1UdIwSBkDCBjYAUSq++kV2kml75
+    S2vM/jCIlKNBzE+hX6RdMFsxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdIYW1idXJn
+    MRAwDgYDVQQHDAdIYW1idXJnMRMwEQYDVQQKDApNeSBDb21wYW55MRMwEQYDVQQD
+    DApNeSBSb290IENBghQ8X6YH/Ytilgofn+6nWBP8EFxlOTAPBgNVHRMBAf8EBTAD
+    AQH/MA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAQEAMyTd+qCL6qvj
+    hCYk5cx6nWcwW/R6C+OEgarawhteGwSImGPZyjjA0Drs8qes1OCIDPmwrhFKjCwc
+    1uvndk/bl37cuDwNhCbznz+qMdGJiaQkRKid+Ec57V0h9pKRZZJK92GYgk+/XfZd
+    d45ElTkSarMa+kEwKa4xqwhQ9PXUBJFSECS4NfX4+ZdSIwC4QhTYWkOWAWvK3+QD
+    97CLTwa6pwwGQnltrLyxJ569VetUp7J/UWF0VY+WGqWdYJfS1J/koku9unSu+z9P
+    Urvbyk6cTCIurUnfAtFrPPtXXItgB/pD/acZI+SVTpnc7Op7LSgRe/Gk9OYpGQrV
+    2hBNeg4VSw==
+    -----END CERTIFICATE-----
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: user-ca-bundle
+  namespace: openshift-config
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: .*

@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cluster 
+  # namespace: default
+spec:
+  ca:
+    # ClusterIssuer uses secret from the ns where it is running
+    # https://cert-manager.io/docs/reference/api-docs/#meta.cert-manager.io/v1.LocalObjectReference
+    secretName: custom-ca
+  #acme:
+  #  server: <acme-server-url>
+  #  email: <your-email>
+  #  privateKeySecretRef:
+  #   name: http-issuer-account-key
+  #  solvers:
+  #   - http01:
+  #       ingress:
+  #         class: <ingress-class>

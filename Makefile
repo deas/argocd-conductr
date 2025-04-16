@@ -1,6 +1,11 @@
 KUBECTL=kubectl
 # CA_CERTS_FILE=/etc/ssl/certs/ca-certificates.crt
 CA_FILES_ROOT=apps/infra/openshift-config
+CA_KEY=$(CA_FILES_ROOT)/ca-tls.key
+CA_CERT=$(CA_FILES_ROOT)/ca-tls.crt
+CA_SUBJ=/C=DE/ST=Hamburg/L=Hamburg/O=My Company/CN=My Root CA
+CA_CNF=$(CA_FILES_ROOT)/ca-tls.cnf
+
 SSH_PUB_KEY=keys/id_rsa-argocd-conductr.pub
 GPG_KEY=argocd-conductr
 ARGOCD_NS=argocd
@@ -21,6 +26,20 @@ BOOTSTRAP_SEALED_SECRET=apps/infra/private/base/sealedsecret-argocd-repo.yaml
 .PHONY: help
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+.PHONY: gen-ca-key
+gen-ca-key: ## Generate CA key
+	openssl genpkey -algorithm RSA -out "$(CA_KEY)"
+
+.PHONY: gen-ca-cert
+gen-ca-cert: ## Generate CA cert
+	openssl req -new -x509 -days 3650 -key "$(CA_KEY)" -out "$(CA_CERT)" -config "$(CA_CNF)" -subj "$(CA_SUBJ)"
+
+.PHONY: gen-ca-sealedsecret
+gen-ca-sealedsecret: ## Generate CA sealed secret
+	$(KUBECTL) create secret generic custom-ca --namespace=openshift-operators --from-file=tls.crt=$(CA_CERT) --from-file=tls.key=$(CA_KEY) --dry-run=client -o yaml \
+		| kubeseal -n openshift-operators --cert assets/kubeseal.pem --format yaml \
+		> apps/infra/private/base/sealedsecret-custom-ca.yaml
 
 .PHONY: gen-keys
 gen-keys: ## Generate ssh keys
