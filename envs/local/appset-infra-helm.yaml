@@ -83,6 +83,10 @@ spec:
                 #  repoURL: https://piraeus.io/helm-charts
                 #  namespace: snapshot-controller
                 #  targetRevision: "4.0.*"
+                - appName: vault-secrets-operator
+                  namespace: openshift-operators
+                  repoURL: https://helm.releases.hashicorp.com
+                  targetRevision: "0.10.*"
                 - appName: csr-approver
                   namespace: kube-system
                   repoURL: https://github.com/deas/csr-approver.git
