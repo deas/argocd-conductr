@@ -4,6 +4,29 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
+  # TODO: Beware of bootstrap failure caused by missing configmap
+  #repo:
+  #  sidecarContainers:
+  #    - name: cmp
+  #      command: [/var/run/argocd/argocd-cmp-server]
+  #      image: busybox
+  #      securityContext:
+  #        runAsNonRoot: true
+  #        runAsUser: 999
+  #      volumeMounts:
+  #        - mountPath: /var/run/argocd
+  #          name: var-files
+  #        - mountPath: /home/argocd/cmp-server/plugins
+  #          name: plugins
+  #        - mountPath: /tmp
+  #          name: tmp
+  #        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+  #          subPath: plugin.yaml
+  #          name: cmp-sample
+  #  volumes:
+  #    - configMap:
+  #        name: cmp-sample
+  #      name: cmp-sample
   # TODO: Needed for the Service Monitors. Appears it brings in an prometheus-argocd sts we don't want :/
   prometheus:
     enabled: true

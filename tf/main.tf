@@ -26,6 +26,8 @@ EOT
 "%s/tools/get-ocm-bs.sh"
 EOT
   , abspath(path.module))]
+  # TODO:: Fix confusing local/var naming
+  bootstrap_path = concat(var.bootstrap_path != null ? var.bootstrap_path : [], tolist(fileset(path.module, "../apps/infra/argo-cd/envs/${local.version_env}/configmap-cmp-**.yaml")))
 }
 
 resource "kind_cluster" "default" {
@@ -228,7 +230,7 @@ module "argocd_olm" {
     yaml_body    = file("${path.module}/../apps/infra/argo-cd-operator/base/subscription-argo-cd-operator.yaml")
     crd_dep_hack = data.kubernetes_resource.subscription_crd[0].object.metadata.name
   }
-  bootstrap_path   = var.bootstrap_path
+  bootstrap_path   = local.bootstrap_path
   cluster_manifest = var.env != null ? templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env }) : null
   additional_keys  = var.additional_keys
   # Beware of module level deps! Breads dynamic module internal bits (e.g. for_each) 
@@ -249,7 +251,7 @@ module "argocd_helm" {
     var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml") : "",
     file("${path.module}/../apps/infra/argo-cd/bootstrap-override-values.yaml")
   ]
-  bootstrap_path   = var.bootstrap_path
+  bootstrap_path   = local.bootstrap_path
   cluster_manifest = var.env != null ? templatefile("${path.module}/../envs/app-root.tmpl.yaml", { env = var.env }) : null
   additional_keys  = var.additional_keys
   # Keep the flux bits around for reference - for the moment

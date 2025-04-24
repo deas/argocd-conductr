@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - ./configmap-cmp-sample.yaml
+  - ./configmap-cmp-kustomized-helm.yaml
   - argocd-argocd.yaml
 # patchesStrategicMerge:
 #- version.yml

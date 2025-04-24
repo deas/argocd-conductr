@@ -84,9 +84,9 @@ variable "bootstrap_olm" {
   description = "Should the cluster have OLM before ArgoCD? (Openshift like)"
 }
 variable "bootstrap_path" {
-  type        = string
+  type        = list(string)
   default     = null
-  description = "Path to and additional boostrap manifest. Use this to inject decryption secrets."
+  description = "Path to and additional boostrap manifest. Use this to inject decryption secrets and other resources Argo CD depends on."
 }
 
 #variable "submariner_name" {
