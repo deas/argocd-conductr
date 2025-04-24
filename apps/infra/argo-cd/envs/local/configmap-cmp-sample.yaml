@@ -14,7 +14,11 @@ data:
       generate:
         command: [sh, -c, 'echo "{\"kind\": \"ConfigMap\", \"apiVersion\": \"v1\", \"metadata\": { \"name\": \"$ARGOCD_APP_NAME\", \"namespace\": \"$ARGOCD_APP_NAMESPACE\", \"annotations\": {\"Foo\": \"$FOO\", \"Bar\": \"baz\"}}}"']
       discover:
-        find:
-          command: [sh, -c, 'echo "FOUND"; exit 0']
+        fileName: "./cmp-sample.yaml"
+        #find:
+        ## This does the same thing as fileName, but it supports double-start (nested directory) glob patterns.
+        #  #glob: "**/Chart.yaml"
+        #  # produce non-empty output to standard out.
+        #  command: [sh, -c, 'echo "FOUND"; exit 0']
       allowConcurrency: true
       lockRepo: true
