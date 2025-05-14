@@ -83,6 +83,10 @@ spec:
                 #  repoURL: https://piraeus.io/helm-charts
                 #  namespace: snapshot-controller
                 #  targetRevision: "4.0.*"
+                - appName: vault
+                  namespace: vault
+                  repoURL: https://helm.releases.hashicorp.com
+                  targetRevision: "0.30.*"
                 - appName: vault-secrets-operator
                   namespace: openshift-operators
                   repoURL: https://helm.releases.hashicorp.com

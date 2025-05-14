@@ -65,7 +65,7 @@ age-create-key:
 #		kubectl create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=/dev/stdin
 
 create-age-secret:
-	cat ./key.txt | kubectl create secret generic sops-age --namespace=argocd \
+	cat ./key.txt | $(KUBECTL) create secret generic sops-age --namespace=argocd \
 		--from-file=key.txt=/dev/stdin
 
 .PHONY:
@@ -78,7 +78,7 @@ argocd-admin-login:  ## ArgoCD admin login
 #		$$(kubectl -n argocd get svc/argo-cd-argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 argocd-ensure-cluster-admin: ## Ensure ArgoCD sa can do anything
-	kubectl auth can-i create pod --as=system:serviceaccount:argocd:argocd-application-controller -n kube-system
+	$(KUBECTL) auth can-i create pod --as=system:serviceaccount:argocd:argocd-application-controller -n kube-system
 
 argocd-deploy: ## ArgoCD deploy guestbook
 	argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
@@ -167,10 +167,11 @@ argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with H
 .PHONY: argocd-olm-install-basic
 argocd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
 	helm upgrade -i --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml
-	kubectl -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
+	$(KUBECTL) -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
 	./tools/wait-for-k8s.sh crd/argocds.argoproj.io banane 60 # TODO : There should be a better way
-	kustomize build apps/infra/argo-cd/envs/$(ENV) | kubectl apply -f -
-	kubectl -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
+	kustomize build apps/infra/argo-cd/envs/$(ENV) | $(KUBECTL) apply -f -
+	$(KUBECTL) -n $(ARGOCD_NS) apply -f apps/infra/argo-cd/envs/$(ENV)/configmap-cluster-env.yaml
+	$(KUBECTL) -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
 
 .PHONY: argocd-sealed-secret-create
 argocd-sealed-secret-create: ## Create sealed secret for argo cd repo
@@ -229,7 +230,7 @@ argocd-disable-sync: ## Disable sync for all argo cd apps
 		argocd app set $$app --sync-policy none; \
 	done
 	for appset in $$(kubectl get applicationsets -n argocd -o name); do \
-		kubectl patch $$appset -n argocd --type merge -p '{"spec":{"template":{"spec":{"syncPolicy":{"automated": null}}}}}'; \
+		$(KUBECTL) patch $$appset -n argocd --type merge -p '{"spec":{"template":{"spec":{"syncPolicy":{"automated": null}}}}}'; \
 	done
 
 .PHONY: argocd-enable-sync
@@ -243,8 +244,8 @@ argocd-enable-sync: ## Enable sync for all argo cd apps
 argocd-remove-appsets-only: ## Remove appsets only
 	$(KUBECTL) -n $(ARGOCD_NS) patch argocd argocd --type=merge -p='{"spec":{"applicationSet":{"enabled":false}}}'
 	$(KUBECTL) -n $(ARGOCD_NS) wait --for=jsonpath='{.status.applicationSetController}'=Unknown argocd/argocd
-	$(KUBECTL) -n $(ARGOCD_NS) get applications -o name | xargs -r -I {} kubectl -n $(ARGOCD_NS) patch {} --type=json -p='{"metadata":{"ownerReferences":null}}' --type merge
-	$(KUBECTL) -n $(ARGOCD_NS) get applicationset -o name | xargs -r kubectl -n $(ARGOCD_NS) delete
+	$(KUBECTL) -n $(ARGOCD_NS) get applicationset -o name | xargs -r -I {} $(KUBECTL) -n $(ARGOCD_NS) patch {} --type=json -p='{"metadata":{"ownerReferences":null}}' --type merge
+	$(KUBECTL) -n $(ARGOCD_NS) get applicationset -o name | xargs -r $(KUBECTL) -n $(ARGOCD_NS) delete
 
 .PHONY: get-mon-webhook-logs
 get-mon-webhook-logs: ## Get monitoring webhook	logs

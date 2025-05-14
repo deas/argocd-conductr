@@ -1,23 +1,24 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cmp-sample
+  name: cmp-cluster-env
   namespace: argocd
 data:
+  # TODO: Hacky path ../.. - doing this to leverage kustomize based ApplicationSet
   plugin.yaml: |
     apiVersion: argoproj.io/v1alpha1
     kind: ConfigManagementPlugin
     metadata:
-      name: cmp-sample
+      name: cmp-cluster-env
     spec:
       version: v1.0
       generate:
-        command: [sh, -c, 'echo "{\"kind\": \"ConfigMap\", \"apiVersion\": \"v1\", \"metadata\": { \"name\": \"$ARGOCD_APP_NAME\", \"namespace\": \"$ARGOCD_APP_NAMESPACE\", \"annotations\": {\"Foo\": \"$FOO\", \"Bar\": \"baz\"}}}"']
+        command: [sh, -c , 'cat ../../values-cluster-env.yaml | envsubst | helm -n argocd template -f - ../..' ]
       discover:
-        fileName: "./cmp-sample.yaml"
+        fileName: "../../values-cluster-env.yaml"
         #find:
         ## This does the same thing as fileName, but it supports double-start (nested directory) glob patterns.
-        #  #glob: "**/Chart.yaml"
+        #  glob: "**/values-cluster-env.yaml"
         #  # produce non-empty output to standard out.
         #  command: [sh, -c, 'echo "FOUND"; exit 0']
       allowConcurrency: true

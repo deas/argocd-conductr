@@ -4,15 +4,25 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
+  # https://github.com/argoproj/argo-cd/discussions/12780
+  resourceTrackingMethod: annotation+label
   # TODO: Beware of bootstrap failure caused by missing configmap
   repo:
+    #mountsatoken: true
+    #serviceaccount: argocd-argocd-application-controller
     sidecarContainers:
       # TODO: For openshift cluster slug parameter, we should probably use a job generating the cm
       # and mount it here in the sidecar. This env appears to be available in native helm/kustomize/jsonnet
       # as well though
       - name: cmp
-        command: [/var/run/argocd/argocd-cmp-server]
-        image: busybox
+        command: [/var/run/argocd/argocd-cmp-server, --loglevel=debug]
+        image: dtzar/helm-kubectl
+        # image: deas/helm-kubectl
+        # command: [/usr/bin/argocd-cmp-server, --loglevel=debug]
+        # imagePullPolicy: Never
+        envFrom:
+          - configMapRef:
+              name: cluster-env
         securityContext:
           runAsNonRoot: true
           runAsUser: 999
@@ -25,11 +35,11 @@ spec:
             name: tmp
           - mountPath: /home/argocd/cmp-server/config/plugin.yaml
             subPath: plugin.yaml
-            name: cmp-sample
+            name: cmp-cluster-env
     volumes:
       - configMap:
-          name: cmp-sample
-        name: cmp-sample
+          name: cmp-cluster-env
+        name: cmp-cluster-env
   # TODO: Needed for the Service Monitors. Appears it brings in an prometheus-argocd sts we don't want :/
   prometheus:
     enabled: true

@@ -1,0 +1,11 @@
+# cat values.yaml | envsubst | helm template -f - .
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-env-sample
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster.labels" . | nindent 4 }}
+data:
+  DOMAIN: {{ .Values.domain }}
+

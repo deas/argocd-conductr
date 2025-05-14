@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
-  - ./configmap-cmp-sample.yaml
+  - ./configmap-cmp-cluster-env.yaml
   - ./configmap-cmp-kustomized-helm.yaml
   - argocd-argocd.yaml
 # patchesStrategicMerge:

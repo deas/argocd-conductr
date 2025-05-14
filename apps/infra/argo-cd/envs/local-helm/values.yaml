@@ -12,6 +12,7 @@ configs:
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
+    application.resourceTrackingMethod: "annotation+label"
     configManagementPlugins: |
       - name: kustomized-helm
         init:
