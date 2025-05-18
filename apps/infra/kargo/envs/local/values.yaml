@@ -1,0 +1,5 @@
+api:
+  adminAccount:
+    # password: kargo
+    passwordHash: $2y$10$4wCSIYSIrzr7OgGwQlBfH.QpP1U2qNNoG9olYkDrYWOrOGDQt1wOa
+    tokenSigningKey: pPb0HlkD0Km5jWmhpERWNuIBOOw5Wcj2
