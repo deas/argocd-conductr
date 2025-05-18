@@ -59,7 +59,7 @@ spec:
                   namespace: crossplane-system
                   targetRevision: "1.17.*"
                 - appName: kro
-                  repoURL: ghcr.io/kro-run/kro/kro
+                  repoURL: ghcr.io/kro-run/kro
                   namespace: kro
                   targetRevision: "0.2.3"
                 - appName: kargo

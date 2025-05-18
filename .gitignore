@@ -23,3 +23,6 @@ apps/infra/monitoring/prom-test-rules.yaml
 tf/examples/spoke/argocd-conductr-spoke-config
 tf/argocd-conductr-config
 .devenv/
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4
