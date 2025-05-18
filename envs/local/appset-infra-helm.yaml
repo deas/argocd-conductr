@@ -58,6 +58,10 @@ spec:
                   repoURL: https://charts.crossplane.io/stable
                   namespace: crossplane-system
                   targetRevision: "1.17.*"
+                - appName: kro
+                  repoURL: ghcr.io/kro-run/kro/kro
+                  namespace: kro
+                  targetRevision: "0.2.3"
                 - appName: kargo
                   repoURL: ghcr.io/akuity/kargo-charts
                   namespace: kargo
