@@ -59,7 +59,7 @@ spec:
                   namespace: crossplane-system
                   targetRevision: "1.17.*"
                 - appName: kargo
-                  repoURL: oci://ghcr.io/akuity/kargo-charts/kargo
+                  repoURL: ghcr.io/akuity/kargo-charts/kargo
                   namespace: kargo
                   targetRevision: "1.5.0"
                 - appName: gatekeeper
