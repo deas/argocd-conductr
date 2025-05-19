@@ -66,6 +66,10 @@ spec:
                   repoURL: ghcr.io/akuity/kargo-charts
                   namespace: kargo
                   targetRevision: "1.5.0"
+                - appName: exxternal-secrets-operator
+                  repoURL: https://charts.external-secrets.io
+                  namespace: external-secrets
+                  targetRevision: "0.16.*"
                 - appName: gatekeeper
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
