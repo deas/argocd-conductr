@@ -15,6 +15,11 @@ subscriptions:
     name: cluster-manager
     source: operatorhubio-catalog
     sourceNamespace: openshift-operator-lifecycle-manager
+  - name: external-secrets-operator
+    namespace: openshift-operators
+    channel: alpha
+    source: operatorhubio-catalog
+    sourceNamespace: openshift-operator-lifecycle-manager
   - name: cert-manager
     namespace: openshift-operators
     channel: stable
