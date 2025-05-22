@@ -1,6 +1,7 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
-  version_env       = var.env != null ? var.env : "local"
+  version_env       = var.argo_env != null ? var.argo_env : "local"
+  # argo_env          = var.argo_env ? var.argo_env : "local"
   # TODO: Whoa! The ultimate mess. Can we do better?
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)

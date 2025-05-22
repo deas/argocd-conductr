@@ -1,6 +1,12 @@
 variable "env" {
   type        = string
-  description = "The environment key to use to kickoff the ArgoCD deployments."
+  description = "The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster."
+  default     = "localhost"
+}
+
+variable "argo_env" {
+  type        = string
+  description = "The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters."
   default     = "local"
 }
 
