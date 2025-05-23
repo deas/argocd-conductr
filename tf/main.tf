@@ -226,7 +226,7 @@ module "argocd_olm" {
   count           = var.argocd_install == "olm" ? 1 : 0
   source          = "github.com/deas/terraform-modules//argocd-olm?ref=main"
   namespace       = "argocd"
-  argocd_instance = file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/argocd-argocd.yaml")
+  argocd_instance = file("${path.module}/../apps/infra/argo-cd/envs/${var.argo_env}/argocd-argocd.yaml")
   subscription = {
     yaml_body    = file("${path.module}/../apps/infra/argo-cd-operator/base/subscription-argo-cd-operator.yaml")
     crd_dep_hack = data.kubernetes_resource.subscription_crd[0].object.metadata.name
@@ -249,7 +249,7 @@ module "argocd_helm" {
   chart_version = local.argocd_chart_version
   values = [
     file("${path.module}/../apps/infra/argo-cd/values.yaml"),
-    var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml") : "",
+    var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.argo_env}/values.yaml") : "",
     file("${path.module}/../apps/infra/argo-cd/bootstrap-override-values.yaml")
   ]
   bootstrap_path   = local.bootstrap_path
