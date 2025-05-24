@@ -92,9 +92,13 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 
 
 .PHONY: test
-test: # Execute go tests
+test: ## Execute go tests
 	go test ./... -coverprofile cover.out
 # -v
+
+.PHONY: test-watch
+test-watch: ## Watch tests
+	ginkgo watch ./...
 
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
