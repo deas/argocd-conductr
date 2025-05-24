@@ -90,6 +90,12 @@ argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ARGO_ENV)/values.yaml \
 	| yq 'select(.kind == "ServiceMonitor")'
 
+
+.PHONY: test
+test: # Execute go tests
+	go test ./... -coverprofile cover.out
+# -v
+
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
 	helm template --release-name monitoring apps/infra/openshift-user-workload-monitoring -n $(MONITORING_NS)  \
@@ -192,7 +198,8 @@ fmt: ## Format
 	terraform fmt --check --recursive
 
 .PHONY: lint
-lint: ## Lint
+lint: ## Lint go/terraform
+	go vet ./...
 	tflint --recursive
 
 .PHONY: gator-verify
