@@ -249,6 +249,8 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
     - [ ] Nested Feature
 -->
 
+- Environment propagation : Try [Kargo](https://kargo.io)
+- Try [kro](https://kro.io)
 - [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
 - Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
 - ~~Introduce proper GitOps time travel support (tags/hashes)~~
@@ -278,7 +280,6 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - kubeconform in CI
 - Argo CD +/vs ACM/open cluster management
 - Notifications Sync alerts Slack/Matrix
-- Environment propagation
 - [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)?
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
 - Proper cascaded removal. Argo CD should be last. Will likely involve terraform.
