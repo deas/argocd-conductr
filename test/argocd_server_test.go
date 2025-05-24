@@ -29,7 +29,7 @@ var _ = Describe("Argo Server Deployment", func() {
 	})
 
 	It("should have the desired number of replicas", func() {
-		deploymentName := "argo-server"
+		deploymentName := "argocd-server"
 		namespace := "argocd"
 
 		// Get the deployment
