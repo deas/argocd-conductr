@@ -46,6 +46,10 @@
 #     container_port = 30580
 #     host_port      = 10280 # Hubble-UI
 #   }
+#   {
+#     container_port = 31080
+#     host_port      = 11080 # ArgoCD Server
+#   }
 # ]
 #
 # https://dev.to/maelvls/pull-through-docker-registry-on-kind-clusters-cpo

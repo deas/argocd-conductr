@@ -1,6 +1,7 @@
 locals {
   kind_cluster_name = var.kind_cluster_name != null ? var.kind_cluster_name : null
-  version_env       = var.env != null ? var.env : "local"
+  version_env       = var.argo_env != null ? var.argo_env : "local"
+  # argo_env          = var.argo_env ? var.argo_env : "local"
   # TODO: Whoa! The ultimate mess. Can we do better?
   cilium_app     = try([for app in yamldecode(file(var.cilium_appset_path))["spec"]["generators"][0]["matrix"]["generators"][0]["list"]["elements"] : app if app.appName == var.cilium_name][0], null)
   cilium_version = try(local.cilium_app["targetRevision"], null)
@@ -50,6 +51,19 @@ resource "kind_cluster" "default" {
           container_path = extra_mounts.value["container_path"]
           host_path      = extra_mounts.value["host_path"]
         }
+      }
+      dynamic "extra_port_mappings" {
+        for_each = var.extra_port_mappings
+        content {
+          container_port = extra_port_mappings.value["container_port"]
+          host_port      = extra_port_mappings.value["host_port"]
+        }
+        # optional: set the bind address on the host
+        # 0.0.0.0 is the current default
+        # listen_address = "127.0.0.1"
+        # optional: set the protocol to one of TCP, UDP, SCTP.
+        # TCP is the default
+        # protocol =  "TCP"
       }
     }
     runtime_config = {}
@@ -225,7 +239,7 @@ module "argocd_olm" {
   count           = var.argocd_install == "olm" ? 1 : 0
   source          = "github.com/deas/terraform-modules//argocd-olm?ref=main"
   namespace       = "argocd"
-  argocd_instance = file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/argocd-argocd.yaml")
+  argocd_instance = file("${path.module}/../apps/infra/argo-cd/envs/${var.argo_env}/argocd-argocd.yaml")
   subscription = {
     yaml_body    = file("${path.module}/../apps/infra/argo-cd-operator/base/subscription-argo-cd-operator.yaml")
     crd_dep_hack = data.kubernetes_resource.subscription_crd[0].object.metadata.name
@@ -248,7 +262,7 @@ module "argocd_helm" {
   chart_version = local.argocd_chart_version
   values = [
     file("${path.module}/../apps/infra/argo-cd/values.yaml"),
-    var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.env}/values.yaml") : "",
+    var.env != null ? file("${path.module}/../apps/infra/argo-cd/envs/${var.argo_env}/values.yaml") : "",
     file("${path.module}/../apps/infra/argo-cd/bootstrap-override-values.yaml")
   ]
   bootstrap_path   = local.bootstrap_path

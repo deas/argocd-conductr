@@ -58,6 +58,18 @@ spec:
                   repoURL: https://charts.crossplane.io/stable
                   namespace: crossplane-system
                   targetRevision: "1.17.*"
+                - appName: kro
+                  repoURL: ghcr.io/kro-run/kro
+                  namespace: kro
+                  targetRevision: "0.2.3"
+                - appName: kargo
+                  repoURL: ghcr.io/akuity/kargo-charts
+                  namespace: kargo
+                  targetRevision: "1.5.0"
+                - appName: external-secrets
+                  repoURL: https://charts.external-secrets.io
+                  namespace: external-secrets
+                  targetRevision: "0.16.*"
                 - appName: gatekeeper
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
@@ -87,15 +99,20 @@ spec:
                   namespace: vault
                   repoURL: https://helm.releases.hashicorp.com
                   targetRevision: "0.30.*"
-                - appName: vault-secrets-operator
-                  namespace: openshift-operators
-                  repoURL: https://helm.releases.hashicorp.com
-                  targetRevision: "0.10.*"
+                #- appName: vault-secrets-operator
+                #  namespace: openshift-operators
+                #  repoURL: https://helm.releases.hashicorp.com
+                #  targetRevision: "0.10.*"
                 - appName: csr-approver
                   namespace: kube-system
                   repoURL: https://github.com/deas/csr-approver.git
                   targetRevision: main
                   chartPath: charts/csr-approver
+                # TODO: Beware - non terraform cluster setup needs to provide proper CNI
+                - appName: cilium
+                  repoURL: https://helm.cilium.io
+                  namespace: kube-system
+                  targetRevision: "1.17.3" # Must not be floating - used in terraform
                 # Using kustomize native helm for reflector due to openshift scc augmentation
                 #- appName: reflector
                 #  repoURL: https://emberstack.github.io/helm-charts
@@ -107,9 +124,6 @@ spec:
             #  targetRevision: main
             #  path:
             #    "apps/infra/submariner-operator"
-            #   repoURL: https://helm.cilium.io
-            #   namespace: kube-system
-            #   targetRevision: "1.16.2" # Must not be floating - used in terraform
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: main

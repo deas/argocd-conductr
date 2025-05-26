@@ -1,6 +1,12 @@
 variable "env" {
   type        = string
-  description = "The environment key to use to kickoff the ArgoCD deployments."
+  description = "The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster."
+  default     = "localhost"
+}
+
+variable "argo_env" {
+  type        = string
+  description = "The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters."
   default     = "local"
 }
 
@@ -101,6 +107,7 @@ variable "cilium_name" {
   default     = "cilium"
 }
 
+# TODO: Can probably be figured out/removed
 variable "cilium_appset_path" {
   type        = string
   description = "Path to the ArgoCD ApplicationSet to look up the Cilium Application. This is how we choose if we want the Cilium CNI in kind"
@@ -143,4 +150,7 @@ variable "extra_mounts" {
   description = "Extra mount points we want in kind nodes"
   default     = []
 }
-
+variable "extra_port_mappings" {
+  type    = list(map(string))
+  default = []
+}

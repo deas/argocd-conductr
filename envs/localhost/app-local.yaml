@@ -1,13 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: local
   namespace: argocd
   # Add this finalizer ONLY if you want these to cascade delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
-  annotations:
-    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
   #  env: local
   #  rev: main
   # Add labels to your application object.

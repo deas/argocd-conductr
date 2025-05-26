@@ -15,7 +15,8 @@ spec:
                 # - appName: olm
                 - appName: private
                 - appName: gatekeeper-library
-                - appName: cluster-manager
+                # TODO: cluster-manager does not play nice with single cluster kind
+                # - appName: cluster-manager
                 - appName: cluster
                 # - appName: klusterlet
                 - appName: ocm-policy-framework

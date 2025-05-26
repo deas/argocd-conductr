@@ -6,6 +6,14 @@ metadata:
 spec:
   # https://github.com/argoproj/argo-cd/discussions/12780
   resourceTrackingMethod: annotation+label
+  extraConfig:
+    # Add the apiKey capability for the admin account
+    accounts.admin: apiKey
+  #tls:
+  #  ca:
+  #    configMapName: example-argocd-ca
+  #    secretName: example-argocd-ca
+  #  initialCerts: []
   # TODO: Beware of bootstrap failure caused by missing configmap
   repo:
     #mountsatoken: true

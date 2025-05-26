@@ -84,9 +84,15 @@ quick-destroy: ## Quick destruction
 #	rm -rf terraform.tfstate*
 	terraform state list | cut -f 1 -d '[' | sort | uniq | xargs terraform state rm
 
-.PHONY: quick-destroy
+.PHONY: docker-update-restart
 docker-update-restart: ## Update Docker Restart Policy
 	docker update --restart=$(DOCKER_RESTART) $(CLUSTER_NAME)
+
+.PHONY: argocd-update-nodeport
+argocd-update-nodeport: ## Update ArgoCD Nodeport (TODO: : ArgoCD CRD does not allow setting a known port)
+	kubectl patch service argocd-server -n argocd \
+		-p '{"spec": {"ports": [{"port": 80, "nodePort": 31080, "protocol": "TCP", "targetPort": 8080}], "type": "NodePort"}}'
+
 
 .PHONY: run-pull-registry-proxy
 run-registry-proxy: ## Run pull through registry proxy/-ies

@@ -13,7 +13,8 @@ MONITORING_NS=openshift-user-workload-monitoring
 OPERATORS_NS=openshift-operators
 # OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
-ENV=local
+ENV=localhost
+ARGO_ENV=local
 AMTOOL_OUTPUT=simple
 # # Use the bootstrap manifest for secrets which are not in git
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
@@ -86,13 +87,23 @@ argocd-deploy: ## ArgoCD deploy guestbook
 .PHONY: argocd-generate-monitor-manifests
 argocd-generate-monitor-manifests: ## Generate ArgoCD monitor manifests
 	helm template --release-name argo-cd argo/argo-cd -n argocd --api-versions monitoring.coreos.com/v1 \
-		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ENV)/values.yaml \
+		-f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ARGO_ENV)/values.yaml \
 	| yq 'select(.kind == "ServiceMonitor")'
+
+
+.PHONY: test
+test: ## Execute go tests
+	go test ./... -coverprofile cover.out
+# -v
+
+.PHONY: test-watch
+test-watch: ## Watch tests
+	ginkgo watch ./...
 
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
 	helm template --release-name monitoring apps/infra/openshift-user-workload-monitoring -n $(MONITORING_NS)  \
-		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ENV)/values.yaml \
+		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ARGO_ENV)/values.yaml \
 	| yq 'select(.kind == "PrometheusRule")' \
 	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/openshift-user-workload-monitoring/prom-test-rules.yaml
 	cd apps/infra/openshift-user-workload-monitoring && promtool test rules test.yaml
@@ -144,11 +155,11 @@ argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	if [ -e "$(BOOTSTRAP_MANIFEST)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST) ; fi
 	# TODO: Unsure whether we want env-config for AppSets in repo
 	#$(KUBECTL) -n $(ARGOCD_NS) create secret generic env-rev \
-	#	--from-literal env=$(ENV) \
+	#	--from-literal env=$(ARGO_ENV) \
 	#	--from-literal repo=https://github.com/deas/argocd-conductr.git \
 	#	--from-literal server=https://kubernetes.default.svc \
 	#	--dry-run=client -o yaml | $(KUBECTL) apply -f -
-	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
+	# $(KUBECTL) -n $(ARGOCD_NS) create secret generic $(ARGO_ENV) --from-literal config="{'tlsClientConfig':{'insecure':false}}" --from-literal name=$(ARGO_ENV) --from-literal server=https://kubernetes.default.svc --dry-run=client -o yaml | $(KUBECTL) apply -f -
 	# $(KUBECTL) -n $(ARGOCD_NS) label secret env-rev argocd.argoproj.io/secret-type=cluster || true
 	$(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-age --namespace=argocd --from-file=keys.txt=./sample-key.txt || true
 	# TODO: DRY: Could pull sealed secrets bits from ArgoCD appset
@@ -169,8 +180,8 @@ argocd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OL
 	helm upgrade -i --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml
 	$(KUBECTL) -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
 	./tools/wait-for-k8s.sh crd/argocds.argoproj.io banane 60 # TODO : There should be a better way
-	kustomize build apps/infra/argo-cd/envs/$(ENV) | $(KUBECTL) apply -f -
-	$(KUBECTL) -n $(ARGOCD_NS) apply -f apps/infra/argo-cd/envs/$(ENV)/configmap-cluster-env.yaml
+	kustomize build apps/infra/argo-cd/envs/$(ARGO_ENV) | $(KUBECTL) apply -f -
+	$(KUBECTL) -n $(ARGOCD_NS) apply -f apps/infra/argo-cd/envs/$(ARGO_ENV)/configmap-cluster-env.yaml
 	$(KUBECTL) -n $(ARGOCD_NS) wait --timeout=180s --for=jsonpath='{.status.phase}'=Available argocd/argocd
 
 .PHONY: argocd-sealed-secret-create
@@ -191,12 +202,13 @@ fmt: ## Format
 	terraform fmt --check --recursive
 
 .PHONY: lint
-lint: ## Lint
+lint: ## Lint go/terraform
+	go vet ./...
 	tflint --recursive
 
 .PHONY: gator-verify
 gator-verify: target ## Gator verify templates and constraints
-	kustomize build apps/infra/gatekeeper-library/envs/$(ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
+	kustomize build apps/infra/gatekeeper-library/envs/$(ARGO_ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
 	gator verify apps/infra/gatekeeper-library/...
 
 .PHONY: set-gitops-rev
@@ -207,7 +219,7 @@ set-gitops-rev: ## Set gitops REV - defaults to current
 .PHONY:set-gitops-repo
 set-gitops-repo: ## Set gitops repo to NEW_URL
 	if [ -z "$(NEW_URL)" ] ; then echo "NEW_URL must not be empty"; exit 1; fi
-	old_url=$$(grep repoURL: envs/local/app-root.yaml | sed -e s,'.*repoURL: ',,g); find envs -iname "*.yaml" | while read f ; do sed -i "s,$${old_url},$(NEW_URL),g" "$${f}"; done
+	old_url=$$(grep repoURL: envs/localhost/app-root.yaml | sed -e s,'.*repoURL: ',,g); find envs -iname "*.yaml" | while read f ; do sed -i "s,$${old_url},$(NEW_URL),g" "$${f}"; done
 
 .PHONY: install-tools
 install-tools: ## Install all the tools
