@@ -16,31 +16,31 @@ spec:
                 - appName: operators
                   namespace: openshift-operators
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: "apps/infra/operators"
                 - appName: registration-operator-hub
                   namespace: open-cluster-management
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: "apps/infra/registration-operator-hub"
                 - appName: submariner-operator
                   namespace: submariner-operator
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: "apps/infra/submariner-operator"
                 - appName: openshift-user-workload-monitoring
                   namespace: openshift-user-workload-monitoring
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: "apps/infra/openshift-user-workload-monitoring"
                 - appName: monitoring-webhook
                   namespace: openshift-user-workload-monitoring
                   repoURL: https://github.com/deas/argocd-conductr.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: "apps/infra/monitoring-webhook"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: main
+              revision: wip
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
               # apps/*envs/local
@@ -66,7 +66,7 @@ spec:
 
       source:
         repoURL: "{{ .repoURL }}"
-        targetRevision: main
+        targetRevision: wip
         chart: ""
         path: "{{ .chartPath }}"
         helm:
