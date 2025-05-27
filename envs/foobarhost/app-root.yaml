@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: root-foobarhost
   namespace: argocd
   # Add this finalizer ONLY if you want these to cascade delete.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: foobar-ops
   #  env: local
   #  rev: main
   # Add labels to your application object.
@@ -18,7 +18,7 @@ spec:
   source:
     repoURL: https://github.com/deas/argocd-conductr.git
     targetRevision: main
-    path: envs/localhost
+    path: envs/foobarhost
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

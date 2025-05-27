@@ -4,7 +4,7 @@ metadata:
   name: argo-cd
   namespace: argocd
   annotations:
-    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: foobar-ops
     argocd.argoproj.io/sync-options: Prune=false
 spec:
   destination:
@@ -15,8 +15,8 @@ spec:
     - chart: argo-cd
       helm:
         valueFiles:
-          - $values/apps/infra/argo-cd/envs/local-helm/../../values.yaml
-          - $values/apps/infra/argo-cd/envs/local-helm/values.yaml
+                  - $values/apps/infra/argo-cd/envs/foobar-helm/../../values.yaml
+                  - $values/apps/infra/argo-cd/envs/foobar-helm/values.yaml
       repoURL: https://argoproj.github.io/argo-helm
       targetRevision: 7.6.8
     - ref: values
