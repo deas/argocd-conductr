@@ -219,7 +219,7 @@ resource "helm_release" "olm" {
   chart      = "olm"
   version    = "0.30.0"
   # namespace  = "olm"
-  values = [file("values-olm.yaml")]
+  values = [file("${path.module}/values-olm.yaml")]
 }
 
 # Needed as a dep when we we bootstrap both : OLM and ArgoCD OLM. The latter module depends on the subscription
