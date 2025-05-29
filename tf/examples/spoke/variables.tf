@@ -28,7 +28,7 @@ variable "bootstrap_olm" {
 }
 
 variable "bootstrap_path" {
-  type        = string
+  type        = list(string)
   default     = null
   description = "Path to and additional boostrap manifest. Use this to inject decryption secrets."
 }

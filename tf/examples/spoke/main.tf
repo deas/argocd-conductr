@@ -13,6 +13,7 @@ module "spoke" {
   pod_subnet                      = var.pod_subnet
   service_subnet                  = var.service_subnet
   containerd_config_patches       = var.containerd_config_patches
+  bootstrap_root                  = "${path.module}/../.."
   bootstrap_path                  = var.bootstrap_path
   dns_hosts                       = var.dns_hosts
   extra_mounts                    = var.extra_mounts
