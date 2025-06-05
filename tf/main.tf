@@ -28,7 +28,7 @@ EOT
 EOT
   , abspath(path.module))]
   # TODO:: Fix confusing local/var naming
-  bootstrap_path = concat(var.bootstrap_path != null ? var.bootstrap_path : [], tolist(fileset(path.module, "../apps/infra/argo-cd/envs/${local.version_env}/configmap-**.yaml")))
+  bootstrap_path = concat(var.bootstrap_path != null ? var.bootstrap_path : [], tolist(fileset(var.bootstrap_root != null ? var.bootstrap_root : path.module, "../apps/infra/argo-cd/envs/${local.version_env}/configmap-**.yaml")))
 }
 
 resource "kind_cluster" "default" {
@@ -219,7 +219,7 @@ resource "helm_release" "olm" {
   chart      = "olm"
   version    = "0.30.0"
   # namespace  = "olm"
-  values = [file("values-olm.yaml")]
+  values = [file("${path.module}/values-olm.yaml")]
 }
 
 # Needed as a dep when we we bootstrap both : OLM and ArgoCD OLM. The latter module depends on the subscription

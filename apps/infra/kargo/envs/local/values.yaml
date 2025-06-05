@@ -1,5 +1,21 @@
 api:
+  logLevel: DEBUG
   adminAccount:
     # password: kargo
     passwordHash: $2y$10$4wCSIYSIrzr7OgGwQlBfH.QpP1U2qNNoG9olYkDrYWOrOGDQt1wOa
     tokenSigningKey: pPb0HlkD0Km5jWmhpERWNuIBOOw5Wcj2
+
+controller:
+  logLevel: DEBUG
+
+externalWebhooksServer:
+  logLevel: DEBUG
+
+garbageCollector:
+  logLevel: DEBUG
+
+managementController:
+  logLevel: DEBUG
+
+webhoookServer:
+  logLevel: DEBUG

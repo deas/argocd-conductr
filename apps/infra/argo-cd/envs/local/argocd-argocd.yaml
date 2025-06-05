@@ -9,11 +9,35 @@ spec:
   extraConfig:
     # Add the apiKey capability for the admin account
     accounts.admin: apiKey
-  #tls:
-  #  ca:
-  #    configMapName: example-argocd-ca
-  #    secretName: example-argocd-ca
-  #  initialCerts: []
+  tls:
+    ca:
+      #    configMapName: example-argocd-ca
+      #    secretName: example-argocd-ca
+    initialCerts:
+      foo: |
+        -----BEGIN CERTIFICATE-----
+        MIIDsDCCApigAwIBAgIIcdkwvM7AvRcwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+        AxMKa3ViZXJuZXRlczAeFw0yNTA1MjYxNTI0MTZaFw0yNjA1MjYxNTI5MTZaMBkx
+        FzAVBgNVBAMTDmt1YmUtYXBpc2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEA1dymVZqvh32JI8FyoOajgOPJwVtcorXOKveWE6AWtpK8feczHkQ5
+        vAdVyoUVT3OvvsRPHn65kc2mcjKCInLf68SOQ8uJ1glEcb8G+GP1NTE/qNrJBPYB
+        kkW2pidGtBPqbVYUKUcmVceNKDM1AJHcIFWIoTRE1d3eT2uzv/RWSkvi1gBy9grt
+        +wmYnkSymakLixgC/VsjMU7RaNihBNb2hrtKZ+Ga3/ji/jgUBIrlo8D/3vqZZaNv
+        F0UPrt4JTmL3vvPvUqTkl2qNYZTnBy92wQhzm//Hw6EhNIN+4ub9LD/37J48u10E
+        68KyHZzcV3YQhBAEPKt8S/zJsx7dPa2eDwIDAQABo4H/MIH8MA4GA1UdDwEB/wQE
+        AwIFoDATBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQY
+        MBaAFK0FfJE0AkUPp48EB5a8orCtbN+aMIGlBgNVHREEgZ0wgZqCHWFyZ29jZC1j
+        b25kdWN0ci1jb250cm9sLXBsYW5lggprdWJlcm5ldGVzghJrdWJlcm5ldGVzLmRl
+        ZmF1bHSCFmt1YmVybmV0ZXMuZGVmYXVsdC5zdmOCJGt1YmVybmV0ZXMuZGVmYXVs
+        dC5zdmMuY2x1c3Rlci5sb2NhbIIJbG9jYWxob3N0hwQKUAABhwSsEgADhwR/AAAB
+        MA0GCSqGSIb3DQEBCwUAA4IBAQCiXdfQ5JXZL4kL70Af8SYsDCXHgscOLCRTF2dL
+        11tz/xlAeeNFTZGFBiCI72UEiMVyWpHd0LtNG3boyl/FvXB/QKlUhQ+8+sYxLFdm
+        0pejvtyp2Bis0zFQSq/E0y1mIPdGnzt9PHAXVB88vE+ZWo0PAQ6VWzMaKOwqoIsc
+        Kr5IdpLFrvV+RXg22+N7XdF2EmzNod9NrloRQ5iq9tUJX8GmfcYbP6fHym51JrCG
+        rmhDMBI/POfwm3I8mrgMS3QMJHTEGfS8Jeod3mx2dgfflf+j2XKba84cXnoZj2T7
+        +O45MgrRuyV7xXhupqT00XtIUU6ShDZek3HbHom1llynHSiN
+        -----END CERTIFICATE-----
+
   # TODO: Beware of bootstrap failure caused by missing configmap
   repo:
     #mountsatoken: true

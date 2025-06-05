@@ -110,7 +110,9 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 
 ### Decisions
 
-We use a single long lived branch `main` and map environments with directories. Leveraging branches for environment propagation appears easy, but comes with its own set of issues.
+Stage propagation is hard. Folders, branches, repos, ... you name it. All those come with pros and cons and it ends up being a tradeoff. Apparently, it is so hard that a dedicated project [kargo](https://kargo.io) was born to solve it. Long story short:
+
+We have started using kargo, and we are trying the migration following [effective processes for monorepos](https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663) while using a single long lived branch (unchanged as we did before) and the "Rendered Config" pattern. Essential bits appear to be working with the `kargo` (environment/stage), and we may even get way without changing the folder structure.
 
 We use single level environment staging with one cluster per environment. We do not use names and namespaces in this context, and we don't even dare to do multi-tenancy in a single cluster (OLMv1 drops it). This should help with isolation, loose coupling, support the cattle model and keep things simpler. We want cluster scoped staging. Using another nested level introduces issues ("Matrjoschka Architecture").
 

@@ -112,6 +112,6 @@ run-registry: ## Run docker registry
 
 .PHONY: show-connections
 show-connections: ## Show submariner/ocm connections
-	KUBECONFIG="argocd-conductr-config:examples/spoke/argocd-conductr-spoke-config" subctl show connections
-	KUBECONFIG="argocd-conductr-config:examples/spoke/argocd-conductr-spoke-config" kubectl --context kind-argocd-conductr get managedcluster
+	KUBECONFIG="argocd-conductr-config:examples/generic/argocd-conductr-spoke-config" subctl show connections
+	KUBECONFIG="argocd-conductr-config:examples/generic/argocd-conductr-spoke-config" kubectl --context kind-argocd-conductr get managedcluster
 

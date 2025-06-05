@@ -14,6 +14,7 @@ OPERATORS_NS=openshift-operators
 # OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
 ENV=localhost
+# grep "^  name: " envs/localhost/app-base.yaml | sed -e s/".* "//g
 ARGO_ENV=local
 AMTOOL_OUTPUT=simple
 # # Use the bootstrap manifest for secrets which are not in git
@@ -272,3 +273,9 @@ olmv0-install: ## Ad hoc install olmv0
 .PHONY: olmv1-install
 olmv1-install: ## Ad hoc install olmv1
 	curl -L -s https://github.com/operator-framework/operator-controller/releases/latest/download/install.sh | bash -s
+
+.PHONY: kargo-setup
+kargo-setup: ## Setup kargo
+	if [ -z $${GITHUB_USERNAME} ] || [ -z "$${GITHUB_PAT}" ] ; then false ; fi
+	$(KUBECTL) apply -f assets/kargo/manifest-kargo.yaml
+	envsubst < assets/kargo/secret-kargo-default-repo.yaml | $(KUBECTL) apply -f -

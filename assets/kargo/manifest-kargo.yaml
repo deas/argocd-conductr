@@ -1,0 +1,102 @@
+# https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: kargo-default
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: orders
+  namespace: kargo-default
+spec:
+  subscriptions:
+    #- image:
+    #    repoURL: public.ecr.aws/nginx/nginx
+    #    semverConstraint: ^1.26.0
+    #    discoveryLimit: 5
+    - git:
+        repoURL: https://github.com/deas/argocd-conductr.git
+        branch: wip
+        commitSelectionStrategy: NewestFromBranch
+        # SemVer, Lexical, NewestTag
+        # allowTags: ""
+        # ignoreTags: ""
+        includePaths:
+          #  - envs/localhost/app-orders.yaml
+          - apps/apps/orders
+        #excludePaths:
+        #  - ""
+        # discoveryLimit: 20
+        # insecureSkipTLSVerify: true
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promo-process
+  namespace: kargo-default
+spec:
+  vars:
+    - name: gitopsRepo
+      value: https://github.com/deas/argocd-conductr.git
+    #- name: imageRepo
+    #  value: public.ecr.aws/nginx/nginx
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitopsRepo }}
+        checkout:
+          - branch: wip
+            path: ./src
+          # - branch: ${{ ctx.stage }}
+          - branch: stage/${{ ctx.stage }}
+            # create: true
+            path: ./out
+    #- uses: git-clear
+    #  config:
+    #    path: ./out
+    #- uses: kustomize-set-image
+    #  as: update
+    #  config:
+    #    path: ./src/base
+    #    images:
+    #      - image: ${{ vars.imageRepo }}
+    #        tag: ${{ imageFrom(vars.imageRepo).Tag }}
+    - uses: kustomize-build
+      config:
+        path: ./src/apps/apps/orders/envs/${{ ctx.stage }}
+        outPath: ./out/rendered/orders/kargo
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./out
+        message: "orders update rendered" # ${{ task.outputs.update.commitMessage }}
+    - uses: git-push
+      config:
+        path: ./out
+    - uses: argocd-update
+      config:
+        apps:
+          - name: orders # kargo-default-${{ ctx.stage }}
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: kargo
+  namespace: kargo-default
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: orders
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: promo-process
+          as: promo-process

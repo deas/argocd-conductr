@@ -14,12 +14,6 @@ variable "service_subnet" {
   default = "10.96.0.0/12"
 }
 
-variable "kind_cluster_name" {
-  type        = string
-  description = "Cluster name"
-  default     = "argocd-conductr-spoke" # TODO: Use environment instead?
-}
-
 # localhost (default) env deploys cluster-manager by default
 variable "bootstrap_olm" {
   type        = bool
@@ -28,7 +22,7 @@ variable "bootstrap_olm" {
 }
 
 variable "bootstrap_path" {
-  type        = string
+  type        = list(string)
   default     = null
   description = "Path to and additional boostrap manifest. Use this to inject decryption secrets."
 }
