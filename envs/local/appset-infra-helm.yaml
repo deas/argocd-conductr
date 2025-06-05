@@ -106,7 +106,7 @@ spec:
                 - appName: csr-approver
                   namespace: kube-system
                   repoURL: https://github.com/deas/csr-approver.git
-                  targetRevision: main
+                  targetRevision: wip
                   chartPath: charts/csr-approver
                 # TODO: Beware - non terraform cluster setup needs to provide proper CNI
                 - appName: cilium
@@ -121,12 +121,12 @@ spec:
             # TODO: Customized local charts need templatePath below
             #- appName: submariner-operator
             #  namespace: submariner-operator
-            #  targetRevision: main
+            #  targetRevision: wip
             #  path:
             #    "apps/infra/submariner-operator"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: main
+              revision: wip
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
   # Beware : group WITHOUT version
@@ -187,7 +187,7 @@ spec:
       # Source of the application manifests
       sources:
         # repoURL: https://github.com/deas/argocd-conductr.git
-        # targetRevision: main
+        # targetRevision: wip
         # path: "{{.path.path}}"
         - repoURL: "{{ .repoURL }}"
           path: '{{ index . "chartPath" | default "" }}'
@@ -200,7 +200,7 @@ spec:
               - "$values/{{ .path.path }}/../../values.yaml"
               - "$values/{{ .path.path }}/values.yaml"
         - repoURL: https://github.com/deas/argocd-conductr.git
-          targetRevision: main
+          targetRevision: wip
           ref: values
       # Destination cluster and namespace to deploy the application
       destination:

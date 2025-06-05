@@ -14,7 +14,7 @@ spec:
   source:
     path: apps/infra/argo-cd/envs/local
     repoURL: https://github.com/deas/argocd-conductr.git
-    targetRevision: main
+    targetRevision: wip
   syncPolicy:
     automated:
       prune: true
