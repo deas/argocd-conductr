@@ -4,11 +4,15 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
+  sourceNamespaces:
+    - sample-argocd
   # https://github.com/argoproj/argo-cd/discussions/12780
   resourceTrackingMethod: annotation+label
   # defaultClusterScopedRoleDisabled: false
   applicationSet:
     enabled: True # Should have been enabled by default?
+    sourceNamespaces:
+      - sample-argocd
   # TODO: CRD does not support Prometheus bits?
   #controller:
   #  metrics:
