@@ -16,7 +16,6 @@ terraform apply
 | argocd\_install | If/How to install ArgoCD | `string` | `"olm"` | no |
 | bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `true` | no |
 | bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets and other resources Argo CD depends on. | `list(string)` | `null` | no |
-| bootstrap\_root | Root path to bootstrap. Use this for environment specific file glob. | `string` | `null` | no |
 | broker\_secret\_get | The command to execute to obtain the submariner broker secret | `list(string)` | `[]` | no |
 | cilium\_appset\_path | Path to the ArgoCD ApplicationSet to look up the Cilium Application. This is how we choose if we want the Cilium CNI in kind | `string` | `null` | no |
 | cilium\_name | Cilium ArgoCD application name in case we are using ArgoCD managed Cilium | `string` | `"cilium"` | no |

@@ -1,7 +1,8 @@
 variable "env" {
   type        = string
   description = "The environment key to use to kickoff the ArgoCD deployments."
-  default     = null
+  # Need a default value for tflint
+  default = "kargo"
 }
 
 variable "pod_subnet" {

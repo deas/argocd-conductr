@@ -14,7 +14,6 @@ module "main" {
   service_subnet                  = var.service_subnet
   containerd_config_patches       = var.containerd_config_patches
   # TODO: bootstrap root relies on ../apps - need to spin up cluster to validate changes
-  bootstrap_root = "${path.module}/../.."
   bootstrap_path = var.bootstrap_path
   dns_hosts      = var.dns_hosts
   extra_mounts   = var.extra_mounts

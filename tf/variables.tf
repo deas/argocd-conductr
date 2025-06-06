@@ -89,11 +89,6 @@ variable "bootstrap_olm" {
   default     = true
   description = "Should the cluster have OLM before ArgoCD? (Openshift like)"
 }
-variable "bootstrap_root" {
-  type        = string
-  default     = null
-  description = "Root path to bootstrap. Use this for environment specific file glob."
-}
 variable "bootstrap_path" {
   type        = list(string)
   default     = null

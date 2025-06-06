@@ -4,6 +4,10 @@ metadata:
   name: argocd
   namespace: argocd
 spec:
+  sourceNamespaces:
+    - sample-argocd
+    # As of now, wildcards are not supported in .spec.applicationSet.sourceNamespaces
+    # *-argocd
   # https://github.com/argoproj/argo-cd/discussions/12780
   resourceTrackingMethod: annotation+label
   extraConfig:
@@ -81,6 +85,8 @@ spec:
   # defaultClusterScopedRoleDisabled: false
   applicationSet:
     enabled: True # Should have been enabled by default?
+    sourceNamespaces:
+      - sample-argocd
   server:
     insecure: true
     enableRolloutsUI: true

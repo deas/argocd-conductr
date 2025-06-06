@@ -28,7 +28,8 @@ EOT
 EOT
   , abspath(path.module))]
   # TODO:: Fix confusing local/var naming
-  bootstrap_path = concat(var.bootstrap_path != null ? var.bootstrap_path : [], tolist(fileset(var.bootstrap_root != null ? var.bootstrap_root : path.module, "../apps/infra/argo-cd/envs/${local.version_env}/configmap-**.yaml")))
+  argo_bootstrap_files = [for f in tolist(fileset(path.module, "../apps/infra/argo-cd/envs/${local.version_env}/configmap-**.yaml")) : format("%s/%s", abspath(path.module), f)]
+  bootstrap_path       = concat(var.bootstrap_path != null ? var.bootstrap_path : [], local.argo_bootstrap_files)
 }
 
 resource "kind_cluster" "default" {
