@@ -89,7 +89,7 @@ spec:
       - sample-argocd
   server:
     insecure: true
-    enableRolloutsUI: true
+    enableRolloutsUI: false
     host: argocd-server.apps-crc.testing # TODO
     ingress:
       enabled: true
