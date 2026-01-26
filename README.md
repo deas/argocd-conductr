@@ -253,6 +253,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 
 - Environment propagation : Try [Kargo](https://kargo.io)
 - Try [kro](https://kro.io)
+- Try [argocd-preview-diff](https://github.com/dag-andersen/argocd-diff-preview)
 - [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
 - Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
 - ~~Introduce proper GitOps time travel support (tags/hashes)~~
