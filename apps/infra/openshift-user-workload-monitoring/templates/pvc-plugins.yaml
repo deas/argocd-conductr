@@ -1,0 +1,17 @@
+{{- if .Values.grafana.plugins.persistentVolumeClaim.size }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-plugins
+  labels:
+    app: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.grafana.plugins.persistentVolumeClaim.size }}
+  {{- if .Values.grafana.plugins.persistentVolumeClaim.storageClass }}
+  storageClassName: {{ .Values.grafana.plugins.persistentVolumeClaim.storageClass }}
+  {{- end }}
+{{- end }}

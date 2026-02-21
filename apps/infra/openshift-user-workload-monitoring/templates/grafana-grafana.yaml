@@ -20,4 +20,20 @@ spec:
     security:
       admin_user: root
       admin_password: secret
+  {{- if .Values.grafana.plugins.persistentVolumeClaim.size }}
+  deployment:
+    spec:
+      strategy: Recreate
+      template:
+        spec:
+          containers:
+            - name: grafana
+              volumeMounts:
+                - name: plugins
+                  mountPath: /var/lib/grafana/plugins
+          volumes:
+            - name: plugins
+              persistentVolumeClaim:
+                claimName: grafana-plugins
+  {{- end }}
 {{- end }}
