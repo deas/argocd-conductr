@@ -23,7 +23,8 @@ spec:
   {{- if .Values.grafana.plugins.persistentVolumeClaim.size }}
   deployment:
     spec:
-      strategy: Recreate
+      strategy:
+        type: Recreate
       template:
         spec:
           containers:
