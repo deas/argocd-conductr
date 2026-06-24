@@ -202,17 +202,24 @@ Some opinions first:
 
 For basic demo purposes, you can use this public repo. If you want to run against your own, replace the git server reference with your own.
 
-First, you should choose where to start, specifically whether you want to use `terraform`.
+First, you should choose where to start, specifically whether you want to use `terraform` (or `opentofu`).
 
-If you don't want to use terraform, you should be starting at the root folder. There is a [`Makefile`](./Makefile) with various ad hoc tasks. Simply running
+If you want IaC on top, start in the [`./tf`](./tf) folder. This path **stands on its own and brings up everything from scratch** — it creates the `kind` cluster, bootstraps OLM, installs Argo CD and applies the root app:
+
+```sh
+cd tf
+cp sample.tfvars terraform.tfvars   # then set proper values
+make apply                          # terraform apply -auto-approve
+make quick-destroy                  # tear the environment back down
+```
+
+If you don't want terraform, start at the root folder instead. Its [`Makefile`](./Makefile) **assumes a cluster already exists** in your current `kubectl` context — it only installs Argo CD and applies the root app, it does not create a `kind` cluster. Running
 
 ```sh
 make
 ```
 
-should give you some help.
-
-If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder. The terraform module supports deployment to `kind` clusters.
+gives you the list of targets.
 
 Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./tools/gen-keys.sh) in case you'd like to use `sops` instead).
 
