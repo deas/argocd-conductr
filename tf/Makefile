@@ -73,16 +73,26 @@ docker-generate-docs: ## Generate documentation
 .PHONY: generate-docs
 generate_docs: docker-generate-docs
 
+# The k8s/helm/kubectl providers derive their connection from the kind_cluster
+# resource, and alekc/kubectl requires a usable kube config at plan time. So a
+# single cold `tofu apply` fails ("KUBERNETES_MASTER") before the cluster exists.
+# Create the cluster first (no-op if it already exists, or in external-cluster
+# mode where kind_cluster is count=0), then reconcile everything in one command.
 .PHONY: apply
-apply: ## Terraform apply
-	terraform apply -auto-approve
+apply: ## Reconcile everything (creates the kind cluster first if needed)
+	tofu apply -target=kind_cluster.default -auto-approve
+	tofu apply -auto-approve
+
+.PHONY: apply-raw
+apply-raw: ## Plain single-pass apply (assumes cluster/kubeconfig already exists)
+	tofu apply -auto-approve
 
 .PHONY: quick-destroy
 quick-destroy: ## Quick destruction
 	docker stop argocd-conductr-control-plane || true
 	docker rm argocd-conductr-control-plane || true
 #	rm -rf terraform.tfstate*
-	terraform state list | cut -f 1 -d '[' | sort | uniq | xargs terraform state rm
+	tofu state list | cut -f 1 -d '[' | sort | uniq | xargs tofu state rm
 
 .PHONY: docker-update-restart
 docker-update-restart: ## Update Docker Restart Policy

@@ -39,7 +39,8 @@ provider "kubectl" {
 }
 
 provider "helm" {
-  kubernetes {
+  # helm provider v3 turned the nested `kubernetes` block into an attribute
+  kubernetes = {
     # config_path = kind_cluster.default.kubeconfig
     host                   = local.host
     client_certificate     = local.client_certificate
@@ -50,7 +51,7 @@ provider "helm" {
 
 provider "helm" {
   alias = "linked"
-  kubernetes {
+  kubernetes = {
     config_path    = var.kubeconfig_linked != null ? var.kubeconfig_linked.path : null
     config_context = var.kubeconfig_linked != null ? var.kubeconfig_linked.context : null
   }
