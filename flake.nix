@@ -26,7 +26,7 @@
                      pkgs.argocd-autopilot
                      pkgs.argocd
 		                 pkgs.kustomize-sops
-                     # pkgs.terraform
+                     # pkgs.opentofu
                      # pkgs.kubernetes-helm
                      # pkgs.kustomize
                      # pkgs.kubernix

@@ -1,6 +1,6 @@
 sops        3.7.1
 tflint      0.53.0
-terraform   1.9.5
+opentofu    1.9.0
 gator       3.17.1
 kubeconform 0.6.7
 kustomize   5.4.3

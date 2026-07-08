@@ -27,7 +27,7 @@ bootstrap.
   this preserves separation and fast local testing.
 - `tools/`, `scripts/` — helper Bash scripts (`argocd.sh`, `gen-keys.sh`,
   `validate.sh`, `wait-for-k8s.sh`, …).
-- `tf/` — self-contained Terraform/OpenTofu entrypoint for those who want IaC
+- `tf/` — self-contained OpenTofu entrypoint for those who want IaC
   on top. It **stands on its own and includes everything**: `make -C tf apply`
   creates the `kind` cluster → OLM → Argo CD → root app, driven entirely by
   `tf/main.tf` (it does not call back into the root `Makefile`). Teardown is
@@ -66,14 +66,14 @@ There are two parallel ways to bring an environment up. Pick one:
 | Command | Purpose |
 | --- | --- |
 | `make` | List available targets (root `Makefile`) |
-| `make -C tf apply` / `make -C tf quick-destroy` | Bring up / tear down the full `kind` environment via Terraform |
+| `make -C tf apply` / `make -C tf quick-destroy` | Bring up / tear down the full `kind` environment via OpenTofu |
 | `make install-tools` | Install pinned tools via `mise` |
 | `make argocd-helm-install-basic argocd-apply-root` | Install Argo CD (Helm) + apply the root app into an existing cluster |
 | `make argocd-olm-install-basic` | Install Argo CD via OLM instead (into an existing cluster) |
 | `make test` | Go/Ginkgo tests (needs a live cluster) |
 | `make test-watch` | `ginkgo watch ./...` |
 | `make lint` | `go vet` + `tflint --recursive` |
-| `make fmt` | `terraform fmt --check --recursive` |
+| `make fmt` | `tofu fmt --check --recursive` |
 | `make gator-verify` | OPA Gatekeeper constraint tests |
 | `make test-prom-rules` | `promtool` unit tests for Prometheus rules |
 | `make argocd-initial-admin-password` / `argocd-admin-login` | Argo CD admin access |
@@ -87,7 +87,7 @@ are provisioned with `jdx/mise-action`.
 ## Tooling & environment
 
 - Tool versions are pinned in `.tool-versions` and installed with **`mise`**
-  (`sops`, `tflint`, `terraform`, `gator`, `kubeconform`, `kustomize`, `yq`,
+  (`sops`, `tflint`, `opentofu`, `gator`, `kubeconform`, `kustomize`, `yq`,
   `promtool`, `helm`). A `nix`/`devenv` flake (`flake.nix` + `direnv`) provides
   `argocd`, `argocd-autopilot`, and `kustomize-sops`.
 - Languages present: Go (`main.go`, `test/`), Clojure

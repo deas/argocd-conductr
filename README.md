@@ -90,7 +90,7 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections -->
 <details>
-<summary>Demo using terraform bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state 🪄🎩🐰
+<summary>Demo using opentofu bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state 🪄🎩🐰
 </summary>
 
 ![Demo](./assets/demo.gif)
@@ -195,25 +195,25 @@ Some opinions first:
 - `kubectl`
 - `mise` (highly recommended)
 - `docker` (if using `kind`)
-- `terraform` (optional)
-- `helm` (if not using terraform)
+- `opentofu` (optional)
+- `helm` (if not using opentofu)
 
 ### Usage
 
 For basic demo purposes, you can use this public repo. If you want to run against your own, replace the git server reference with your own.
 
-First, you should choose where to start, specifically whether you want to use `terraform` (or `opentofu`).
+First, you should choose where to start, specifically whether you want to use `opentofu`.
 
 If you want IaC on top, start in the [`./tf`](./tf) folder. This path **stands on its own and brings up everything from scratch** — it creates the `kind` cluster, bootstraps OLM, installs Argo CD and applies the root app:
 
 ```sh
 cd tf
 cp sample.tfvars terraform.tfvars   # then set proper values
-make apply                          # terraform apply -auto-approve
+make apply                          # tofu apply -auto-approve
 make quick-destroy                  # tear the environment back down
 ```
 
-If you don't want terraform, start at the root folder instead. Its [`Makefile`](./Makefile) **assumes a cluster already exists** in your current `kubectl` context — it only installs Argo CD and applies the root app, it does not create a `kind` cluster. Running
+If you don't want opentofu, start at the root folder instead. Its [`Makefile`](./Makefile) **assumes a cluster already exists** in your current `kubectl` context — it only installs Argo CD and applies the root app, it does not create a `kind` cluster. Running
 
 ```sh
 make
@@ -229,7 +229,7 @@ If using github, you may want to disable github actions and/or add a public depl
 gh repo deploy-key add ...
 ```
 
-In the root folder (w/o terraform), you should be checking
+In the root folder (w/o opentofu), you should be checking
 
 ```
 make -n argocd-helm-install-basic argocd-apply-root
@@ -271,7 +271,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
 - There are `TODO` tags in code (to provide context)
 - It takes too long for prometheus to get up
-- `terraform` within Argo CD? (just like in `tf-controller`)
+- `opentofu` within Argo CD? (just like in `tf-controller`)
 - crossplane
 - For `kind`, we may want to replace Metallb with [`cloud-provider-kind`](https://github.com/kubernetes-sigs/cloud-provider-kind)
 - keycloak + sso (DNS) local trickery
@@ -292,7 +292,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - Notifications Sync alerts Slack/Matrix
 - [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)?
 - Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
-- Proper cascaded removal. Argo CD should be last. Will likely involve terraform.
+- Proper cascaded removal. Argo CD should be last. Will likely involve opentofu.
 - ~~[Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/) (s. Known Issues)~~
 - Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
 - Openshift Proxy/Global Pull Secrets, Global Pull Secrets, Ingress + API Server

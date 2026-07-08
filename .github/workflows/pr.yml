@@ -31,11 +31,11 @@ jobs:
           #  [tools]
           #  gator = "3.17.1"
           # working_directory: app # [default: .] directory to run mise in
-      #- name: Setup Terraform
-      #  uses: hashicorp/setup-terraform@v1
+      #- name: Setup OpenTofu
+      #  uses: opentofu/setup-opentofu@v1
       #  with:
       #    # https://github.com/gruntwork-io/terratest/issues/706#issuecomment-733495166
-      #    terraform_wrapper: false
+      #    tofu_wrapper: false
       #- uses: terraform-linters/setup-tflint@v3
       #  name: Setup TFLint
       #  with:

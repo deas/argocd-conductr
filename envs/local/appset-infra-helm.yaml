@@ -108,11 +108,11 @@ spec:
                   repoURL: https://github.com/deas/csr-approver.git
                   targetRevision: wip
                   chartPath: charts/csr-approver
-                # TODO: Beware - non terraform cluster setup needs to provide proper CNI
+                # TODO: Beware - non opentofu cluster setup needs to provide proper CNI
                 - appName: cilium
                   repoURL: https://helm.cilium.io
                   namespace: kube-system
-                  targetRevision: "1.17.3" # Must not be floating - used in terraform
+                  targetRevision: "1.17.3" # Must not be floating - used in opentofu
                 # Using kustomize native helm for reflector due to openshift scc augmentation
                 #- appName: reflector
                 #  repoURL: https://emberstack.github.io/helm-charts

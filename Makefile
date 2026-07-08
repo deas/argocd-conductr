@@ -169,7 +169,7 @@ argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	# if [ -e "$(BOOTSTRAP_SEALED_SECRET)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_SEALED_SECRET) ; fi 
 
 .PHONY: argocd-helm-install-basic
-# TODO: A bit overlap with terraform 
+# TODO: A bit overlap with opentofu
 argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with Helm
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
@@ -200,10 +200,10 @@ argocd-apply-root: ## Apply argocd root application
 
 .PHONY: fmt
 fmt: ## Format
-	terraform fmt --check --recursive
+	tofu fmt --check --recursive
 
 .PHONY: lint
-lint: ## Lint go/terraform
+lint: ## Lint go/opentofu
 	go vet ./...
 	tflint --recursive
 

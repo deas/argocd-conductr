@@ -1,11 +1,11 @@
-# terraform argocd conductr example generic
+# opentofu argocd conductr example generic
 
 ## Usage
 
 ```shell
 cp sample.tfvars terraform.tfvars
 # Set proper values in terraform.tfvars
-terraform apply
+tofu apply
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

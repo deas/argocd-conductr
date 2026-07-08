@@ -24,7 +24,7 @@ it with `make set-gitops-rev`.
   or `base/`+`envs/<env>/`.
 - `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/<env>/`.
   **Keep Argo CD resources out of `apps/`.**
-- `tools/`, `scripts/` — Bash helpers. `tf/` — self-contained Terraform/OpenTofu
+- `tools/`, `scripts/` — Bash helpers. `tf/` — self-contained OpenTofu
   entrypoint that stands on its own: `make -C tf apply` brings up everything from
   scratch (`kind` cluster → OLM → Argo CD → root app). Don't unify it with the
   root `Makefile`, which instead assumes a cluster already exists.

@@ -1,10 +1,10 @@
-# terraform infra for argocd conductr
+# opentofu infra for argocd conductr
 
 ## Usage
 ```shell
 cp sample.tfvars terraform.tfvars
 # Set proper values in terraform.tfvars
-terraform apply
+tofu apply
 ```
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
