@@ -73,7 +73,7 @@ provider "registry.opentofu.org/hashicorp/external" {
 
 provider "registry.opentofu.org/hashicorp/helm" {
   version     = "3.2.0"
-  constraints = ">= 2.7.1"
+  constraints = ">= 2.7.1, >= 3.0.0, < 4.0.0"
   hashes = [
     "h1:/TdLShnQEtyQRij46dZJobeA8clDnuncSdc2KRkc0B0=",
     "h1:8j4dgSY+8Y9tukMTo0WuKPyJx0JKUeZsYx9ltTUmEuo=",
@@ -147,7 +147,7 @@ provider "registry.opentofu.org/hashicorp/http" {
 
 provider "registry.opentofu.org/hashicorp/kubernetes" {
   version     = "3.2.1"
-  constraints = ">= 2.0.2"
+  constraints = ">= 2.0.2, >= 3.0.0, < 4.0.0"
   hashes = [
     "h1:+VM77HEd3CgzxwQ0PtfOc5tQrRQ2FZ9YJj1ShiMTsoI=",
     "h1:32YYVAK/LUIheXfaxxnwL4qzf6QgWaMVkByneQH8EpA=",
