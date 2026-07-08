@@ -252,64 +252,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 
 ## TODO
 
-<!--
-- [ ] Feature 1
-- [ ] Feature 3
-    - [ ] Nested Feature
--->
-
-- Environment propagation : Try [Kargo](https://kargo.io)
-- Try [kro](https://kro.io)
-- Try [argocd-preview-diff](https://github.com/dag-andersen/argocd-diff-preview)
-- [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
-- Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
-- ~~Introduce proper GitOps time travel support (tags/hashes)~~
-- Improve Openshift harmonization (esp. with regards to naming/namespaces)
-- `kind` based testing
-- Improve Unit/Integration Test Coverage
-- Prometheus based sync failure alerts (s. known issues)
-- It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
-- There are `TODO` tags in code (to provide context)
-- It takes too long for prometheus to get up
-- `opentofu` within Argo CD? (just like in `tf-controller`)
-- crossplane
-- For `kind`, we may want to replace Metallb with [`cloud-provider-kind`](https://github.com/kubernetes-sigs/cloud-provider-kind)
-- keycloak + sso (DNS) local trickery
-- Aspire Dashboard? (ultralight oTel)
-- Customer Use Case Demo litmus? Should probably bring the pure chaos bits to Argo CD [`deas/kaos`](https://github.com/deas/ka0s/)
-- ~~helm job sample~~
-- ~~Argo CD Grafana Dashboard~~
-- ~~Argo CD Service Monitor (depends on prom)~~
-- Canary-/Green/Blue Deployment (Rollouts)
-- ~~default to auto update everything~~?
-- ~~Proper self management of Argo CD~~
-- ~~metrics-server~~
-- contour?
-- ~~cilium~~
-- ~~OPA Policies: \_Gatekeeper vs usage in CI~~
-- kubeconform in CI
-- Argo CD +/vs ACM/open cluster management
-- Notifications Sync alerts Slack/Matrix
-- [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)?
-- Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
-- Proper cascaded removal. Argo CD should be last. Will likely involve opentofu.
-- ~~[Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/) (s. Known Issues)~~
-- Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
-- Openshift Proxy/Global Pull Secrets, Global Pull Secrets, Ingress + API Server
-  Certs, IDP Integration
-- Improve Github Actions Quality Gates
-- Tracing Solution (zipkin, tempo)
-- oTel Sample
-- More Grafana Dashboards / Integrations with Openshift Console Plugin
-- Consider migrating `make` to `just`
-- Dedupe/Modularize `Makefile`/`Justfile`
-- [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
-  See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
-- [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
-- Argo CD rbac/multi tenancy?
-- ACM appears to auto approve CSRs. Open source auto-approvers appear to specifically target cert-manager (CRD) or kubelet. Introduce [`csr-approver`](https://github.com/deas/csr-approver)
-- Introduce IPv6 with `crc`/kvm
-- Go deeper with `nix`/`devenv` - maybe even replace `mise`
+Tracked work items live in [`docs/TODO.md`](./docs/TODO.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

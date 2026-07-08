@@ -24,6 +24,7 @@ it with `make set-gitops-rev`.
   or `base/`+`envs/<env>/`.
 - `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/<env>/`.
   **Keep Argo CD resources out of `apps/`.**
+- `docs/` — `TODO.md`, `plans/`, `adr/`, `spikes/` (see `docs/README.md`).
 - `tools/`, `scripts/` — Bash helpers. `tf/` — self-contained OpenTofu
   entrypoint that stands on its own: `make -C tf apply` brings up everything from
   scratch (`kind` cluster → OLM → Argo CD → root app). Don't unify it with the
