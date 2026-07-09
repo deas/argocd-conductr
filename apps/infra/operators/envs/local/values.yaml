@@ -5,11 +5,19 @@ subscriptions:
   #    channel: stable
   #    source: redhat-operators
   #    sourceNamespace: openshift-marketplace
-  - name: loki-operator
-    namespace: openshift-operators
-    channel: alpha
-    source: operatorhubio-catalog
-    sourceNamespace: openshift-operator-lifecycle-manager
+  # Disabled: loki-operator (v0.10.2) is an OpenShift operator. On this vanilla
+  # kind cluster it can't find the OpenShift-only CRDs it watches
+  # (config.openshift.io APIServer/Proxy, route.openshift.io Route), so its
+  # manager fails cache sync and crashloops. OLM then re-runs install
+  # requirement checks every flap, hammering kube-apiserver CPU. Nothing here
+  # creates a LokiStack anyway, so it manages nothing. Log storage is provided
+  # by the upstream Grafana loki Helm chart (apps/infra/loki), not this operator.
+  # See docs/finding-kube-apiserver-cpu-olm-hotloop.md.
+  #- name: loki-operator
+  #  namespace: openshift-operators
+  #  channel: alpha
+  #  source: operatorhubio-catalog
+  #  sourceNamespace: openshift-operator-lifecycle-manager
   - channel: stable
     namespace: openshift-operators
     name: cluster-manager
