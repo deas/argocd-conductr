@@ -89,7 +89,12 @@ spec:
       - sample-argocd
   server:
     insecure: true
-    enableRolloutsUI: true
+    # TODO: Re-enable once the operator's rollout-extension regression is fixed.
+    # With true, argocd-operator v0.18.0 injects the rollout-extension init
+    # container (argocd-extension-installer:v0.0.8), whose image has a
+    # non-numeric USER; under the pod's runAsNonRoot the kubelet rejects it
+    # (CreateContainerConfigError), wedging the argocd-server rollout.
+    enableRolloutsUI: false
     host: argocd-server.apps-crc.testing # TODO
     ingress:
       enabled: true
