@@ -14,7 +14,7 @@ spec:
     # Add the apiKey capability for the admin account
     accounts.admin: apiKey
   tls:
-    ca:
+    ca: {} # empty object: schema (operator v0.18.0 CRD) rejects null
       #    configMapName: example-argocd-ca
       #    secretName: example-argocd-ca
     initialCerts:
