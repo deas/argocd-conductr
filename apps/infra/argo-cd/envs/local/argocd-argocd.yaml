@@ -99,7 +99,7 @@ spec:
         route.openshift.io/termination: edge
     service:
       type: NodePort # LoadBalancer
-  kustomizeBuildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
+  kustomizeBuildOptions: "--enable-alpha-plugins --enable-exec --enable-helm"
   # CMP via ConfigMap deprecated and removed in argo-cd 2.8
   #configManagementPlugins: |
   #  - name: kustomized-helm
