@@ -1,0 +1,22 @@
+# Bare single-pod Gitea (sqlite, no HA dependencies) serving as an in-cluster
+# git remote for quick Argo CD sync experiments.
+#
+# Argo CD repo URL: http://gitea-http.gitea.svc.cluster.local:3000/<owner>/<repo>.git
+# Host access:      kubectl -n gitea port-forward svc/gitea-http 3000:3000
+# Admin login:      gitea_admin / r8sA8CPHD9!bt6d (chart default - local throwaway)
+
+postgresql-ha:
+  enabled: false
+valkey-cluster:
+  enabled: false
+
+# Without valkey the chart falls back to in-memory session/cache and a
+# level queue - nothing else to configure for a single pod.
+gitea:
+  config:
+    database:
+      DB_TYPE: sqlite3
+    server:
+      # Make the clone URLs shown in the UI directly usable as Argo CD repo URLs
+      DOMAIN: gitea-http.gitea.svc.cluster.local
+      ROOT_URL: http://gitea-http.gitea.svc.cluster.local:3000/

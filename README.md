@@ -59,6 +59,7 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#usage">Installation</a></li>
+        <li><a href="#quick-sync-experiments-with-the-in-cluster-gitea">In-cluster Gitea</a></li>
       </ul>
     </li>
     <li><a href="#todo">TODO</a></li>
@@ -251,6 +252,37 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [Pull-through Docker registry on Kind clusters](https://maelvls.dev/docker-proxy-registry-kind/) (`registry:2` supports only one registry per instnance)
 - `kind load` may address some use cases
 - Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images). (s. `make argocd-destroy`)
+
+### Quick sync experiments with the in-cluster Gitea
+
+The `local` and `local-helm` environments deploy a bare, single-pod
+[Gitea](https://about.gitea.com) ([`apps/infra/gitea`](./apps/infra/gitea)) to
+act as an in-cluster git remote for quick Argo CD sync experiments — edit,
+push, sync without leaving the cluster or waiting on GitHub.
+
+Admin credentials are the chart defaults — `gitea_admin` / `r8sA8CPHD9!bt6d` —
+a local throwaway, fine for `kind`. Reach the UI/API from the host via
+
+```sh
+kubectl -n gitea port-forward svc/gitea-http 3000:3000
+```
+
+Create a repo (make it public and Argo CD needs no repo credentials) and push:
+
+```sh
+curl -su 'gitea_admin:r8sA8CPHD9!bt6d' -X POST localhost:3000/api/v1/user/repos \
+  -H 'Content-Type: application/json' -d '{"name": "sync-lab", "auto_init": true}'
+git clone 'http://gitea_admin:r8sA8CPHD9%21bt6d@localhost:3000/gitea_admin/sync-lab.git'
+```
+
+From inside the cluster — i.e. as an `Application` `repoURL` — the same repo is
+
+```
+http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sync-lab.git
+```
+
+Repositories and the sqlite database live on a small PVC, so they survive pod
+restarts — but they are pruned together with the gitea app itself.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

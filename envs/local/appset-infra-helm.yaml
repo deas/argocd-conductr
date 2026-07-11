@@ -74,6 +74,11 @@ spec:
                   repoURL: https://open-policy-agent.github.io/gatekeeper/charts
                   namespace: gatekeeper-system
                   targetRevision: "3.17.*"
+                # In-cluster git remote for quick Argo CD sync experiments
+                - appName: gitea
+                  repoURL: https://dl.gitea.com/charts
+                  namespace: gitea
+                  targetRevision: "12.6.*"
                 #  - appName: cluster-manager
                 #  repoURL: https://open-cluster-management.io/helm-charts
                 #  namespace: open-cluster-management
