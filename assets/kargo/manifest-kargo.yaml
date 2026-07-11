@@ -1,7 +1,7 @@
 # Minimal two-stage (test -> prod) promotion of the orders app using the
 # Rendered Configs pattern: humans edit kustomize sources on wip, Kargo renders
-# them per stage to rendered/apps/orders/<stage> on the long-lived stage/kargo
-# branch, and Argo CD only ever deploys that flat YAML (see
+# them per stage to rendered/apps/orders/<stage> on the machine-owned
+# `rendered` branch, and Argo CD only ever deploys that flat YAML (see
 # envs/*/appset-rendered-apps.yaml). Drive it with tools/kargo-promo-demo.sh.
 # https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663
 apiVersion: kargo.akuity.io/v1alpha1
@@ -53,12 +53,12 @@ spec:
           # older Freight to prod renders exactly that revision
           - commit: ${{ commitFrom(vars.gitopsRepo).ID }}
             path: ./src
-          - branch: stage/kargo
+          - branch: rendered
             create: true
             path: ./out
     - uses: kustomize-build
       config:
-        path: ./src/apps/apps/orders/envs/${{ ctx.stage }}
+        path: ./src/apps/apps/orders/stages/${{ ctx.stage }}
         outPath: ./out/rendered/apps/orders/${{ ctx.stage }}/manifest.yaml
     - uses: git-commit
       as: commit

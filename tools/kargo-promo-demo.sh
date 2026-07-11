@@ -6,7 +6,7 @@
 #   1. bump APP_VERSION in apps/apps/orders/base and push to wip
 #   2. the Warehouse turns that commit into Freight
 #   3. auto-promotion renders it into test (rendered/apps/orders/test on
-#      stage/kargo) and Argo CD deploys orders-test
+#      the rendered branch) and Argo CD deploys orders-test
 #   4. once the Freight is verified in test, we promote it to prod by
 #      creating a Promotion resource - the "manual gate", done with kubectl
 #
@@ -23,7 +23,7 @@ project=kargo-default
 repo_root=$(git rev-parse --show-toplevel)
 deployment_yml=apps/apps/orders/base/deployment.yml
 source_branch=wip
-rendered_branch=stage/kargo
+rendered_branch=rendered
 
 log() { echo "==> $*"; }
 
@@ -49,8 +49,8 @@ require() {
 
 # First-run bootstrap: a promotion's argocd-update step needs the
 # orders-<stage> Application, but the ApplicationSet only generates it once
-# rendered/apps/orders/<stage> exists on stage/kargo. Seed missing folders
-# with a render of the current sources so the apps exist before promoting.
+# rendered/apps/orders/<stage> exists on the rendered branch. Seed missing
+# folders with a render of the current sources so the apps exist first.
 seed_rendered() {
   local tmp seeded=""
   tmp=$(mktemp -d)
@@ -59,7 +59,7 @@ seed_rendered() {
   for stage in test prod; do
     if [ ! -d "$tmp/rendered/apps/orders/$stage" ]; then
       mkdir -p "$tmp/rendered/apps/orders/$stage"
-      kustomize build "$repo_root/apps/apps/orders/envs/$stage" \
+      kustomize build "$repo_root/apps/apps/orders/stages/$stage" \
         > "$tmp/rendered/apps/orders/$stage/manifest.yaml"
       seeded="$seeded $stage"
     fi

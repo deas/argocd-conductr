@@ -17,7 +17,7 @@ spec:
                 - appName: operators
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: stage/kargo
+              revision: rendered
               directories:
                 - path: "rendered/infra/{{ .appName }}/kargo"
               # apps/*envs/local
@@ -41,7 +41,7 @@ spec:
         # targetRevision: main
         # path: "{{.path.path}}"
         repoURL: https://github.com/deas/argocd-conductr.git
-        targetRevision: stage/kargo
+        targetRevision: rendered
         path: "{{.path.path}}"
       # Destination cluster and namespace to deploy the application
       destination:

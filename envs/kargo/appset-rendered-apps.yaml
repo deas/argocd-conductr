@@ -15,7 +15,7 @@ spec:
                 - appName: orders
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: stage/kargo
+              revision: rendered
               directories:
                 # One folder per Kargo stage, written only by promotions
                 # (assets/kargo/manifest-kargo.yaml)
@@ -37,7 +37,7 @@ spec:
       # Source of the application manifests - pre-rendered flat YAML only
       source:
         repoURL: https://github.com/deas/argocd-conductr.git
-        targetRevision: stage/kargo
+        targetRevision: rendered
         path: "{{ .path.path }}"
       # Destination cluster and namespace to deploy the application
       destination:
