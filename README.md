@@ -284,6 +284,14 @@ http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sync-lab.git
 Repositories and the sqlite database live on a small PVC, so they survive pod
 restarts — but they are pruned together with the gitea app itself.
 
+For a scripted end-to-end pass of exactly this loop, run
+[`tools/gitea-sync-demo.sh`](./tools/gitea-sync-demo.sh): it creates a repo,
+pushes manifests, points a throwaway `Application` at it and verifies initial
+sync, update, prune and self-heal before cleaning up after itself. The script
+is deliberately imperative — everything it touches is ephemeral demo state
+that is removed on exit, so the declarative rule ("edit manifests, commit, let
+Argo CD sync") still holds for anything durable.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- TODO -->
