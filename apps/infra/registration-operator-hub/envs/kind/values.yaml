@@ -1,0 +1,9 @@
+
+# the replicas for the clusterManager operator deployment.
+replicaCount: 1 
+
+  # if true, will create a bootstrap secret for cluster join and auto approve.
+createBootstrapToken: true
+
+# if true, will create a serviceAccount to generate token for cluster join and auto approve.
+createBootstrapSA: true

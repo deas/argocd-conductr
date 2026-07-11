@@ -1,0 +1,10 @@
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: add-sync-wave-annotation
+patch: |
+  - op: add
+    path: /metadata/annotations/argocd.argoproj.io~1sync-wave
+    value: "-1"
+target:
+  kind: ConstraintTemplate
