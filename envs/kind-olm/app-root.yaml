@@ -8,7 +8,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
-  #  env: local
+  #  env: local-helm
   #  rev: main
   # Add labels to your application object.
   #labels:
@@ -17,8 +17,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/deas/argocd-conductr.git
-    targetRevision: rendered
-    path: envs/kargo
+    targetRevision: wip
+    path: envs/kind-olm
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

@@ -13,12 +13,11 @@ spec:
           - list:
               elements:
                 # TODO: Customized local charts need templatePath below
-                # olm-less: no `operators` app here - that local chart only
-                # renders OLM Subscriptions (see apps/infra/operators). Their
-                # helm counterparts live in appset-infra-helm.yaml
-                # (cert-manager, grafana-operator) and below
-                # (registration-operator-hub covers the cluster-manager
-                # operator).
+                - appName: operators
+                  namespace: openshift-operators
+                  repoURL: https://github.com/deas/argocd-conductr.git
+                  targetRevision: wip
+                  chartPath: "apps/infra/operators"
                 - appName: registration-operator-hub
                   namespace: open-cluster-management
                   repoURL: https://github.com/deas/argocd-conductr.git
@@ -43,9 +42,16 @@ spec:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: stage/cluster-test
               directories:
-                # local-helm reuses the `local` per-component overlays - it is
-                # the same kind cluster class, only bootstrapped without OLM
-                - path: "apps/infra/{{ .appName }}/envs/local"
+                - path: "apps/infra/{{ .appName }}/envs/kind"
+              # apps/*envs/kind
+              # - path: apps/*/envs/kind
+  #templatePatch: |
+  #  {{- if hasKey . "chartPath" }}
+  #  spec:
+  #    sources:
+  #      0:
+  #        path: {{ .chartPath }}
+  #  {{- end }}
   template:
     metadata:
       # We don't env/stage at the name level
@@ -68,10 +74,11 @@ spec:
         helm:
           valueFiles:
             - "values.yaml"
-            - "envs/local/values.yaml"
+            - "envs/kind/values.yaml"
       destination:
         server: https://kubernetes.default.svc
         # We don't stage/env at the ns level
+        # namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
         namespace: "{{ .namespace }}"
 
       syncPolicy:
@@ -82,3 +89,4 @@ spec:
         automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
           prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
           selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+

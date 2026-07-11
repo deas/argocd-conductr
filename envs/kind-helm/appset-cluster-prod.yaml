@@ -45,7 +45,7 @@ spec:
             # the promoted branch
             valueFiles:
               - "$values/apps/infra/{{ .appName }}/values.yaml"
-              - "$values/apps/infra/{{ .appName }}/envs/local/values.yaml"
+              - "$values/apps/infra/{{ .appName }}/envs/kind/values.yaml"
         - repoURL: https://github.com/deas/argocd-conductr.git
           targetRevision: stage/cluster-prod
           ref: values
@@ -82,7 +82,7 @@ spec:
                 # orders-test/orders-prod namespaces belong to the separate
                 # hydrated per-app pipeline and are untouched by this one
                 - appName: orders
-                  path: apps/apps/orders/envs/local
+                  path: apps/apps/orders/envs/kind
                   namespace: orders
   template:
     metadata:

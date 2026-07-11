@@ -23,7 +23,7 @@ promote versions of the app's config sources, not images.
 
 ## Branches and folders — env vs stage
 
-**Envs** (`envs/local`, `apps/*/envs/<env>`) describe *what a target looks
+**Envs** (`envs/kind-olm`, `apps/*/envs/<env>`) describe *what a target looks
 like* — a cluster footprint (OLM vs helm, kind vs remote). Nothing promotes
 between envs. **Stages** (`apps/apps/orders/stages/<stage>`) describe *which
 version is deployed where* — positions in a promotion pipeline. Folders
@@ -53,7 +53,7 @@ what hits the cluster.
   matching Stage's `argocd-update` step may act on it.
 - `apps/apps/orders/stages/test|prod` — per-stage overlays (namespace
   `orders-<stage>`, `STAGE` env var, prod runs 2 replicas). The app's
-  `envs/local` overlay is the non-Kargo path and stays under `envs/`.
+  `envs/kind-olm` overlay is the non-Kargo path and stays under `envs/`.
 
 A promotion runs `promo-process`: clone the Freight's commit (`./src`) and
 `rendered` (`./out`), `kustomize build` the stage overlay into

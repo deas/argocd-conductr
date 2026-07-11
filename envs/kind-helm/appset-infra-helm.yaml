@@ -142,9 +142,9 @@ spec:
               repoURL: https://github.com/deas/argocd-conductr.git
               revision: stage/cluster-test
               directories:
-                # local-helm reuses the `local` per-component overlays - it is
+                # both kind flavors share the `kind` class overlays - it is
                 # the same kind cluster class, only bootstrapped without OLM
-                - path: "apps/infra/{{ .appName }}/envs/local"
+                - path: "apps/infra/{{ .appName }}/envs/kind"
   # Beware : group WITHOUT version
   # TODO: : Those diffs should probably not exist and be fixed further upstream
   templatePatch: |

@@ -9,21 +9,22 @@ and OpenShift/`crc`. See `AGENTS.md` and `README.md` for full detail.
 State is **declarative**: edit manifests, commit, let Argo CD sync. Do not
 `kubectl apply` to mutate cluster state except during bootstrap.
 
-App-of-Apps chain: `root` (`envs/localhost`) → `local` (`envs/local`) →
-ApplicationSets (`infra-helm`, `infra-helm-local`, `infra-misc`) → components
-under `apps/infra`. `targetRevision` tracks a branch (currently `wip`); update
-it with `make set-gitops-rev`.
+App-of-Apps chain: `root` (`envs/<env>/app-root.yaml`) → ApplicationSets
+(`infra-helm`, `infra-helm-local`, `infra-misc`, …) → components under
+`apps/infra`. Control-plane `targetRevision` tracks a branch (currently
+`wip`; update with `make set-gitops-rev`); workload appsets read the
+Kargo-promoted `stage/cluster-test` branch (docs/kargo-promotion.md).
 
 ## Layout
 
 - `envs/<env>/` — Argo CD bootstrap manifests only (root app + ApplicationSets).
-  Environments: `localhost`, `local`, `local-helm`, `kargo`, `spoke`.
+  Envs name cluster class + bootstrap flavor: `kind-olm`, `kind-helm`.
 - `apps/infra/<component>/` — platform components. Remote Helm charts use
-  `values.yaml` + `envs/<env>/values.yaml`, with the version pinned in
-  `envs/local/appset-*.yaml`. Local charts/Kustomize use `Chart.yaml`+`templates/`
-  or `base/`+`envs/<env>/`.
-- `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/<env>/`.
-  **Keep Argo CD resources out of `apps/`.**
+  `values.yaml` + `envs/kind/values.yaml` (shared class overlay), with the
+  version pinned in `envs/*/appset-*.yaml`. Local charts/Kustomize use
+  `Chart.yaml`+`templates/` or `base/`+`envs/kind/`.
+- `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/kind/` +
+  `stages/<stage>/`. **Keep Argo CD resources out of `apps/`.**
 - `docs/` — `TODO.md`, `plans/`, `adr/`, `spikes/` (see `docs/README.md`).
 - `tools/`, `scripts/` — Bash helpers. `tf/` — self-contained OpenTofu
   entrypoint that stands on its own: `make -C tf apply` brings up everything from

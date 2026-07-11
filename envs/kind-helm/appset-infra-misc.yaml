@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: rendered-infra
+  name: infra-misc
   namespace: argocd
 spec:
   goTemplate: true
@@ -12,42 +12,45 @@ spec:
           # - cluster: {}
           - list:
               elements:
-                - appName: kargo
-                - appName: argo-rollouts
-                - appName: operators
+                - appName: private
+                - appName: gatekeeper-library
+                # TODO: cluster-manager does not play nice with single cluster kind
+                # - appName: cluster-manager
+                - appName: cluster
+                # - appName: klusterlet
+                - appName: ocm-policy-framework
+                - appName: reflector
+                - appName: openshift-config
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: rendered
+              revision: stage/cluster-test
               directories:
-                - path: "rendered/infra/{{ .appName }}/kargo"
-              # apps/*envs/local
-              # - path: apps/*/envs/local
+                # both kind flavors share the `kind` class overlays - it is
+                # the same kind cluster class, only bootstrapped without OLM
+                - path: "apps/infra/{{ .appName }}/envs/kind"
   template:
     metadata:
       # We don't env/stage at the name level
-      name: "{{index .path.segments 2}}"
+      name: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
       finalizers:
         - resources-finalizer.argocd.argoproj.io
       annotations:
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
-        kargo.akuity.io/authorized-stage: "kargo-default:kargo"
+        # Workloads are gated: content flows via Kargo promotion (see assets/kargo)
+        kargo.akuity.io/authorized-stage: "kargo-default:cluster-test"
     spec:
       # The project the application belongs to.
       project: default
 
       # Source of the application manifests
       source:
-        # repoURL: https://github.com/deas/argocd-conductr.git
-        # targetRevision: main
-        # path: "{{.path.path}}"
         repoURL: https://github.com/deas/argocd-conductr.git
-        targetRevision: rendered
+        targetRevision: stage/cluster-test
         path: "{{.path.path}}"
       # Destination cluster and namespace to deploy the application
       destination:
         server: https://kubernetes.default.svc
         # We don't stage/env at the ns level
-        # namespace: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
         # namespace: " .namespace "
 
       # Sync policy
@@ -59,4 +62,3 @@ spec:
         automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
           prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
           selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
-

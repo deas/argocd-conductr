@@ -111,7 +111,7 @@ variable "cilium_name" {
 variable "cilium_appset_path" {
   type        = string
   description = "Path to the ArgoCD ApplicationSet to look up the Cilium Application. This is how we choose if we want the Cilium CNI in kind"
-  default     = null # "envs/local/appset-infra-helm.yaml"
+  default     = null # "envs/kind-olm/appset-infra-helm.yaml"
 }
 
 variable "containerd_config_patches" {

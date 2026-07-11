@@ -6,7 +6,7 @@
 # kubeconfig_path = "/home/deas/.kube/config"
 # bootstrap_path = "../secret-sealed-secrets.yaml"
 
-# cilium_appset_path = "../envs/local/appset-infra-helm.yaml"
+# cilium_appset_path = "../envs/kind-olm/appset-infra-helm.yaml"
 
 #additional_keys = {
 #  "sops-age" = { "keys.txt" = "../sample-key.txt" }

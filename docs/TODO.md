@@ -8,7 +8,7 @@ of proposed features and known issues.
 ## Argo CD & Rollouts
 
 - [ ] Re-enable Rollouts UI — `server.enableRolloutsUI` is `false` in
-      `../apps/infra/argo-cd/envs/local/argocd-argocd.yaml` as a workaround for an
+      `../apps/infra/argo-cd/envs/kind-olm/argocd-argocd.yaml` as a workaround for an
       upstream regression; catch up with upstream and re-enable once fixed.
 - [ ] Canary / blue-green deployments via Argo Rollouts
 - [ ] Argo CD RBAC / multi-tenancy

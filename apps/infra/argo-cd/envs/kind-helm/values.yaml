@@ -107,7 +107,7 @@ repoServer:
     serviceMonitor:
       enabled: true
   # CMP sidecar - mirrors repo.sidecarContainers of the ArgoCD CR on `local`
-  # (apps/infra/argo-cd/envs/local/argocd-argocd.yaml)
+  # (apps/infra/argo-cd/envs/kind-olm/argocd-argocd.yaml)
   extraContainers:
     # TODO: For openshift cluster slug parameter, we should probably use a job generating the cm
     # and mount it here in the sidecar. This env appears to be available in native helm/kustomize/jsonnet
@@ -604,7 +604,7 @@ dex:
       enabled: true
 
 # ConfigMaps the `local` env ships via kustomize
-# (apps/infra/argo-cd/envs/local) resp. applies during bootstrap
+# (apps/infra/argo-cd/envs/kind-olm) resp. applies during bootstrap
 # (cluster-env). Rendering them here keeps the helm bootstrap self-contained -
 # the cmp sidecar above envFrom-references cluster-env at pod start.
 extraObjects:

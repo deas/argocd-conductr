@@ -13,12 +13,13 @@ MONITORING_NS=openshift-user-workload-monitoring
 OPERATORS_NS=openshift-operators
 # OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
-ENV=localhost
-# grep "^  name: " envs/localhost/app-base.yaml | sed -e s/".* "//g
-ARGO_ENV=local
+ENV=kind-olm
+# grep "^  name: " envs/kind-helm/app-root.yaml | sed -e s/".* "//g
+ARGO_ENV=kind-helm
+ARGO_CLASS=kind
 # argo-cd itself only carries helm values for the olm-less envs (local uses the
 # ArgoCD CR via the operator) - used by argocd-helm-install-basic
-ARGO_HELM_ENV=local-helm
+ARGO_HELM_ENV=kind-helm
 AMTOOL_OUTPUT=simple
 # # Use the bootstrap manifest for secrets which are not in git
 BOOTSTRAP_MANIFEST=keys/bootstrap.yaml
@@ -107,7 +108,7 @@ test-watch: ## Watch tests
 .PHONY: test-prom-rules
 test-prom-rules: target ## Unit test prometheus rules
 	helm template --release-name monitoring apps/infra/openshift-user-workload-monitoring -n $(MONITORING_NS)  \
-		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ARGO_ENV)/values.yaml \
+		-f apps/infra/openshift-user-workload-monitoring/values.yaml -f apps/infra/openshift-user-workload-monitoring/envs/$(ARGO_CLASS)/values.yaml \
 	| yq 'select(.kind == "PrometheusRule")' \
 	| yq eval-all '.spec.groups[] as $$item ireduce ({"groups": []}; .groups += [$$item])' - > apps/infra/openshift-user-workload-monitoring/prom-test-rules.yaml
 	cd apps/infra/openshift-user-workload-monitoring && promtool test rules test.yaml
@@ -212,7 +213,7 @@ lint: ## Lint go/opentofu
 
 .PHONY: gator-verify
 gator-verify: target ## Gator verify templates and constraints
-	kustomize build apps/infra/gatekeeper-library/envs/$(ARGO_ENV) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
+	kustomize build apps/infra/gatekeeper-library/envs/$(ARGO_CLASS) | yq 'select(.kind == "ConstraintTemplate")' > target/template.yaml
 	gator verify apps/infra/gatekeeper-library/...
 
 .PHONY: set-gitops-rev
@@ -223,7 +224,7 @@ set-gitops-rev: ## Set gitops REV - defaults to current
 .PHONY:set-gitops-repo
 set-gitops-repo: ## Set gitops repo to NEW_URL
 	if [ -z "$(NEW_URL)" ] ; then echo "NEW_URL must not be empty"; exit 1; fi
-	old_url=$$(grep repoURL: envs/localhost/app-root.yaml | sed -e s,'.*repoURL: ',,g); find envs -iname "*.yaml" | while read f ; do sed -i "s,$${old_url},$(NEW_URL),g" "$${f}"; done
+	old_url=$$(grep repoURL: envs/kind-helm/app-root.yaml | sed -e s,'.*repoURL: ',,g); find envs -iname "*.yaml" | while read f ; do sed -i "s,$${old_url},$(NEW_URL),g" "$${f}"; done
 
 .PHONY: install-tools
 install-tools: ## Install all the tools
@@ -231,7 +232,7 @@ install-tools: ## Install all the tools
 
 #.PHONY: create-dashboard-configmaps
 #create-dashboard-configmaps: ## Create dashboard ConfigMaps
-#	$(KUBECTL) -n $(MONITORING_NS) create configmap dashboards-misc --from-file=./apps/infra/openshift-user-workload-monitoring/envs/local/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/local/configmap-dashboards.yaml
+#	$(KUBECTL) -n $(MONITORING_NS) create configmap dashboards-misc --from-file=./apps/infra/openshift-user-workload-monitoring/envs/kind/assets/dashboards -o yaml --dry-run=client > ./apps/infra/monitoring/envs/kind/configmap-dashboards.yaml
 #	@echo
 #	@echo "Make sure to add label for grafana sidecar"
 #	@echo

@@ -14,16 +14,22 @@ bootstrap.
 ## Repository layout
 
 - `envs/<env>/` — Argo CD bootstrap manifests only (root `Application` +
-  `ApplicationSet`s). No component config lives here. Environments: `localhost`,
-  `local`, `local-helm`, `kargo`, `spoke`.
+  `ApplicationSet`s). No component config lives here. An env names a
+  **cluster class + bootstrap flavor**: `kind-olm` (kind, OLM-bootstrapped)
+  and `kind-helm` (kind, helm-only — the hub). Stages are NOT envs (see
+  docs/kargo-promotion.md); spoke clusters need no env root (they are
+  registered as cluster secrets on the hub).
 - `apps/infra/<component>/` — platform components. Two shapes:
-  - **Remote Helm chart**: `values.yaml` (shared) + `envs/<env>/values.yaml`
-    (overlay). The chart version is pinned in the ApplicationSet element lists
-    in `envs/local/appset-*.yaml`.
+  - **Remote Helm chart**: `values.yaml` (shared) + `envs/kind/values.yaml`
+    (the shared **class** overlay both flavors reuse). The chart version is
+    pinned in the ApplicationSet element lists in `envs/*/appset-*.yaml`.
+    Flavor-specific components (argo-cd, cilium bootstrap) instead carry
+    `envs/kind-olm` / `envs/kind-helm` overlays.
   - **Local chart or Kustomize/OLM**: `Chart.yaml` + `templates/`, or
-    `base/` + `envs/<env>/` overlays.
+    `base/` + `envs/kind/` overlays.
 - `apps/apps/<app>/` — workload apps (e.g. `orders`) as Kustomize `base/` +
-  `envs/<env>/` overlays. **Keep Argo CD resources out of `apps/`** by design —
+  `envs/kind/` class overlays and `stages/<stage>/` promotion overlays.
+  **Keep Argo CD resources out of `apps/`** by design —
   this preserves separation and fast local testing.
 - `tools/`, `scripts/` — helper Bash scripts (`argocd.sh`, `gen-keys.sh`,
   `validate.sh`, `wait-for-k8s.sh`, …).
@@ -37,24 +43,27 @@ bootstrap.
 
 ## App-of-Apps chain
 
-`root` (`envs/localhost/app-root.yaml`, points at `envs/localhost`)
-→ `local` (`envs/localhost/app-base.yaml`, points at `envs/local`)
-→ ApplicationSets (`infra-helm`, `infra-helm-local`, `infra-misc`)
+`root` (`envs/<env>/app-root.yaml`, points at `envs/<env>`)
+→ ApplicationSets (`infra-helm`, `infra-helm-local`, `infra-misc`, …)
 → individual components under `apps/infra`.
 
-The olm-less `local-helm` env mirrors the same chain from
-`envs/local-helm/app-root.yaml`, replacing the OLM-provided operators with
-helm charts (argo-cd chart instead of the ArgoCD CR, cert-manager,
-grafana-operator; `registration-operator-hub` covers the OCM cluster-manager
-operator). Its ApplicationSets reuse the `local` per-component overlays.
+The olm-less `kind-helm` env replaces the OLM-provided operators of
+`kind-olm` with helm charts (argo-cd chart instead of the ArgoCD CR,
+cert-manager, grafana-operator; `registration-operator-hub` covers the OCM
+cluster-manager operator). Both flavors' ApplicationSets reuse the shared
+`envs/kind` per-component class overlays.
 
-`targetRevision` tracks a branch (currently `wip`); update it across `envs`
-with `make set-gitops-rev`. Two Makefile variables drive paths: `ENV` (default
-`localhost`) selects the root-app dir under `envs/`; `ARGO_ENV` (default
-`local`) selects the per-component values overlay.
+The control plane (`envs/**`, root, argo-cd) tracks a branch directly
+(currently `wip`; update across `envs` with `make set-gitops-rev`). Workload
+appsets are **gated**: they read the machine-owned `stage/cluster-test`
+branch, written only by Kargo promotions. Makefile variables: `ENV`/`ARGO_ENV`
+(default `kind-olm`/`kind-helm`) select the root-app dir and flavor overlay;
+`ARGO_CLASS` (default `kind`) selects the shared class overlay.
 
-Promotion between stages uses **Kargo** with the "Rendered Config" pattern on a
-single long-lived branch (`envs/kargo`).
+Promotion uses **Kargo** (docs/kargo-promotion.md): per-app Rendered Configs
+on the `rendered` branch (stages `test` → `prod`), and whole-env promotion
+between clusters via `stage/cluster-*` branches (`cluster-test` on the hub →
+`cluster-prod` on the spoke kind cluster).
 
 ## Bootstrap: two entrypoints
 

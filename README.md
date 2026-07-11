@@ -121,7 +121,7 @@ We prefer Pull over Push.
 
 We focus on one "Platform Team" managing many clusters using a single repo. It should enable ArgoCD embedding for Application verticals.
 
-Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
+Following the App of Apps pattern, our `kind-olm` root `Application` is at (`envs/kind-olm`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
 
 OLM footprint has a bigger footprint than helm and it comes with its own set of issues as well. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM) `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens. Hence, we default to bring in OLM when it is not there initially (such as on `kind`).
 
@@ -222,7 +222,7 @@ make
 
 gives you the list of targets. Both install flavors are supported from here:
 `make argocd-olm-install-basic argocd-apply-root` boots the OLM-preferring
-`local` environment (via `envs/localhost`), while
+`kind-olm` environment, while
 `make argocd-helm-install-basic argocd-apply-root ENV=local-helm` boots the
 olm-less `local-helm` environment, which brings in the operators OLM would
 otherwise provide (cert-manager, grafana-operator, the OCM cluster-manager via
