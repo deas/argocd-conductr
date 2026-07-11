@@ -569,6 +569,11 @@ notifications:
     serviceMonitor:
       enabled: true
 applicationSet:
+  # Cluster-scoped RBAC for the appset controller - required with
+  # applicationsetcontroller.namespaces (the operator grants this implicitly);
+  # without it the controller cannot watch Applications and appsets never
+  # generate
+  allowAnyNamespace: true
   metrics:
     enabled: true
     serviceMonitor:
