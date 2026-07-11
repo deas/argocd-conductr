@@ -1,4 +1,0 @@
-grafana:
-  plugins:
-    persistentVolumeClaim:
-      size: "100Mi"
