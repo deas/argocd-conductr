@@ -88,6 +88,14 @@ controller:
       enabled: true
 
 repoServer:
+  # Default 1s probe timeouts SIGTERM the repo server under load (kind on a
+  # busy host; CMP discovery streams the repo tarball per app refresh), which
+  # re-triggers the sync storm that caused the load - a crashloop feedback loop
+  livenessProbe:
+    timeoutSeconds: 10
+    failureThreshold: 5
+  readinessProbe:
+    timeoutSeconds: 10
   metrics:
     enabled: true
     serviceMonitor:
