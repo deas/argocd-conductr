@@ -25,7 +25,7 @@ spec:
         - name: STAGE
           value: test
         - name: APP_VERSION
-          value: "3"
+          value: "4"
         image: docker.io/kostiscodefresh/simple-env-app:1.0
         imagePullPolicy: Always
         name: webserver-simple
