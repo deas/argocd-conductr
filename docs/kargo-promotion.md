@@ -88,6 +88,18 @@ Notes:
 - Re-promoting Freight whose rendered output is already on `rendered`
   makes `git-commit` return `Skipped`, leaving `desiredRevision` empty — fine
   for the demo, but a real setup may want to handle the no-change case.
+- kubectl-created Promotions need **time-sortable names**: the stage
+  controller assumes names sort chronologically (Kargo generates
+  `<stage>.<ulid>.<freight-prefix>`) and silently ignores any Promotion whose
+  name sorts before `status.lastPromotion` — with `generateName`'s random
+  suffix the Stage may never record the result (stale `CURRENT FREIGHT`,
+  health pinned to an old revision). The demo scripts mint ULID names.
+- Both orders stages read folders on the *same* `rendered` branch, and the
+  argocd-update health check pins each stage to its promotion's commit — so
+  promoting one stage advances the branch head and flips the *other* stage
+  Unhealthy (revision mismatch) until it is re-promoted (a no-op render).
+  Kargo's docs recommend branch-per-stage for exactly this reason; the
+  cluster pipeline (separate `stage/cluster-*` branches) is immune.
 
 ## Whole-env promotion between clusters
 

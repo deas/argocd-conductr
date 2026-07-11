@@ -113,6 +113,17 @@ freight_verified_in() { # <freight> <stage>
     -o jsonpath='{.status.verifiedIn}' 2>/dev/null | grep -q "\"$2\""
 }
 
+# Time-sortable ULID (Crockford base32, lowercase) - the stage controller
+# assumes Promotion names sort chronologically and silently ignores ones that
+# sort before status.lastPromotion (regular_stages.go), so kubectl-created
+# Promotions must mimic kargo's <stage>.<ulid>.<freight-prefix> naming
+ulid() {
+  local a=0123456789abcdefghjkmnpqrstvwxyz ms=$(( $(date +%s%N) / 1000000 )) out="" i c
+  for i in 9 8 7 6 5 4 3 2 1 0; do c=$(( (ms >> (5 * i)) & 31 )); out="$out${a:$c:1}"; done
+  for i in $(seq 1 16); do out="$out${a:$((RANDOM % 32)):1}"; done
+  echo "$out"
+}
+
 promote() { # <stage> <freight>
   # Unlike the kargo CLI/UI, directly-created Promotions must carry their
   # steps - the admission webhook only inflates task refs, it does not copy
@@ -121,7 +132,7 @@ promote() { # <stage> <freight>
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Promotion
 metadata:
-  generateName: $1-
+  name: $1.$(ulid).${2:0:7}
   namespace: $project
 spec:
   stage: $1
