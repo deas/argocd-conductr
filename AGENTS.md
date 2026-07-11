@@ -42,6 +42,12 @@ bootstrap.
 → ApplicationSets (`infra-helm`, `infra-helm-local`, `infra-misc`)
 → individual components under `apps/infra`.
 
+The olm-less `local-helm` env mirrors the same chain from
+`envs/local-helm/app-root.yaml`, replacing the OLM-provided operators with
+helm charts (argo-cd chart instead of the ArgoCD CR, cert-manager,
+grafana-operator; `registration-operator-hub` covers the OCM cluster-manager
+operator). Its ApplicationSets reuse the `local` per-component overlays.
+
 `targetRevision` tracks a branch (currently `wip`); update it across `envs`
 with `make set-gitops-rev`. Two Makefile variables drive paths: `ENV` (default
 `localhost`) selects the root-app dir under `envs/`; `ARGO_ENV` (default

@@ -1,0 +1,5 @@
+# grafana-operator (helm) - olm-less replacement for the grafana-operator OLM
+# subscription (v5 channel) used by the `local` env (see apps/infra/operators).
+# Chart defaults are cluster scoped (namespaceScope: false, watchNamespaces: ""),
+# matching the OLM install - Grafana CRs live in openshift-user-workload-monitoring.
+{}

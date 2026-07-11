@@ -9,20 +9,20 @@
 configs:
   params:
     server.insecure: "true"
+    # Apps in any namespace - mirrors sourceNamespaces of the ArgoCD CR on `local`
+    application.namespaces: "sample-argocd"
+    applicationsetcontroller.namespaces: "sample-argocd"
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
     application.resourceTrackingMethod: "annotation+label"
-    configManagementPlugins: |
-      - name: kustomized-helm
-        init:
-          command: ["/bin/sh", "-c"]
-          args: ["helm dependency build || true"]
-        generate:
-          command: ["/bin/sh", "-c"]
-          args: ["helm template ../../helm_base --name-template $ARGOCD_APP_NAME --include-crds > ../../helm_base/all.yml && kustomize build"]
+    # Add the apiKey capability for the admin account
+    accounts.admin: apiKey
+    # CMP via ConfigMap (configManagementPlugins) was removed in argo-cd 2.8 -
+    # plugins run as repo server sidecars now, see repoServer.extraContainers
     # https://github.com/argoproj/argo-cd/blob/master/docs/user-guide/kustomize.md
-    kustomize.buildOptions: "--enable-alpha-plugins --enable-star --enable-exec --enable-helm"
+    # --enable-star was dropped in kustomize v5
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec --enable-helm"
     # TODO: Ugh! Really? https://codefresh.io/blog/argo-cd-application-dependencies/
     # https://github.com/argoproj/argo-cd/issues/7437
     # https://argo-cd.readthedocs.io/en/stable/faq/#why-is-my-application-stuck-in-progressing-state
@@ -89,6 +89,35 @@ repoServer:
     enabled: true
     serviceMonitor:
       enabled: true
+  # CMP sidecar - mirrors repo.sidecarContainers of the ArgoCD CR on `local`
+  # (apps/infra/argo-cd/envs/local/argocd-argocd.yaml)
+  extraContainers:
+    # TODO: For openshift cluster slug parameter, we should probably use a job generating the cm
+    # and mount it here in the sidecar. This env appears to be available in native helm/kustomize/jsonnet
+    # as well though
+    - name: cmp
+      command: [/var/run/argocd/argocd-cmp-server, --loglevel=debug]
+      image: dtzar/helm-kubectl
+      envFrom:
+        - configMapRef:
+            name: cluster-env
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: plugin.yaml
+          name: cmp-cluster-env
+  volumes:
+    - configMap:
+        name: cmp-cluster-env
+      name: cmp-cluster-env
   #env:
   #- name: XDG_CONFIG_HOME
   #  value: /.config
@@ -551,3 +580,55 @@ dex:
     enabled: true
     serviceMonitor:
       enabled: true
+
+# ConfigMaps the `local` env ships via kustomize
+# (apps/infra/argo-cd/envs/local) resp. applies during bootstrap
+# (cluster-env). Rendering them here keeps the helm bootstrap self-contained -
+# the cmp sidecar above envFrom-references cluster-env at pod start.
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cluster-env
+      namespace: argocd
+    data:
+      DOMAIN: localhost
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cmp-cluster-env
+      namespace: argocd
+    data:
+      # TODO: Hacky path ../.. - doing this to leverage kustomize based ApplicationSet
+      plugin.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: cmp-cluster-env
+        spec:
+          version: v1.0
+          generate:
+            command: [sh, -c , 'cat ../../values-cluster-env.yaml | envsubst | helm -n argocd template -f - ../..' ]
+          discover:
+            fileName: "../../values-cluster-env.yaml"
+          allowConcurrency: true
+          lockRepo: true
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cmp-kustomized-helm
+      namespace: argocd
+    data:
+      plugin.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: cmp-kustomized-helm
+        spec:
+          version: v1.0
+          init:
+            command: ["/bin/sh", "-c"]
+            args: ["helm dependency build || true"]
+          generate:
+            command: ["/bin/sh", "-c"]
+            args: ["helm template ../../helm_base --name-template $ARGOCD_APP_NAME --include-crds > ../../helm_base/all.yml && kustomize build"]

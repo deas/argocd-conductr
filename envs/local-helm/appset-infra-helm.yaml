@@ -1,0 +1,210 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-helm
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          # - cluster: {}
+          - list:
+              elements:
+                - appName: ingress-nginx
+                  repoURL: https://kubernetes.github.io/ingress-nginx
+                  namespace: ingress
+                  targetRevision: "4.7.1"
+                - appName: metrics-server
+                  repoURL: https://kubernetes-sigs.github.io/metrics-server
+                  namespace: openshift-user-workload-monitoring
+                  targetRevision: "3.12.*"
+                - appName: loki
+                  repoURL: https://grafana.github.io/helm-charts
+                  namespace: openshift-user-workload-monitoring
+                  targetRevision: "4.8.0" # "5.0.0" is out
+                - appName: kube-prometheus-stack
+                  repoURL: https://prometheus-community.github.io/helm-charts
+                  namespace: openshift-user-workload-monitoring
+                  targetRevision: "65.1.0" #"45.7.1"
+                - appName: prometheus-blackbox-exporter
+                  repoURL: https://prometheus-community.github.io/helm-charts
+                  namespace: openshift-user-workload-monitoring
+                  targetRevision: "9.1.*"
+                - appName: sealed-secrets
+                  repoURL: https://bitnami-labs.github.io/sealed-secrets
+                  namespace: kube-system
+                  targetRevision: "2.16.1"
+                - appName: argo-rollouts
+                  repoURL: https://argoproj.github.io/argo-helm
+                  namespace: argocd
+                  targetRevision: "2.37.7"
+                - appName: argo-image-updater
+                  repoURL: https://argoproj.github.io/argo-helm
+                  namespace: argocd
+                  targetRevision: "0.11.0"
+                - appName: argo-events
+                  repoURL: https://argoproj.github.io/argo-helm
+                  namespace: argocd
+                  targetRevision:
+                    "2.4.8"
+                    #- appName: submariner-operator
+                    #  repoURL: https://submariner-io.github.io/submariner-charts/charts
+                    #  namespace: submariner-operator
+                    #  targetRevision: "0.18.*" # TODO Document targetRevision
+                #  TODO: Bootstrap using quay.io/submariner/subctl:0.18.1
+                - appName: crossplane
+                  repoURL: https://charts.crossplane.io/stable
+                  namespace: crossplane-system
+                  targetRevision: "1.17.*"
+                - appName: kro
+                  repoURL: ghcr.io/kro-run/kro
+                  namespace: kro
+                  targetRevision: "0.2.3"
+                - appName: kargo
+                  repoURL: ghcr.io/akuity/kargo-charts
+                  namespace: kargo
+                  targetRevision: "1.5.0"
+                - appName: external-secrets
+                  repoURL: https://charts.external-secrets.io
+                  namespace: external-secrets
+                  targetRevision: "0.16.*"
+                - appName: gatekeeper
+                  repoURL: https://open-policy-agent.github.io/gatekeeper/charts
+                  namespace: gatekeeper-system
+                  targetRevision: "3.17.*"
+                #  - appName: cluster-manager
+                #  repoURL: https://open-cluster-management.io/helm-charts
+                #  namespace: open-cluster-management
+                #  targetRevision: "0.15.0"
+                # - appName: litmus
+                #   repoURL: https://litmuschaos.github.io/litmus-helm/
+                #   namespace: litmus
+                #   targetRevision: "3.14.*"
+                # olm-less: cert-manager via helm (the `local` env brings it in
+                # through an OLM subscription, see apps/infra/operators)
+                - appName: cert-manager
+                  repoURL: https://charts.jetstack.io
+                  namespace: cert-manager
+                  targetRevision: "1.16.*"
+                # olm-less: replaces the grafana-operator OLM subscription (v5
+                # channel). Cluster scoped by default - Grafana CRs live in
+                # openshift-user-workload-monitoring.
+                - appName: grafana-operator
+                  repoURL: ghcr.io/grafana/helm-charts
+                  namespace: openshift-operators
+                  targetRevision: "5.24.0"
+                - appName: submariner-k8s-broker
+                  repoURL: https://submariner-io.github.io/submariner-charts/charts
+                  namespace: submariner-k8s-broker
+                  targetRevision: "0.18.1"
+                # For velero snapshots on kind
+                #- appName: snapshot-controller
+                #  repoURL: https://piraeus.io/helm-charts
+                #  namespace: snapshot-controller
+                #  targetRevision: "4.0.*"
+                - appName: vault
+                  namespace: vault
+                  repoURL: https://helm.releases.hashicorp.com
+                  targetRevision: "0.30.*"
+                #- appName: vault-secrets-operator
+                #  namespace: openshift-operators
+                #  repoURL: https://helm.releases.hashicorp.com
+                #  targetRevision: "0.10.*"
+                - appName: csr-approver
+                  namespace: kube-system
+                  repoURL: https://github.com/deas/csr-approver.git
+                  targetRevision: wip
+                  chartPath: charts/csr-approver
+                # TODO: Beware - non opentofu cluster setup needs to provide proper CNI
+                - appName: cilium
+                  repoURL: https://helm.cilium.io
+                  namespace: kube-system
+                  targetRevision: "1.17.3" # Must not be floating - used in opentofu
+                # Using kustomize native helm for reflector due to openshift scc augmentation
+                #- appName: reflector
+                #  repoURL: https://emberstack.github.io/helm-charts
+                #  namespace: reflector
+                #  targetRevision: "9.0.*"
+            # TODO: Customized local charts need templatePath below
+            #- appName: submariner-operator
+            #  namespace: submariner-operator
+            #  targetRevision: wip
+            #  path:
+            #    "apps/infra/submariner-operator"
+          - git:
+              repoURL: https://github.com/deas/argocd-conductr.git
+              revision: wip
+              directories:
+                # local-helm reuses the `local` per-component overlays - it is
+                # the same kind cluster class, only bootstrapped without OLM
+                - path: "apps/infra/{{ .appName }}/envs/local"
+  # Beware : group WITHOUT version
+  # TODO: : Those diffs should probably not exist and be fixed further upstream
+  templatePatch: |
+    spec:
+      ignoreDifferences:
+      {{- if eq .appName "sealed-secrets" }}
+      - jsonPointers:
+        - /metadata/annotations
+        kind: "ServiceMonitor"
+        group: "monitoring.coreos.com"
+      {{- else if eq .appName "loki" }}
+      - jsonPointers:
+        - /spec/volumeClaimTemplates
+        kind: "StatefulSet"
+        group: "apps"
+      - jqPathExpressions:
+        - .spec.relabelings[]
+        kind: "PodLogs"
+        group: "monitoring.grafana.com"
+      - jqPathExpressions:
+        - .spec.endpoints[].relabelings[]
+        kind: "ServiceMonitor"
+        group: "monitoring.coreos.com"
+      {{- end }}
+  template:
+    metadata:
+      # We don't env/stage at the name level
+      name: "{{index .path.segments 2}}" # -{{index .path.segments 3}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+      #  argocd.argoproj.io/sync-options: Prune=false
+    spec:
+      # The project the application belongs to.
+      project: default
+
+      # Source of the application manifests
+      sources:
+        - repoURL: "{{ .repoURL }}"
+          path: '{{ index . "chartPath" | default "" }}'
+          chart: '{{ if hasKey . "chartPath" }}{{ else }}{{ .appName }}{{ end }}'
+          targetRevision: "{{ .targetRevision }}"
+          helm:
+            # Helm values files for overriding values in the helm chart
+            # The path is relative to the spec.source.path directory defined above
+            valueFiles:
+              - "$values/{{ .path.path }}/../../values.yaml"
+              - "$values/{{ .path.path }}/values.yaml"
+        - repoURL: https://github.com/deas/argocd-conductr.git
+          targetRevision: wip
+          ref: values
+      # Destination cluster and namespace to deploy the application
+      destination:
+        server: https://kubernetes.default.svc
+        # We don't stage/env at the ns level
+        namespace: "{{ .namespace }}"
+
+      # Sync policy
+      syncPolicy:
+        syncOptions:
+          # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+          - ServerSideApply=true
+          - CreateNamespace=true
+          # - RespectIgnoreDifferences=true
+        automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+          prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+          selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).

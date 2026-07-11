@@ -219,7 +219,13 @@ If you don't want opentofu, start at the root folder instead. Its [`Makefile`](.
 make
 ```
 
-gives you the list of targets.
+gives you the list of targets. Both install flavors are supported from here:
+`make argocd-olm-install-basic argocd-apply-root` boots the OLM-preferring
+`local` environment (via `envs/localhost`), while
+`make argocd-helm-install-basic argocd-apply-root ENV=local-helm` boots the
+olm-less `local-helm` environment, which brings in the operators OLM would
+otherwise provide (cert-manager, grafana-operator, the OCM cluster-manager via
+`registration-operator-hub`) as helm charts instead.
 
 Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./tools/gen-keys.sh) in case you'd like to use `sops` instead).
 
