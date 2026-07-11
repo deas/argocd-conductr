@@ -23,6 +23,7 @@ project=kargo-default
 repo_root=$(git rev-parse --show-toplevel)
 deployment_yml=apps/apps/orders/base/deployment.yml
 source_branch=wip
+rendered_branch=stage/kargo
 
 log() { echo "==> $*"; }
 
@@ -44,6 +45,37 @@ require() {
     { echo "git credentials missing - run 'make kargo-setup' with GITHUB_USERNAME/GITHUB_PAT" >&2; exit 1; }
   kubectl -n argocd get appset rendered-apps >/dev/null 2>&1 ||
     { echo "rendered-apps ApplicationSet missing - is the env root app synced?" >&2; exit 1; }
+}
+
+# First-run bootstrap: a promotion's argocd-update step needs the
+# orders-<stage> Application, but the ApplicationSet only generates it once
+# rendered/apps/orders/<stage> exists on stage/kargo. Seed missing folders
+# with a render of the current sources so the apps exist before promoting.
+seed_rendered() {
+  local tmp seeded=""
+  tmp=$(mktemp -d)
+  git clone --quiet --branch "$rendered_branch" --depth 1 \
+    "$(git -C "$repo_root" remote get-url origin)" "$tmp"
+  for stage in test prod; do
+    if [ ! -d "$tmp/rendered/apps/orders/$stage" ]; then
+      mkdir -p "$tmp/rendered/apps/orders/$stage"
+      kustomize build "$repo_root/apps/apps/orders/envs/$stage" \
+        > "$tmp/rendered/apps/orders/$stage/manifest.yaml"
+      seeded="$seeded $stage"
+    fi
+  done
+  if [ -n "$seeded" ]; then
+    git -C "$tmp" add rendered
+    git -C "$tmp" commit --quiet -m "chore: seed rendered stage folders ($seeded)"
+    git -C "$tmp" push --quiet origin "$rendered_branch"
+    log "Seeded rendered folders on $rendered_branch:$seeded"
+  fi
+  rm -rf "$tmp"
+  # The appset git generator polls every ~3min
+  for stage in test prod; do
+    wait_for "Application orders-$stage generated" 30 15 \
+      kubectl -n argocd get app "orders-$stage"
+  done
 }
 
 bump_version() {
@@ -95,6 +127,7 @@ EOF
 }
 
 require
+seed_rendered
 bump_version
 
 log "Refreshing Warehouse (default poll interval is several minutes)"

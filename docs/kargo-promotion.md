@@ -61,6 +61,12 @@ into `test` and verification, then promotes the same Freight to `prod` by
 creating a `Promotion` with kubectl. Verify with the env vars the app serves:
 `orders-test`/`orders-prod` namespaces, `STAGE` and `APP_VERSION`.
 
-Note: re-promoting Freight whose rendered output is already on `stage/kargo`
-makes `git-commit` return `Skipped`, leaving `desiredRevision` empty — fine
-for the demo, but a real setup may want to handle the no-change case.
+Notes:
+
+- First-run chicken-and-egg: `argocd-update` needs the `orders-<stage>` app,
+  which the ApplicationSet only generates once the rendered folder exists.
+  The demo script therefore seeds missing `rendered/apps/orders/<stage>`
+  folders (a plain render of the current sources) before promoting.
+- Re-promoting Freight whose rendered output is already on `stage/kargo`
+  makes `git-commit` return `Skipped`, leaving `desiredRevision` empty — fine
+  for the demo, but a real setup may want to handle the no-change case.
