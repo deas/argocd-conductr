@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  DOMAIN: localhost
+kind: ConfigMap
+metadata:
+  name: cluster-env
+  namespace: argocd

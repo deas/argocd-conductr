@@ -1,0 +1,3 @@
+# No local overrides - chart defaults apply. This overlay is shared by the
+# local-helm env (its ApplicationSets reuse the `local` overlays).
+{}
