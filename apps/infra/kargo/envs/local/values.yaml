@@ -17,5 +17,5 @@ garbageCollector:
 managementController:
   logLevel: DEBUG
 
-webhoookServer:
+webhooksServer:
   logLevel: DEBUG

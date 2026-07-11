@@ -5,6 +5,12 @@
 ## openshift:
 # -- enables using arbitrary uid for argo repo server
 # enabled: false
+global:
+  networkPolicy:
+    # Chart 10.0.0 flipped this default to true - cilium enforces NetworkPolicy,
+    # so keep the pre-10.x behavior of not restricting traffic
+    create: false
+
 ## Argo Configs
 configs:
   params:

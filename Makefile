@@ -176,7 +176,7 @@ argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with Helm
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
-	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ARGO_HELM_ENV)/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 7.6.8
+	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ARGO_HELM_ENV)/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 10.1.3
 
 
 .PHONY: argocd-olm-install-basic
