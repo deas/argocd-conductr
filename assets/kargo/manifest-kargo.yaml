@@ -1,9 +1,18 @@
-# Minimal two-stage (test -> prod) promotion of the orders app using the
-# Rendered Configs pattern: humans edit kustomize sources on wip, Kargo renders
-# them per stage to rendered/apps/orders/<stage> on the machine-owned
-# `rendered` branch, and Argo CD only ever deploys that flat YAML (see
-# envs/*/appset-rendered-apps.yaml). Drive it with tools/kargo-promo-demo.sh.
-# https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663
+# Two Kargo pipelines in one project (see docs/kargo-promotion.md):
+#
+# 1. orders (test -> prod): Rendered Configs for a single app. Humans edit
+#    kustomize sources on wip, Kargo renders them per stage to
+#    rendered/apps/orders/<stage> on the machine-owned `rendered` branch, and
+#    Argo CD only ever deploys that flat YAML (envs/*/appset-rendered-apps.yaml).
+#    Drive it with tools/kargo-promo-demo.sh.
+#    https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663
+#
+# 2. cluster (cluster-test -> cluster-prod): whole-env promotion between two
+#    kind clusters. Stages are clusters; each stage branch
+#    (stage/cluster-<stage>) carries a machine-owned copy of the apps/ tree at
+#    the promoted Freight commit, and Argo CD keeps rendering helm/kustomize
+#    from it as usual (hub appsets + envs/*/appset-cluster-prod.yaml).
+#    Drive it with tools/kargo-cluster-demo.sh.
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Project
 metadata:
@@ -16,9 +25,13 @@ metadata:
   namespace: kargo-default
 spec:
   promotionPolicies:
-    # New Freight flows into test unattended; prod stays a manual decision
+    # New Freight flows into the test stages unattended; the prod stages stay
+    # a manual decision
     - stageSelector:
         name: test
+      autoPromotionEnabled: true
+    - stageSelector:
+        name: cluster-test
       autoPromotionEnabled: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -114,3 +127,164 @@ spec:
         - task:
             name: promo-process
           as: promo-process
+---
+# ---------------------------------------------------------------------------
+# Pipeline 2: whole-env promotion between clusters (hub = cluster-test,
+# spoke = cluster-prod)
+# ---------------------------------------------------------------------------
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: cluster
+  namespace: kargo-default
+spec:
+  subscriptions:
+    - git:
+        repoURL: https://github.com/deas/argocd-conductr.git
+        branch: wip
+        commitSelectionStrategy: NewestFromBranch
+        # Everything the workload appsets read lives under apps/. The control
+        # plane (envs/, root, argo-cd, the appsets themselves) is deliberately
+        # NOT promoted - it tracks wip directly.
+        includePaths:
+          - apps
+---
+# The stage branches only ever differ from wip's apps/ tree by promotion lag:
+# clear the branch, copy the Freight's apps/ tree, commit, push, then let the
+# stage's Argo CD apps sync to the new commit. Promotion is a plain copy.
+#
+# Two near-identical tasks because argocd-update needs the per-stage app
+# names: the hub gate checks a representative subset (all hub workload apps
+# read the branch, but promotion health does not hinge on the heavyweight
+# monitoring stack), the spoke gate checks everything it runs.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote-cluster-test
+  namespace: kargo-default
+spec:
+  vars:
+    - name: gitopsRepo
+      value: https://github.com/deas/argocd-conductr.git
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitopsRepo }}
+        checkout:
+          - commit: ${{ commitFrom(vars.gitopsRepo).ID }}
+            path: ./src
+          - branch: stage/${{ ctx.stage }}
+            create: true
+            path: ./out
+    - uses: git-clear
+      config:
+        path: ./out
+    - uses: copy
+      config:
+        inPath: ./src/apps
+        outPath: ./out/apps
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./out
+        message: "promote ${{ ctx.stage }} @ ${{ commitFrom(vars.gitopsRepo).ID }}"
+    - uses: git-push
+      config:
+        path: ./out
+    - uses: argocd-update
+      config:
+        apps:
+          - name: ingress-nginx
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
+          - name: reflector
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote-cluster-prod
+  namespace: kargo-default
+spec:
+  vars:
+    - name: gitopsRepo
+      value: https://github.com/deas/argocd-conductr.git
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitopsRepo }}
+        checkout:
+          - commit: ${{ commitFrom(vars.gitopsRepo).ID }}
+            path: ./src
+          - branch: stage/${{ ctx.stage }}
+            create: true
+            path: ./out
+    - uses: git-clear
+      config:
+        path: ./out
+    - uses: copy
+      config:
+        inPath: ./src/apps
+        outPath: ./out/apps
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./out
+        message: "promote ${{ ctx.stage }} @ ${{ commitFrom(vars.gitopsRepo).ID }}"
+    - uses: git-push
+      config:
+        path: ./out
+    - uses: argocd-update
+      config:
+        apps:
+          # <app>-<cluster secret name> as generated by appset-cluster-prod
+          - name: ingress-nginx-spoke
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
+          - name: orders-spoke
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: cluster-test
+  namespace: kargo-default
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: cluster
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: promote-cluster-test
+          as: promote
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: cluster-prod
+  namespace: kargo-default
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: cluster
+      sources:
+        stages:
+          - cluster-test
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: promote-cluster-prod
+          as: promote

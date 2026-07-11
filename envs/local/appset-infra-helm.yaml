@@ -131,7 +131,7 @@ spec:
             #    "apps/infra/submariner-operator"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip
+              revision: stage/cluster-test
               directories:
                 - path: "apps/infra/{{ .appName }}/envs/local"
   # Beware : group WITHOUT version
@@ -184,6 +184,8 @@ spec:
         - resources-finalizer.argocd.argoproj.io
       annotations:
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+        # Workloads are gated: content flows via Kargo promotion (see assets/kargo)
+        kargo.akuity.io/authorized-stage: "kargo-default:cluster-test"
       #  argocd.argoproj.io/sync-options: Prune=false
     spec:
       # The project the application belongs to.
@@ -205,7 +207,7 @@ spec:
               - "$values/{{ .path.path }}/../../values.yaml"
               - "$values/{{ .path.path }}/values.yaml"
         - repoURL: https://github.com/deas/argocd-conductr.git
-          targetRevision: wip
+          targetRevision: stage/cluster-test
           ref: values
       # Destination cluster and namespace to deploy the application
       destination:

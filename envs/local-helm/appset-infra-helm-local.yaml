@@ -41,7 +41,7 @@ spec:
                   chartPath: "apps/infra/monitoring-webhook"
           - git:
               repoURL: https://github.com/deas/argocd-conductr.git
-              revision: wip
+              revision: stage/cluster-test
               directories:
                 # local-helm reuses the `local` per-component overlays - it is
                 # the same kind cluster class, only bootstrapped without OLM
@@ -54,13 +54,15 @@ spec:
         - resources-finalizer.argocd.argoproj.io
       annotations:
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+        # Workloads are gated: content flows via Kargo promotion (see assets/kargo)
+        kargo.akuity.io/authorized-stage: "kargo-default:cluster-test"
       #  argocd.argoproj.io/sync-options: Prune=false
     spec:
       project: default
 
       source:
         repoURL: "{{ .repoURL }}"
-        targetRevision: wip
+        targetRevision: stage/cluster-test
         chart: ""
         path: "{{ .chartPath }}"
         helm:

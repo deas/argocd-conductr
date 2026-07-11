@@ -286,3 +286,7 @@ kargo-setup: ## Setup kargo
 .PHONY: kargo-demo
 kargo-demo: ## Run the end-to-end kargo promotion demo (see docs/kargo-promotion.md)
 	./tools/kargo-promo-demo.sh
+
+.PHONY: kargo-cluster-demo
+kargo-cluster-demo: ## Run the end-to-end cluster promotion demo, hub -> spoke (see docs/kargo-promotion.md)
+	./tools/kargo-cluster-demo.sh

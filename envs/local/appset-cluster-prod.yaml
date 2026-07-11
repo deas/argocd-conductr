@@ -1,0 +1,111 @@
+# Workloads for the prod-stage spoke cluster - a deliberately slim subset
+# (grow the element lists as needed). Generates nothing until a cluster secret
+# labeled kargo-stage: cluster-prod is registered in Argo CD. Sources track
+# the machine-owned stage/cluster-prod branch, written only by Kargo
+# promotions (assets/kargo/manifest-kargo.yaml, docs/kargo-promotion.md).
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-prod-helm
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  kargo-stage: cluster-prod
+          - list:
+              elements:
+                - appName: ingress-nginx
+                  repoURL: https://kubernetes.github.io/ingress-nginx
+                  namespace: ingress
+                  targetRevision: "4.7.1"
+  template:
+    metadata:
+      # <app>-<cluster>, e.g. ingress-nginx-spoke
+      name: "{{ .appName }}-{{ .name }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+        # Authorizes the cluster-prod Stage's argocd-update step
+        kargo.akuity.io/authorized-stage: "kargo-default:cluster-prod"
+    spec:
+      project: default
+      sources:
+        - repoURL: "{{ .repoURL }}"
+          chart: "{{ .appName }}"
+          targetRevision: "{{ .targetRevision }}"
+          helm:
+            # Same layered values as the hub's infra-helm appset, read from
+            # the promoted branch
+            valueFiles:
+              - "$values/apps/infra/{{ .appName }}/values.yaml"
+              - "$values/apps/infra/{{ .appName }}/envs/local/values.yaml"
+        - repoURL: https://github.com/deas/argocd-conductr.git
+          targetRevision: stage/cluster-prod
+          ref: values
+      destination:
+        server: "{{ .server }}"
+        namespace: "{{ .namespace }}"
+      syncPolicy:
+        syncOptions:
+          # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+          - ServerSideApply=true
+          - CreateNamespace=true
+        automated:
+          prune: true
+          selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-prod-misc
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  kargo-stage: cluster-prod
+          - list:
+              elements:
+                # The plain (stage-less) orders overlay - the hub's
+                # orders-test/orders-prod namespaces belong to the separate
+                # hydrated per-app pipeline and are untouched by this one
+                - appName: orders
+                  path: apps/apps/orders/envs/local
+                  namespace: orders
+  template:
+    metadata:
+      # <app>-<cluster>, e.g. orders-spoke (no collision with orders-prod)
+      name: "{{ .appName }}-{{ .name }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: local-ops
+        kargo.akuity.io/authorized-stage: "kargo-default:cluster-prod"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/deas/argocd-conductr.git
+        targetRevision: stage/cluster-prod
+        path: "{{ .path }}"
+      destination:
+        server: "{{ .server }}"
+        namespace: "{{ .namespace }}"
+      syncPolicy:
+        syncOptions:
+          - ServerSideApply=true
+          - CreateNamespace=true
+        automated:
+          prune: true
+          selfHeal: true

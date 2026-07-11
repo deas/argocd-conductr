@@ -1,4 +1,15 @@
-# Kargo promotion (rendered configs, test → prod)
+# Kargo promotion
+
+Two working promotion pipelines, both defined in
+`assets/kargo/manifest-kargo.yaml` (project `kargo-default`):
+
+1. **Per-app, hydrated** (`test` → `prod`): the `orders` app, Rendered
+   Configs pattern — this section.
+2. **Whole-env, between clusters** (`cluster-test` → `cluster-prod`): the
+   hub and a spoke kind cluster — see
+   [Whole-env promotion between clusters](#whole-env-promotion-between-clusters).
+
+## Pipeline 1: orders (rendered configs, test → prod)
 
 Minimal working example of Kargo-based promotion for the `orders` app,
 following the **Rendered Configs** pattern on a single long-lived branch.
@@ -77,3 +88,90 @@ Notes:
 - Re-promoting Freight whose rendered output is already on `rendered`
   makes `git-commit` return `Skipped`, leaving `desiredRevision` empty — fine
   for the demo, but a real setup may want to handle the no-change case.
+
+## Whole-env promotion between clusters
+
+Pipeline 2 promotes the **entire workload config** (`apps/**`) between two
+kind clusters on the same host: the hub (`argocd-conductr-helm`, stage
+`cluster-test`) and a spoke (`argocd-conductr-spoke`, stage `cluster-prod`).
+Hub-and-spoke: the hub's Argo CD and Kargo manage both clusters — that is
+what makes `argocd-update` and freight verification work for the spoke.
+
+### What is promoted
+
+Any `wip` commit touching `apps/**` becomes Freight of the `cluster`
+Warehouse. Unlike pipeline 1 there is no hydration: each stage branch
+(`stage/cluster-test`, `stage/cluster-prod`) carries a machine-owned **copy
+of the `apps/` tree** at the promoted commit, and Argo CD keeps rendering
+helm/kustomize from it exactly as it would from `wip`. Promotion is a plain
+copy (git-clone → git-clear → copy → commit → push → argocd-update).
+
+### Who reads what
+
+- **Hub workload appsets** (`infra-helm`, `infra-misc`, `infra-helm-local`)
+  are gated: their git generators and `$values`/source revisions point at
+  `stage/cluster-test`. A push to `wip` changes *nothing* on the hub until
+  auto-promotion lands it on the branch.
+- **Spoke appsets** (`appset-cluster-prod.yaml`) generate `<app>-spoke`
+  Applications (slim subset: `ingress-nginx-spoke`, `orders-spoke`) from
+  `stage/cluster-prod` once a cluster secret labeled
+  `kargo-stage: cluster-prod` exists. Names are suffixed with the cluster
+  secret's name, so they cannot collide with pipeline 1's `orders-prod`.
+- **The control plane is deliberately NOT promoted**: `envs/**` (root app,
+  the appsets themselves, `app-argo-cd`) and the cilium bootstrap keep
+  tracking `wip`. Never gate the machinery that applies promotions.
+
+Break-glass: kargo's own values are gated like any workload. If a promoted
+change breaks kargo, it cannot promote the fix — push the fix directly to
+`stage/cluster-test` (the branches are machine-owned, but a human commit is a
+legitimate manual override; the next promotion overwrites it).
+
+### Spoke cluster lifecycle
+
+```sh
+cd tf
+tofu workspace select -or-create spoke
+tofu apply -var-file=spoke.tfvars -target='kind_cluster.default[0]'  # first time
+tofu apply -var-file=spoke.tfvars
+```
+
+(kind + cilium only — no Argo CD, no OLM. The two-phase apply works around
+the kubectl provider needing a reachable endpoint at plan time.)
+
+Register it on the hub as an Argo CD cluster secret — server is the spoke
+control-plane container IP on the shared kind docker network (kind includes
+it in the API server cert SANs):
+
+```sh
+docker inspect argocd-conductr-spoke-control-plane \
+  -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'   # -> server
+kubectl config view --raw ...                                     # -> ca/cert/key data
+```
+
+The secret needs `argocd.argoproj.io/secret-type: cluster` and
+`kargo-stage: cluster-prod` labels, `name: spoke`, `server: https://<ip>:6443`
+and a `config` JSON with `tlsClientConfig.{caData,certData,keyData}`.
+
+### Running it
+
+```sh
+make kargo-cluster-demo
+```
+
+`tools/kargo-cluster-demo.sh` bumps `APP_VERSION` in the orders base (the
+same knob as pipeline 1 — both warehouses watch `wip`, so the bump feeds both
+pipelines; they are independent), waits for `cluster` Freight, auto-promotion
+into `cluster-test`, verification (hub gate apps `ingress-nginx` and
+`reflector` healthy at the new revision), then creates the `cluster-prod`
+Promotion and waits until the spoke's `orders` deployment serves the new
+version.
+
+Notes:
+
+- The hub gate's `argocd-update` checks a representative subset — every hub
+  workload app reads the branch, but promotion health does not hinge on the
+  heavyweight monitoring stack.
+- A no-op promotion (apps/ tree unchanged on the branch) makes `git-commit`
+  return `Skipped` — same caveat as pipeline 1.
+- Next step once stable: switch the source branch `wip` → `main` (Warehouse
+  subscriptions + the pinned control-plane refs + tf).
