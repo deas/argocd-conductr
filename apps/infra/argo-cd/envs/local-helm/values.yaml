@@ -12,6 +12,9 @@ configs:
     # Apps in any namespace - mirrors sourceNamespaces of the ArgoCD CR on `local`
     application.namespaces: "sample-argocd"
     applicationsetcontroller.namespaces: "sample-argocd"
+    # Required with applicationsetcontroller.namespaces (the operator sets the
+    # equivalent flag implicitly) - we only use list+git generators
+    applicationsetcontroller.enable.scm.providers: "false"
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
