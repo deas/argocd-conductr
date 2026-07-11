@@ -3,20 +3,6 @@ kind: Namespace
 metadata:
   name: orders-prod
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: simple-service
-  namespace: orders-prod
-spec:
-  ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    app: trivial-go-web-app
-  type: ClusterIP
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,9 +25,23 @@ spec:
         - name: STAGE
           value: prod
         - name: APP_VERSION
-          value: "1"
+          value: "2"
         image: docker.io/kostiscodefresh/simple-env-app:1.0
         imagePullPolicy: Always
         name: webserver-simple
         ports:
         - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-service
+  namespace: orders-prod
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: trivial-go-web-app
+  type: ClusterIP
