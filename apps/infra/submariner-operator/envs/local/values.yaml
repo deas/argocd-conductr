@@ -1,5 +1,0 @@
-submariner:
-  cableDriver: "vxlan"
-  clusterId: "argocd-conductor"
-postInstallJob:
-  enabled: true
