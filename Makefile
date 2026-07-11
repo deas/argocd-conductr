@@ -282,3 +282,7 @@ kargo-setup: ## Setup kargo
 	if [ -z $${GITHUB_USERNAME} ] || [ -z "$${GITHUB_PAT}" ] ; then false ; fi
 	$(KUBECTL) apply -f assets/kargo/manifest-kargo.yaml
 	envsubst < assets/kargo/secret-kargo-default-repo.yaml | $(KUBECTL) apply -f -
+
+.PHONY: kargo-demo
+kargo-demo: ## Run the end-to-end kargo promotion demo (see docs/kargo-promotion.md)
+	./tools/kargo-promo-demo.sh

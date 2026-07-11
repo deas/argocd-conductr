@@ -19,5 +19,9 @@ spec:
         - name: webserver-simple
           imagePullPolicy: Always
           image: docker.io/kostiscodefresh/simple-env-app:1.0
+          env:
+            # Bumped by tools/kargo-promo-demo.sh to produce new Freight
+            - name: APP_VERSION
+              value: "1"
           ports:
             - containerPort: 8080

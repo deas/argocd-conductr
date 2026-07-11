@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Stages are folders: this overlay renders to rendered/apps/orders/test on the
+# stage/kargo branch (see assets/kargo/manifest-kargo.yaml)
+namespace: orders-test
+
+resources:
+  - ../../base
+
+patches:
+  - path: settings.yml

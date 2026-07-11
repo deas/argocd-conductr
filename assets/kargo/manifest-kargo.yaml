@@ -1,8 +1,25 @@
+# Minimal two-stage (test -> prod) promotion of the orders app using the
+# Rendered Configs pattern: humans edit kustomize sources on wip, Kargo renders
+# them per stage to rendered/apps/orders/<stage> on the long-lived stage/kargo
+# branch, and Argo CD only ever deploys that flat YAML (see
+# envs/*/appset-rendered-apps.yaml). Drive it with tools/kargo-promo-demo.sh.
 # https://github.com/akuity/kargo/discussions/3203#discussioncomment-11718663
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Project
 metadata:
   name: kargo-default
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: kargo-default
+  namespace: kargo-default
+spec:
+  promotionPolicies:
+    # New Freight flows into test unattended; prod stays a manual decision
+    - stageSelector:
+        name: test
+      autoPromotionEnabled: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
@@ -11,24 +28,12 @@ metadata:
   namespace: kargo-default
 spec:
   subscriptions:
-    #- image:
-    #    repoURL: public.ecr.aws/nginx/nginx
-    #    semverConstraint: ^1.26.0
-    #    discoveryLimit: 5
     - git:
         repoURL: https://github.com/deas/argocd-conductr.git
         branch: wip
         commitSelectionStrategy: NewestFromBranch
-        # SemVer, Lexical, NewestTag
-        # allowTags: ""
-        # ignoreTags: ""
         includePaths:
-          #  - envs/localhost/app-orders.yaml
           - apps/apps/orders
-        #excludePaths:
-        #  - ""
-        # discoveryLimit: 20
-        # insecureSkipTLSVerify: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: PromotionTask
@@ -39,45 +44,34 @@ spec:
   vars:
     - name: gitopsRepo
       value: https://github.com/deas/argocd-conductr.git
-    #- name: imageRepo
-    #  value: public.ecr.aws/nginx/nginx
   steps:
     - uses: git-clone
       config:
         repoURL: ${{ vars.gitopsRepo }}
         checkout:
-          - branch: wip
+          # The Freight being promoted - not the branch head, so promoting an
+          # older Freight to prod renders exactly that revision
+          - commit: ${{ commitFrom(vars.gitopsRepo).ID }}
             path: ./src
-          # - branch: ${{ ctx.stage }}
-          - branch: stage/${{ ctx.stage }}
-            # create: true
+          - branch: stage/kargo
+            create: true
             path: ./out
-    #- uses: git-clear
-    #  config:
-    #    path: ./out
-    #- uses: kustomize-set-image
-    #  as: update
-    #  config:
-    #    path: ./src/base
-    #    images:
-    #      - image: ${{ vars.imageRepo }}
-    #        tag: ${{ imageFrom(vars.imageRepo).Tag }}
     - uses: kustomize-build
       config:
         path: ./src/apps/apps/orders/envs/${{ ctx.stage }}
-        outPath: ./out/rendered/orders/kargo
+        outPath: ./out/rendered/apps/orders/${{ ctx.stage }}/manifest.yaml
     - uses: git-commit
       as: commit
       config:
         path: ./out
-        message: "orders update rendered" # ${{ task.outputs.update.commitMessage }}
+        message: "render orders ${{ ctx.stage }} @ ${{ commitFrom(vars.gitopsRepo).ID }}"
     - uses: git-push
       config:
         path: ./out
     - uses: argocd-update
       config:
         apps:
-          - name: orders # kargo-default-${{ ctx.stage }}
+          - name: orders-${{ ctx.stage }}
             sources:
               - repoURL: ${{ vars.gitopsRepo }}
                 desiredRevision: ${{ task.outputs.commit.commit }}
@@ -85,7 +79,7 @@ spec:
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
-  name: kargo
+  name: test
   namespace: kargo-default
 spec:
   requestedFreight:
@@ -94,6 +88,26 @@ spec:
         name: orders
       sources:
         direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: promo-process
+          as: promo-process
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: kargo-default
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: orders
+      sources:
+        stages:
+          - test
   promotionTemplate:
     spec:
       steps:
