@@ -114,6 +114,9 @@ freight_verified_in() { # <freight> <stage>
 }
 
 promote() { # <stage> <freight>
+  # Unlike the kargo CLI/UI, directly-created Promotions must carry their
+  # steps - the admission webhook only inflates task refs, it does not copy
+  # the Stage's promotionTemplate
   kubectl create -f - <<EOF
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Promotion
@@ -123,6 +126,10 @@ metadata:
 spec:
   stage: $1
   freight: $2
+  steps:
+    - task:
+        name: promo-process
+      as: promo-process
 EOF
 }
 
