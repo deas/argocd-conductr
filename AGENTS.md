@@ -17,8 +17,9 @@ bootstrap.
   `ApplicationSet`s). No component config lives here. An env names a
   **cluster class + bootstrap flavor**: `kind-olm` (kind, OLM-bootstrapped)
   and `kind-helm` (kind, helm-only — the hub). Stages are NOT envs (see
-  docs/kargo-promotion.md); workload clusters need no env root (they are
-  registered as cluster secrets on the hub).
+  docs/kargo-promotion.md). `workload` is the one cluster env: the workload
+  cluster's own slim Argo CD control plane (pull model — plain Applications
+  tracking the promoted stage branch, plus a Kargo controller shard).
 - `apps/infra/<component>/` — platform components. Two shapes:
   - **Remote Helm chart**: `values.yaml` (shared) + `envs/kind/values.yaml`
     (the shared **class** overlay both flavors reuse). The chart version is

@@ -1,0 +1,31 @@
+# Promoted workload (kargo pipeline 2): the plain (stage-less) orders overlay
+# from the machine-owned stage/cluster-prod branch - promotions move the
+# branch, this app follows. The hub's orders-test/orders-prod namespaces
+# belong to the separate hydrated per-app pipeline and are untouched by this.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orders
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Authorizes the cluster-prod Stage's argocd-update step - executed by
+    # the workload shard controller against this (local) Argo CD
+    kargo.akuity.io/authorized-stage: "kargo-default:cluster-prod"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/deas/argocd-conductr.git
+    targetRevision: stage/cluster-prod
+    path: apps/apps/orders/envs/kind
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: orders
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

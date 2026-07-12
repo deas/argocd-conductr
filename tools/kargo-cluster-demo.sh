@@ -8,15 +8,19 @@
 #   3. auto-promotion copies the apps/ tree to stage/cluster-test and the
 #      hub's workload apps sync to it
 #   4. once the Freight is verified in cluster-test, we promote it to
-#      cluster-prod - the workload cluster - by creating a Promotion with kubectl
+#      cluster-prod - the workload cluster - by creating a Promotion with
+#      kubectl. cluster-prod is sharded: the Promotion executes on the Kargo
+#      controller running ON the workload cluster, and that cluster's own
+#      Argo CD pulls the branch (pull model, envs/workload).
 #
 # The same bump also feeds the per-app orders pipeline (both warehouses watch
 # wip) - that is expected; the pipelines are independent.
 #
 # Assumes: hub cluster with kargo + gated appsets synced, workload cluster
-# provisioned (tf/workload.tfvars) and registered as an Argo CD cluster secret
-# labeled kargo-stage: cluster-prod, `make kargo-setup` applied, kubectl
-# pointing at the hub and push rights on the repo.
+# provisioned with its own Argo CD (tf/workload.tfvars) and its shard
+# controller wired to the hub (tools/kargo-shard-kubeconfig.sh),
+# `make kargo-setup` applied, kubectl pointing at the hub and push rights on
+# the repo.
 
 set -euo pipefail
 
@@ -45,10 +49,12 @@ require() {
     { echo "project namespace '$project' missing - run 'make kargo-setup'" >&2; exit 1; }
   kubectl -n "$project" get warehouse "$warehouse" >/dev/null 2>&1 ||
     { echo "warehouse '$warehouse' missing - run 'make kargo-setup'" >&2; exit 1; }
-  kubectl -n argocd get app orders-workload ingress-nginx-workload >/dev/null 2>&1 ||
-    { echo "workload-cluster apps missing - is the workload cluster registered (kargo-stage: cluster-prod)?" >&2; exit 1; }
   kubectl --context "$workload_context" get nodes >/dev/null 2>&1 ||
     { echo "cannot reach workload cluster context $workload_context" >&2; exit 1; }
+  kubectl --context "$workload_context" -n argocd get app orders ingress-nginx >/dev/null 2>&1 ||
+    { echo "workload-cluster apps missing - is its Argo CD up (tf/workload.tfvars, envs/workload)?" >&2; exit 1; }
+  kubectl --context "$workload_context" -n kargo get deploy kargo-controller >/dev/null 2>&1 ||
+    { echo "workload shard controller missing - run tools/kargo-shard-kubeconfig.sh and check envs/workload/app-kargo-shard.yaml" >&2; exit 1; }
 }
 
 bump_version() {

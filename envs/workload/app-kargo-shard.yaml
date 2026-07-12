@@ -1,0 +1,59 @@
+# Kargo controller shard on the workload cluster (sharded topology,
+# https://docs.kargo.io/operator-guide/architecture): controller-only
+# install that watches the hub's Kargo control plane - via the kubeconfig
+# secret wired by tools/kargo-shard-kubeconfig.sh - and operates only on
+# resources with shard `workload` (the cluster-prod Stage). Its
+# argocd-update step and Stage health checks resolve against this cluster's
+# own Argo CD.
+# Control plane: tracks wip (chart values inline), never promoted - unlike
+# the hub's gated kargo app, the shard must survive a broken promotion.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kargo-shard
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/akuity/kargo-charts
+    chart: kargo
+    targetRevision: 1.10.8
+    helm:
+      releaseName: kargo
+      valuesObject:
+        api:
+          enabled: false
+        managementController:
+          enabled: false
+        webhooksServer:
+          enabled: false
+        externalWebhooksServer:
+          enabled: false
+        garbageCollector:
+          enabled: false
+        webhooks:
+          # No webhook server here - the hub's control plane validates and
+          # defaults all Kargo resources
+          register: false
+        kubeconfigSecrets:
+          # key kubeconfig.yaml, created by tools/kargo-shard-kubeconfig.sh
+          kargo: kargo-control-plane-kubeconfig
+        controller:
+          logLevel: DEBUG
+          shardName: workload
+          rollouts:
+            # No Argo Rollouts on this cluster - disable instead of relying
+            # on the startup sanity check, so fewer permissions are granted
+            integrationEnabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kargo
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

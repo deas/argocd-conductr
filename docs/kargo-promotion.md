@@ -106,14 +106,27 @@ Notes:
 Pipeline 2 promotes the **entire workload config** (`apps/**`) between two
 kind clusters on the same host: the hub (`argocd-conductr-helm`, stage
 `cluster-test`) and a **workload cluster** (`argocd-conductr-workload`,
-stage `cluster-prod`) — Cluster API vocabulary: it has no GitOps control
-plane of its own. The hub's Argo CD and Kargo manage both clusters — that is
-what makes `argocd-update` and freight verification work for the workload
-cluster. ("Hub and spoke" is deliberately avoided here: in this repo that
-pair historically meant Open Cluster Management roles, and this registration
-is a plain Argo CD cluster secret, not an OCM klusterlet.) Which stage the
-cluster plays is not part of its identity — it comes from the `kargo-stage`
-label on its cluster secret.
+stage `cluster-prod`) — Cluster API vocabulary: it has no cluster-management
+control plane of its own. The two stages use the two multi-cluster models:
+
+- `cluster-test` is **local**: the hub's own Argo CD syncs its gated appsets
+  from `stage/cluster-test`.
+- `cluster-prod` is **pull**: the workload cluster runs its *own* slim Argo
+  CD (root app → `envs/workload`) that pulls `stage/cluster-prod`, plus a
+  **Kargo controller shard** ([sharded topology](https://docs.kargo.io/operator-guide/architecture))
+  that connects back to the hub's Kargo control plane and executes only
+  resources with `shard: workload` — the `cluster-prod` Stage. Its
+  `argocd-update` step and Stage health checks resolve against the local
+  Argo CD, which is what keeps freight verification working without the hub
+  ever reaching into the workload cluster. There is no Argo CD cluster
+  secret on the hub anymore; the only cross-cluster credential points the
+  other way (shard → hub, see below).
+
+("Hub and spoke" is deliberately avoided here: in this repo that pair
+historically meant Open Cluster Management roles.) Which stage the cluster
+plays is not part of its identity — it comes from `Stage.spec.shard`
+matching the shard controller's name, and from which stage branch
+`envs/workload` tracks.
 
 ### What is promoted
 
@@ -130,14 +143,17 @@ copy (git-clone → git-clear → copy → commit → push → argocd-update).
   are gated: their git generators and `$values`/source revisions point at
   `stage/cluster-test`. A push to `wip` changes *nothing* on the hub until
   auto-promotion lands it on the branch.
-- **Workload-cluster appsets** (`appset-cluster-prod.yaml`) generate
-  `<app>-workload` Applications (slim subset: `ingress-nginx-workload`,
-  `orders-workload`) from `stage/cluster-prod` once a cluster secret labeled
-  `kargo-stage: cluster-prod` exists. Names are suffixed with the cluster
-  secret's name, so they cannot collide with pipeline 1's `orders-prod`.
-- **The control plane is deliberately NOT promoted**: `envs/**` (root app,
-  the appsets themselves, `app-argo-cd`) and the cilium bootstrap keep
-  tracking `wip`. Never gate the machinery that applies promotions.
+- **Workload-cluster apps** (`envs/workload/`, plain Applications — a
+  deliberately slim subset: `ingress-nginx`, `orders`) are synced by the
+  workload cluster's own Argo CD from `stage/cluster-prod`. Plain names are
+  fine: they live in a different Argo CD, so they cannot collide with
+  pipeline 1's `orders-prod` on the hub.
+- **The control plane is deliberately NOT promoted**: `envs/**` (root apps,
+  appsets, `app-argo-cd`, the kargo shard) and the cilium bootstrap keep
+  tracking `wip` on *both* clusters. Never gate the machinery that applies
+  promotions — in particular the shard controller tracks `wip` (values
+  inline in `envs/workload/app-kargo-shard.yaml`) so a broken promotion can
+  never take down the thing that would promote the fix.
 
 Break-glass: kargo's own values are gated like any workload. If a promoted
 change breaks kargo, it cannot promote the fix — push the fix directly to
@@ -153,23 +169,27 @@ tofu apply -var-file=workload.tfvars -target='kind_cluster.default[0]'  # first 
 tofu apply -var-file=workload.tfvars
 ```
 
-(kind + cilium only — no Argo CD, no OLM. The two-phase apply works around
-the kubectl provider needing a reachable endpoint at plan time.)
+(kind + cilium + Argo CD — no OLM. The two-phase apply works around the
+kubectl provider needing a reachable endpoint at plan time. opentofu
+bootstraps Argo CD and the root app pointing at `envs/workload`; from there
+the cluster manages itself, including the `argo-cd` app taking over the helm
+release and the `kargo-shard` app installing the controller-only kargo
+chart.)
 
-Register it on the hub as an Argo CD cluster secret — server is the
-workload-cluster control-plane container IP on the shared kind docker
-network (kind includes it in the API server cert SANs):
+Wire the shard to the hub's Kargo control plane:
 
 ```sh
-docker inspect argocd-conductr-workload-control-plane \
-  -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'   # -> server
-kubectl config view --raw ...                                     # -> ca/cert/key data
+tools/kargo-shard-kubeconfig.sh
 ```
 
-The secret needs `argocd.argoproj.io/secret-type: cluster` and
-`kargo-stage: cluster-prod` labels, `name: workload`,
-`server: https://<ip>:6443` and a `config` JSON with
-`tlsClientConfig.{caData,certData,keyData}`.
+The script mints a long-lived token for the hub's `kargo-controller`
+ServiceAccount — reusing that SA means the per-Project secret RoleBindings
+Kargo maintains (git credentials!) apply to the shard as well — and stores
+it as kubeconfig secret `kargo-control-plane-kubeconfig` on the workload
+cluster. The server is `https://argocd-conductr-helm-control-plane:6443`:
+the container name resolves through docker's embedded DNS inside the kind
+network and is in the API server cert SANs, so it is immune to container IP
+drift.
 
 ### Running it
 
@@ -190,6 +210,11 @@ Notes:
 - The hub gate's `argocd-update` checks a representative subset — every hub
   workload app reads the branch, but promotion health does not hinge on the
   heavyweight monitoring stack.
+- `cluster-prod` Promotions execute on the workload cluster's shard
+  controller, including their git steps — the shard reads the repo
+  credentials from the Project namespace on the hub and pushes to GitHub
+  itself. kubectl-created Promotions work unchanged: the hub's mutating
+  webhook stamps the Stage's shard label onto them.
 - A no-op promotion (apps/ tree unchanged on the branch) makes `git-commit`
   return `Skipped` — same caveat as pipeline 1.
 - Next step once stable: switch the source branch `wip` → `main` (Warehouse
