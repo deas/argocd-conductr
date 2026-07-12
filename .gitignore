@@ -27,3 +27,4 @@ tf/argocd-conductr-config
 .aider.input.history
 .aider.tags.cache.v4
 secret-sealed-secrets.yaml
+tf/*-config

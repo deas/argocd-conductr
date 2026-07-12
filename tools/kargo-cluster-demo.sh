@@ -8,13 +8,13 @@
 #   3. auto-promotion copies the apps/ tree to stage/cluster-test and the
 #      hub's workload apps sync to it
 #   4. once the Freight is verified in cluster-test, we promote it to
-#      cluster-prod - the spoke cluster - by creating a Promotion with kubectl
+#      cluster-prod - the workload cluster - by creating a Promotion with kubectl
 #
 # The same bump also feeds the per-app orders pipeline (both warehouses watch
 # wip) - that is expected; the pipelines are independent.
 #
-# Assumes: hub cluster with kargo + gated appsets synced, spoke cluster
-# provisioned (tf/spoke.tfvars) and registered as an Argo CD cluster secret
+# Assumes: hub cluster with kargo + gated appsets synced, workload cluster
+# provisioned (tf/workload.tfvars) and registered as an Argo CD cluster secret
 # labeled kargo-stage: cluster-prod, `make kargo-setup` applied, kubectl
 # pointing at the hub and push rights on the repo.
 
@@ -25,7 +25,7 @@ warehouse=cluster
 repo_root=$(git rev-parse --show-toplevel)
 deployment_yml=apps/apps/orders/base/deployment.yml
 source_branch=wip
-spoke_context=kind-argocd-conductr-spoke
+workload_context=kind-argocd-conductr-workload
 
 log() { echo "==> $*"; }
 
@@ -45,10 +45,10 @@ require() {
     { echo "project namespace '$project' missing - run 'make kargo-setup'" >&2; exit 1; }
   kubectl -n "$project" get warehouse "$warehouse" >/dev/null 2>&1 ||
     { echo "warehouse '$warehouse' missing - run 'make kargo-setup'" >&2; exit 1; }
-  kubectl -n argocd get app orders-spoke ingress-nginx-spoke >/dev/null 2>&1 ||
-    { echo "spoke apps missing - is the spoke cluster registered (kargo-stage: cluster-prod)?" >&2; exit 1; }
-  kubectl --context "$spoke_context" get nodes >/dev/null 2>&1 ||
-    { echo "cannot reach spoke cluster context $spoke_context" >&2; exit 1; }
+  kubectl -n argocd get app orders-workload ingress-nginx-workload >/dev/null 2>&1 ||
+    { echo "workload-cluster apps missing - is the workload cluster registered (kargo-stage: cluster-prod)?" >&2; exit 1; }
+  kubectl --context "$workload_context" get nodes >/dev/null 2>&1 ||
+    { echo "cannot reach workload cluster context $workload_context" >&2; exit 1; }
 }
 
 bump_version() {
@@ -83,8 +83,8 @@ freight_verified_in() { # <freight> <stage>
     -o jsonpath='{.status.verifiedIn}' 2>/dev/null | grep -q "\"$2\""
 }
 
-spoke_orders_version() { # <expected>
-  kubectl --context "$spoke_context" -n orders get deploy simple-deployment \
+workload_orders_version() { # <expected>
+  kubectl --context "$workload_context" -n orders get deploy simple-deployment \
     -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="APP_VERSION")].value}' 2>/dev/null |
     grep -x "$1"
 }
@@ -141,7 +141,7 @@ wait_for "Freight verified in cluster-test" 30 10 freight_verified_in "$freight"
 log "Promoting to cluster-prod (the manual gate - a human creating a Promotion)"
 promote cluster-prod "$freight" promote-cluster-prod
 wait_for "Promotion cluster-prod/$freight Succeeded" 60 10 promotion_phase cluster-prod "$freight"
-wait_for "spoke orders runs APP_VERSION=$next" 30 10 spoke_orders_version "$next"
+wait_for "workload-cluster orders runs APP_VERSION=$next" 30 10 workload_orders_version "$next"
 
-log "Done: APP_VERSION=$next promoted wip -> cluster-test (hub) -> cluster-prod (spoke)"
+log "Done: APP_VERSION=$next promoted wip -> cluster-test (hub) -> cluster-prod (workload cluster)"
 kubectl -n "$project" get freight,stages,promotions

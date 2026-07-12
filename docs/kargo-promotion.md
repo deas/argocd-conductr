@@ -6,7 +6,7 @@ Two working promotion pipelines, both defined in
 1. **Per-app, hydrated** (`test` → `prod`): the `orders` app, Rendered
    Configs pattern — this section.
 2. **Whole-env, between clusters** (`cluster-test` → `cluster-prod`): the
-   hub and a spoke kind cluster — see
+   hub and a workload kind cluster — see
    [Whole-env promotion between clusters](#whole-env-promotion-between-clusters).
 
 ## Pipeline 1: orders (rendered configs, test → prod)
@@ -105,9 +105,15 @@ Notes:
 
 Pipeline 2 promotes the **entire workload config** (`apps/**`) between two
 kind clusters on the same host: the hub (`argocd-conductr-helm`, stage
-`cluster-test`) and a spoke (`argocd-conductr-spoke`, stage `cluster-prod`).
-Hub-and-spoke: the hub's Argo CD and Kargo manage both clusters — that is
-what makes `argocd-update` and freight verification work for the spoke.
+`cluster-test`) and a **workload cluster** (`argocd-conductr-workload`,
+stage `cluster-prod`) — Cluster API vocabulary: it has no GitOps control
+plane of its own. The hub's Argo CD and Kargo manage both clusters — that is
+what makes `argocd-update` and freight verification work for the workload
+cluster. ("Hub and spoke" is deliberately avoided here: in this repo that
+pair historically meant Open Cluster Management roles, and this registration
+is a plain Argo CD cluster secret, not an OCM klusterlet.) Which stage the
+cluster plays is not part of its identity — it comes from the `kargo-stage`
+label on its cluster secret.
 
 ### What is promoted
 
@@ -124,9 +130,9 @@ copy (git-clone → git-clear → copy → commit → push → argocd-update).
   are gated: their git generators and `$values`/source revisions point at
   `stage/cluster-test`. A push to `wip` changes *nothing* on the hub until
   auto-promotion lands it on the branch.
-- **Spoke appsets** (`appset-cluster-prod.yaml`) generate `<app>-spoke`
-  Applications (slim subset: `ingress-nginx-spoke`, `orders-spoke`) from
-  `stage/cluster-prod` once a cluster secret labeled
+- **Workload-cluster appsets** (`appset-cluster-prod.yaml`) generate
+  `<app>-workload` Applications (slim subset: `ingress-nginx-workload`,
+  `orders-workload`) from `stage/cluster-prod` once a cluster secret labeled
   `kargo-stage: cluster-prod` exists. Names are suffixed with the cluster
   secret's name, so they cannot collide with pipeline 1's `orders-prod`.
 - **The control plane is deliberately NOT promoted**: `envs/**` (root app,
@@ -138,31 +144,32 @@ change breaks kargo, it cannot promote the fix — push the fix directly to
 `stage/cluster-test` (the branches are machine-owned, but a human commit is a
 legitimate manual override; the next promotion overwrites it).
 
-### Spoke cluster lifecycle
+### Workload cluster lifecycle
 
 ```sh
 cd tf
-tofu workspace select -or-create spoke
-tofu apply -var-file=spoke.tfvars -target='kind_cluster.default[0]'  # first time
-tofu apply -var-file=spoke.tfvars
+tofu workspace select -or-create workload
+tofu apply -var-file=workload.tfvars -target='kind_cluster.default[0]'  # first time
+tofu apply -var-file=workload.tfvars
 ```
 
 (kind + cilium only — no Argo CD, no OLM. The two-phase apply works around
 the kubectl provider needing a reachable endpoint at plan time.)
 
-Register it on the hub as an Argo CD cluster secret — server is the spoke
-control-plane container IP on the shared kind docker network (kind includes
-it in the API server cert SANs):
+Register it on the hub as an Argo CD cluster secret — server is the
+workload-cluster control-plane container IP on the shared kind docker
+network (kind includes it in the API server cert SANs):
 
 ```sh
-docker inspect argocd-conductr-spoke-control-plane \
+docker inspect argocd-conductr-workload-control-plane \
   -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'   # -> server
 kubectl config view --raw ...                                     # -> ca/cert/key data
 ```
 
 The secret needs `argocd.argoproj.io/secret-type: cluster` and
-`kargo-stage: cluster-prod` labels, `name: spoke`, `server: https://<ip>:6443`
-and a `config` JSON with `tlsClientConfig.{caData,certData,keyData}`.
+`kargo-stage: cluster-prod` labels, `name: workload`,
+`server: https://<ip>:6443` and a `config` JSON with
+`tlsClientConfig.{caData,certData,keyData}`.
 
 ### Running it
 
@@ -175,8 +182,8 @@ same knob as pipeline 1 — both warehouses watch `wip`, so the bump feeds both
 pipelines; they are independent), waits for `cluster` Freight, auto-promotion
 into `cluster-test`, verification (hub gate apps `ingress-nginx` and
 `reflector` healthy at the new revision), then creates the `cluster-prod`
-Promotion and waits until the spoke's `orders` deployment serves the new
-version.
+Promotion and waits until the workload cluster's `orders` deployment serves
+the new version.
 
 Notes:
 

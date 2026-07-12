@@ -1,4 +1,4 @@
-# Workloads for the prod-stage spoke cluster - a deliberately slim subset
+# Workloads for the prod-stage workload cluster - a deliberately slim subset
 # (grow the element lists as needed). Generates nothing until a cluster secret
 # labeled kargo-stage: cluster-prod is registered in Argo CD. Sources track
 # the machine-owned stage/cluster-prod branch, written only by Kargo
@@ -26,7 +26,7 @@ spec:
                   targetRevision: "4.7.1"
   template:
     metadata:
-      # <app>-<cluster>, e.g. ingress-nginx-spoke
+      # <app>-<cluster>, e.g. ingress-nginx-workload
       name: "{{ .appName }}-{{ .name }}"
       finalizers:
         - resources-finalizer.argocd.argoproj.io
@@ -86,7 +86,7 @@ spec:
                   namespace: orders
   template:
     metadata:
-      # <app>-<cluster>, e.g. orders-spoke (no collision with orders-prod)
+      # <app>-<cluster>, e.g. orders-workload (no collision with orders-prod)
       name: "{{ .appName }}-{{ .name }}"
       finalizers:
         - resources-finalizer.argocd.argoproj.io

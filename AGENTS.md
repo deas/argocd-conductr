@@ -17,7 +17,7 @@ bootstrap.
   `ApplicationSet`s). No component config lives here. An env names a
   **cluster class + bootstrap flavor**: `kind-olm` (kind, OLM-bootstrapped)
   and `kind-helm` (kind, helm-only — the hub). Stages are NOT envs (see
-  docs/kargo-promotion.md); spoke clusters need no env root (they are
+  docs/kargo-promotion.md); workload clusters need no env root (they are
   registered as cluster secrets on the hub).
 - `apps/infra/<component>/` — platform components. Two shapes:
   - **Remote Helm chart**: `values.yaml` (shared) + `envs/kind/values.yaml`
@@ -63,7 +63,7 @@ branch, written only by Kargo promotions. Makefile variables: `ENV`/`ARGO_ENV`
 Promotion uses **Kargo** (docs/kargo-promotion.md): per-app Rendered Configs
 on the `rendered` branch (stages `test` → `prod`), and whole-env promotion
 between clusters via `stage/cluster-*` branches (`cluster-test` on the hub →
-`cluster-prod` on the spoke kind cluster).
+`cluster-prod` on the workload kind cluster).
 
 ## Bootstrap: two entrypoints
 
