@@ -32,7 +32,7 @@ bootstrap.
   `envs/kind/` class overlays and `stages/<stage>/` promotion overlays.
   **Keep Argo CD resources out of `apps/`** by design —
   this preserves separation and fast local testing.
-- `tools/`, `scripts/` — helper Bash scripts (`argocd.sh`, `gen-keys.sh`,
+- `tools/` — helper Bash scripts (`argocd.sh`, `gen-keys.sh`,
   `validate.sh`, `wait-for-k8s.sh`, …).
 - `tf/` — self-contained OpenTofu entrypoint for those who want IaC
   on top. It **stands on its own and includes everything**: `make -C tf apply`
@@ -47,6 +47,8 @@ bootstrap.
 `root` (`envs/<env>/app-root.yaml`, points at `envs/<env>`)
 → ApplicationSets (`infra-helm`, `infra-helm-local`, `infra-misc`, …)
 → individual components under `apps/infra`.
+The `workload` env has no checked-in `app-root.yaml`; its root app is
+templated from `envs/app-root.tmpl.yaml` by `tf/main.tf`.
 
 The olm-less `kind-helm` env replaces the OLM-provided operators of
 `kind-olm` with helm charts (argo-cd chart instead of the ArgoCD CR,
@@ -57,9 +59,10 @@ cluster-manager operator). Both flavors' ApplicationSets reuse the shared
 The control plane (`envs/**`, root, argo-cd) tracks a branch directly
 (currently `wip`; update across `envs` with `make set-gitops-rev`). Workload
 appsets are **gated**: they read the machine-owned `stage/cluster-test`
-branch, written only by Kargo promotions. Makefile variables: `ENV`/`ARGO_ENV`
-(default `kind-olm`/`kind-helm`) select the root-app dir and flavor overlay;
-`ARGO_CLASS` (default `kind`) selects the shared class overlay.
+branch, written only by Kargo promotions. Makefile variables: `ENV` (default
+`kind-olm`) selects the root-app dir; `ARGO_ENV` (default `kind-olm`) the OLM
+flavor overlay; `ARGO_HELM_ENV` (default `kind-helm`) the helm flavor values;
+`ARGO_CLASS` (default `kind`) the shared class overlay.
 
 Promotion uses **Kargo** (docs/kargo-promotion.md): per-app Rendered Configs
 on the `rendered` branch (stages `test` → `prod`), and whole-env promotion

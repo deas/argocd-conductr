@@ -25,8 +25,8 @@ Kargo-promoted `stage/cluster-test` branch (docs/kargo-promotion.md).
   `Chart.yaml`+`templates/` or `base/`+`envs/kind/`.
 - `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/kind/` +
   `stages/<stage>/`. **Keep Argo CD resources out of `apps/`.**
-- `docs/` — `TODO.md`, `plans/`, `adr/`, `spikes/` (see `docs/README.md`).
-- `tools/`, `scripts/` — Bash helpers. `tf/` — self-contained OpenTofu
+- `docs/` — `TODO.md`, `kargo-promotion.md`.
+- `tools/` — Bash helpers. `tf/` — self-contained OpenTofu
   entrypoint that stands on its own: `make -C tf apply` brings up everything from
   scratch (`kind` cluster → OLM → Argo CD → root app). Don't unify it with the
   root `Makefile`, which instead assumes a cluster already exists.

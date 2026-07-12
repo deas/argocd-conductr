@@ -135,16 +135,14 @@ We cover deployments of:
 - Argo Rollouts
 - Argo Events
 - Operator Lifecycle Management
-- Metallb
+- Kargo
 - Kube-Prometheus
-- Loki/Promtail
+- Loki
 - Velero
 - Cert-Manager
-- AWS Credentials Sync
 - Sealed Secrets
 - SOPS Secrets
 - Submariner
-- Caretta
 - LitmusChaos
 
 Beyond deployments, we feature:
@@ -154,7 +152,9 @@ Beyond deployments, we feature:
 - Github Actions integration
 - Prometheus Rule Unit Testing
 - A [bare bones alerting application](./apps/infra/monitoring-webhook) in case want to send alerts to very custom receivers (like Matrix Chat Rooms)
-- Open Cluster Management / Submariner Hub and Spoke Setup (WIP)
+- Open Cluster Management / Submariner multi-cluster setup (dormant)
+- Kargo promotion pipelines — per-app Rendered Configs and whole-env
+  promotion to a second cluster (see [`docs/kargo-promotion.md`](./docs/kargo-promotion.md))
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -223,8 +223,8 @@ make
 gives you the list of targets. Both install flavors are supported from here:
 `make argocd-olm-install-basic argocd-apply-root` boots the OLM-preferring
 `kind-olm` environment, while
-`make argocd-helm-install-basic argocd-apply-root ENV=local-helm` boots the
-olm-less `local-helm` environment, which brings in the operators OLM would
+`make argocd-helm-install-basic argocd-apply-root ENV=kind-helm` boots the
+olm-less `kind-helm` environment, which brings in the operators OLM would
 otherwise provide (cert-manager, grafana-operator, the OCM cluster-manager via
 `registration-operator-hub`) as helm charts instead.
 
@@ -244,18 +244,18 @@ make -n argocd-helm-install-basic argocd-apply-root
 
 Run this without `-n` once you feel confident to get the ball rolling.
 
-The default `local` deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
+The default `kind-olm` deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
 
 We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
 
 - [Local Registry](https://kind.sigs.k8s.io/docs/user/local-registry/)
 - [Pull-through Docker registry on Kind clusters](https://maelvls.dev/docker-proxy-registry-kind/) (`registry:2` supports only one registry per instnance)
 - `kind load` may address some use cases
-- Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images). (s. `make argocd-destroy`)
+- Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images).
 
 ### Quick sync experiments with the in-cluster Gitea
 
-The `local` and `local-helm` environments deploy a bare, single-pod
+The `kind-olm` and `kind-helm` environments deploy a bare, single-pod
 [Gitea](https://about.gitea.com) ([`apps/infra/gitea`](./apps/infra/gitea)) to
 act as an in-cluster git remote for quick Argo CD sync experiments — edit,
 push, sync without leaving the cluster or waiting on GitHub.
