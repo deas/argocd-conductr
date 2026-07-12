@@ -145,3 +145,17 @@ When writing code, you MUST follow these principles:
   3. Function Composition
   4. Declarative Code
 - Do not use object oriented programming.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as markdown files under `.scratch/<feature-slug>/` in this repo — no external tracker. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles, using default label strings, recorded on a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
