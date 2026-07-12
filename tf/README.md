@@ -12,7 +12,7 @@ tofu apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | additional\_keys | Files to use to create secrets | `map(any)` | `{}` | no |
-| argo\_env | The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters. | `string` | `"local"` | no |
+| argo\_env | The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters. | `string` | `"kind-olm"` | no |
 | argocd\_install | If/How to install ArgoCD | `string` | `"olm"` | no |
 | bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `true` | no |
 | bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets and other resources Argo CD depends on. | `list(string)` | `null` | no |
@@ -21,7 +21,7 @@ tofu apply
 | cilium\_name | Cilium ArgoCD application name in case we are using ArgoCD managed Cilium | `string` | `"cilium"` | no |
 | containerd\_config\_patches | Containerd patches to apply to kind nodes | `list(string)` | `[]` | no |
 | dns\_hosts | Additional Core DNS Entries we want in kind | `map(string)` | `null` | no |
-| env | The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster. | `string` | `"localhost"` | no |
+| env | The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster. | `string` | `"kind-olm"` | no |
 | export\_ocm\_bootstrap\_secret | Whether we want export/output open cluster management secrets | `bool` | `false` | no |
 | export\_submariner\_broker\_secret | Whether we want export/output submariner broker secrets | `bool` | `true` | no |
 | extra\_mounts | Extra mount points we want in kind nodes | `list(map(string))` | `[]` | no |

@@ -7,7 +7,7 @@
 # See docs/kargo-promotion.md. Use with:
 #   tofu workspace select -or-create workload
 #   tofu apply -var-file=workload.tfvars
-env      = "workload" # root app path envs/workload
+env      = "workload"  # root app path envs/workload
 argo_env = "kind-helm" # reuse the hub cluster class's cilium + argo-cd values
 
 argocd_install = "helm"
