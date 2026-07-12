@@ -126,7 +126,7 @@ spec:
                 - appName: cilium
                   repoURL: https://helm.cilium.io
                   namespace: kube-system
-                  targetRevision: "1.17.3" # Must not be floating - used in opentofu
+                  targetRevision: "1.19.5" # Must not be floating - used in opentofu
                 # Using kustomize native helm for reflector due to openshift scc augmentation
                 #- appName: reflector
                 #  repoURL: https://emberstack.github.io/helm-charts
