@@ -308,29 +308,10 @@ resource "helm_release" "cilium" {
   values     = local.cilium_values
 }
 
-
-resource "helm_release" "metallb" {
-  count      = var.metallb ? 1 : 0
-  name       = "metallb"
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "metallb"
-  version    = "6.3.15"
-  namespace  = "metallb-system"
-  # values     = [] # local.cilium_values
-}
-
-# TODO: This module should depend on the helm_release and create the resources
-module "metallb_config" {
-  count  = var.metallb ? 1 : 0
-  source = "github.com/deas/terraform-modules//kind-metallb?ref=main"
-}
-
-# The Following module should be replaced by the bitnami helm chart
-module "metallb" {
-  # source = "../../terraform-modules/metallb"
-  count            = var.metallb ? 1 : 0
-  source           = "github.com/deas/terraform-modules//metallb?ref=main"
-  install_manifest = "" # data.http.metallb_native[0].response_body
-  config_manifest  = module.metallb_config[0].manifest
-  depends_on       = [helm_release.metallb]
-}
+# LoadBalancer Services on kind: our preference is cloud-provider-kind
+# (https://github.com/kubernetes-sigs/cloud-provider-kind), a host-side helper
+# that assigns external IPs to type=LoadBalancer Services across all local kind
+# clusters at once - no in-cluster CRDs or address-pool bookkeeping. It runs as
+# a background process on the host, not as Terraform-managed cluster resources,
+# so it is intentionally not provisioned here. MetalLB used to live here and was
+# removed (never enabled - var.metallb defaulted to false everywhere).

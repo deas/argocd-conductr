@@ -133,12 +133,6 @@ variable "additional_keys" {
   default     = {}
 }
 
-variable "metallb" {
-  type        = bool
-  default     = false # TODO: kubectl version not reliable, depends on random order. Should move it over to helm. 
-  description = "If we want to use MetallLb on kind"
-}
-
 variable "dns_hosts" {
   type        = map(string)
   description = "Additional Core DNS Entries we want in kind"

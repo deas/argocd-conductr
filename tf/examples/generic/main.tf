@@ -4,7 +4,6 @@
 
 module "main" {
   source                          = "../.."
-  metallb                         = false
   export_submariner_broker_secret = false
   env                             = var.env
   argocd_install                  = "olm"
