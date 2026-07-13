@@ -332,6 +332,7 @@ Tracked work items live in [`docs/TODO.md`](./docs/TODO.md).
 - [Argo CD Application Dependencies](https://codefresh.io/blog/argo-cd-application-dependencies/)
 - [Progressive Syncs (alpha)](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/)
 - [Custom Root CAs in OpenShift](https://kenmoini.com/post/2022/02/custom-root-ca-in-openshift/)
+- [Finding: vind (vCluster in Docker) as a kind replacement](./docs/finding-vind-evaluation.md) — why we stay on `kind` for now
 
 <!-- CONTRIBUTING -->
 
