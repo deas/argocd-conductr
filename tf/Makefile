@@ -24,6 +24,11 @@ REGISTRY_URL := gcr.io/cloud-foundation-cicd
 CLUSTER_NAME = argocd-conductr-control-plane
 DOCKER_RESTART = no
 
+# Var-file fed to every `tofu apply`. Defaults to the helm (olm-less) flavor.
+# Override for the olm cluster, e.g. `make apply TFVARS=terraform-batman.tfvars`.
+# Note: terraform.tfvars is auto-loaded first; TFVARS overrides on top of it.
+TFVARS ?= sample-helm.tfvars
+
 # GPG_ID := 68789365A466F3CFC4D563AF9C946BF5155242C6
 
 .DEFAULT_GOAL := help
@@ -80,12 +85,12 @@ generate_docs: docker-generate-docs
 # mode where kind_cluster is count=0), then reconcile everything in one command.
 .PHONY: apply
 apply: ## Reconcile everything (creates the kind cluster first if needed)
-	tofu apply -target=kind_cluster.default -auto-approve
-	tofu apply -auto-approve
+	tofu apply -target=kind_cluster.default -var-file=$(TFVARS) -auto-approve
+	tofu apply -var-file=$(TFVARS) -auto-approve
 
 .PHONY: apply-raw
 apply-raw: ## Plain single-pass apply (assumes cluster/kubeconfig already exists)
-	tofu apply -auto-approve
+	tofu apply -var-file=$(TFVARS) -auto-approve
 
 .PHONY: quick-destroy
 quick-destroy: ## Quick destruction

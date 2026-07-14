@@ -196,37 +196,44 @@ Some opinions first:
 - `kubectl`
 - `mise` (highly recommended)
 - `docker` (if using `kind`)
-- `opentofu` (optional)
-- `helm` (if not using opentofu)
+- `opentofu` (required to bring up a cluster)
+- `helm` (only for the deprecated no-opentofu install path)
 
 ### Usage
 
 For basic demo purposes, you can use this public repo. If you want to run against your own, replace the git server reference with your own.
 
-First, you should choose where to start, specifically whether you want to use `opentofu`.
-
-If you want IaC on top, start in the [`./tf`](./tf) folder. This path **stands on its own and brings up everything from scratch** — it creates the `kind` cluster, bootstraps OLM, installs Argo CD and applies the root app:
-
-```sh
-cd tf
-cp sample.tfvars terraform.tfvars   # then set proper values
-make apply                          # tofu apply -auto-approve
-make quick-destroy                  # tear the environment back down
-```
-
-If you don't want opentofu, start at the root folder instead. Its [`Makefile`](./Makefile) **assumes a cluster already exists** in your current `kubectl` context — it only installs Argo CD and applies the root app, it does not create a `kind` cluster. Running
+The root [`Makefile`](./Makefile) is the entrypoint. Run `make` for the full
+list of targets; the **Clusters** section brings everything up from scratch
+(`kind` cluster → cilium → Argo CD → root app) via the OpenTofu module in
+[`./tf`](./tf), which it drives for you:
 
 ```sh
-make
+make cluster-up            # default hub cluster (helm flavor) - the usual entrypoint
+make cluster-workload-up   # optional second "workload" cluster (pull model)
+make kargo-connect         # wire the workload Kargo shard back to the hub
+make cluster-down          # tear the current cluster back down
 ```
 
-gives you the list of targets. Both install flavors are supported from here:
-`make argocd-olm-install-basic argocd-apply-root` boots the OLM-preferring
-`kind-olm` environment, while
-`make argocd-helm-install-basic argocd-apply-root ENV=kind-helm` boots the
-olm-less `kind-helm` environment, which brings in the operators OLM would
-otherwise provide (cert-manager, grafana-operator, the OCM cluster-manager via
-`registration-operator-hub`) as helm charts instead.
+`cluster-up` picks the right `tofu` workspace and tfvars per cluster, so you
+never touch `tofu workspace` directly. The OLM-preferring `kind-olm` flavor is
+built the same way but in its own workspace with `tf/terraform-batman.tfvars`
+(see [`tf/`](./tf) for the underlying `apply`/`quick-destroy` engine, and
+[`docs/kargo-promotion.md`](./docs/kargo-promotion.md) for the two-cluster
+promotion flow).
+
+<details>
+<summary>Deprecated: install Argo CD into a pre-existing cluster (no OpenTofu)</summary>
+
+Before OpenTofu was required, the root Makefile could install Argo CD into a
+cluster you had already created (it did not create the `kind` cluster). Those
+targets still exist but are **deprecated** — prefer `make cluster-up`:
+`make argocd-helm-install-basic argocd-apply-root` boots the olm-less
+`kind-helm` flavor (bringing in cert-manager, grafana-operator and the OCM
+cluster-manager as helm charts), while
+`make argocd-olm-install-basic argocd-apply-root ENV=kind-olm` boots the
+OLM-preferring `kind-olm` flavor.
+</details>
 
 Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./tools/gen-keys.sh) in case you'd like to use `sops` instead).
 
@@ -236,15 +243,15 @@ If using github, you may want to disable github actions and/or add a public depl
 gh repo deploy-key add ...
 ```
 
-In the root folder (w/o opentofu), you should be checking
+If you want to see what a target will do before running it, dry-run it first:
 
 ```
-make -n argocd-helm-install-basic argocd-apply-root
+make -n cluster-up
 ```
 
-Run this without `-n` once you feel confident to get the ball rolling.
+Run it without `-n` once you feel confident to get the ball rolling.
 
-The default `kind-olm` deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
+The deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
 
 We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
 

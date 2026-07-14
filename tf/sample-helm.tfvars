@@ -1,6 +1,6 @@
-# olm-less test flavor - use with:
-#   tofu workspace select local-helm
-#   tofu apply -var-file=local-helm.tfvars
+# olm-less test flavor - this is the default. Just run:
+#   make apply
+# (the Makefile defaults TFVARS to this file, on the default workspace).
 # terraform.tfvars is auto-loaded first (proxies, audit, bootstrap_path);
 # values here override it.
 env                = "kind-helm"

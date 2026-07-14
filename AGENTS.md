@@ -34,11 +34,10 @@ bootstrap.
   this preserves separation and fast local testing.
 - `tools/` — helper Bash scripts (`argocd.sh`, `gen-keys.sh`,
   `validate.sh`, `wait-for-k8s.sh`, …).
-- `tf/` — self-contained OpenTofu entrypoint for those who want IaC
-  on top. It **stands on its own and includes everything**: `make -C tf apply`
-  creates the `kind` cluster → OLM → Argo CD → root app, driven entirely by
-  `tf/main.tf` (it does not call back into the root `Makefile`). Teardown is
-  `make -C tf quick-destroy`.
+- `tf/` — the OpenTofu module (the cluster-lifecycle **engine**): `make -C tf
+  apply` creates the `kind` cluster → cilium → Argo CD → root app, driven
+  entirely by `tf/main.tf`; teardown is `make -C tf quick-destroy`. The root
+  `Makefile`'s `cluster-*` targets are the human front door that wrap these.
 - `.github/workflows/` — CI.
 - `main.go`, `test/` — small Go helper + Ginkgo cluster tests.
 
@@ -60,7 +59,7 @@ The control plane (`envs/**`, root, argo-cd) tracks a branch directly
 (currently `wip`; update across `envs` with `make set-gitops-rev`). Workload
 appsets are **gated**: they read the machine-owned `stage/cluster-test`
 branch, written only by Kargo promotions. Makefile variables: `ENV` (default
-`kind-olm`) selects the root-app dir; `ARGO_ENV` (default `kind-olm`) the OLM
+`kind-helm`) selects the root-app dir; `ARGO_ENV` (default `kind-olm`) the OLM
 flavor overlay; `ARGO_HELM_ENV` (default `kind-helm`) the helm flavor values;
 `ARGO_CLASS` (default `kind`) the shared class overlay.
 
@@ -69,26 +68,34 @@ on the `rendered` branch (stages `test` → `prod`), and whole-env promotion
 between clusters via `stage/cluster-*` branches (`cluster-test` on the hub →
 `cluster-prod` on the workload kind cluster).
 
-## Bootstrap: two entrypoints
+## Bootstrap: one entrypoint
 
-There are two parallel ways to bring an environment up. Pick one:
+The root `Makefile` is the front door. Its **Clusters** section
+(`make cluster-up`, `cluster-workload-up`, `cluster-down`, `kargo-connect`)
+brings everything up from scratch (cluster + cilium + Argo CD + root app) by
+driving the OpenTofu module in `tf/` — it selects the right `tofu` workspace and
+tfvars per cluster, so callers never run `tofu workspace` directly.
 
-- **With IaC (`tf/`)** — `make -C tf apply` brings up everything from scratch
-  (cluster + OLM + Argo CD + root app). Use this for the local `kind` workflow.
-- **Without IaC (root `Makefile`)** — assumes a cluster **already exists** in
-  your current `kubectl` context. It only installs Argo CD and applies the root
-  app; it has no `kind` cluster lifecycle target. The overlap with `tf/` is
-  intentional layering, not duplication — do not try to unify them.
+- `tf/` is the **engine** (the actual `apply`/`quick-destroy`), co-located with
+  the `.tf` it must run beside. `make -C tf apply` still works for tofu-savvy
+  use; the root targets wrap it.
+- Bringing Argo CD up **without** OpenTofu (into a pre-existing cluster) via
+  `argocd-helm-install-basic`/`argocd-olm-install-basic` + `argocd-apply-root`
+  is **deprecated** — OpenTofu is now required to create a cluster. Those
+  targets remain, marked `[DEPRECATED]`, only for the existing-cluster case.
 
 ## Common commands
 
 | Command | Purpose |
 | --- | --- |
 | `make` | List available targets (root `Makefile`) |
-| `make -C tf apply` / `make -C tf quick-destroy` | Bring up / tear down the full `kind` environment via OpenTofu |
+| `make cluster-up` | Bring up the default hub cluster (helm) - wraps OpenTofu in `tf/` |
+| `make cluster-workload-up` | Bring up the second "workload" cluster (pull model) |
+| `make kargo-connect` | Wire the workload Kargo shard to the hub control plane |
+| `make cluster-down` / `make -C tf quick-destroy` | Tear down the current-workspace cluster |
 | `make install-tools` | Install pinned tools via `mise` |
-| `make argocd-helm-install-basic argocd-apply-root` | Install Argo CD (Helm) + apply the root app into an existing cluster |
-| `make argocd-olm-install-basic` | Install Argo CD via OLM instead (into an existing cluster) |
+| `make argocd-helm-install-basic argocd-apply-root` | `[DEPRECATED]` Install Argo CD (Helm) into an existing cluster |
+| `make argocd-olm-install-basic` | `[DEPRECATED]` Install Argo CD via OLM into an existing cluster |
 | `make test` | Go/Ginkgo tests (needs a live cluster) |
 | `make test-watch` | `ginkgo watch ./...` |
 | `make lint` | `go vet` + `tflint --recursive` |

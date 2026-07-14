@@ -26,16 +26,19 @@ Kargo-promoted `stage/cluster-test` branch (docs/kargo-promotion.md).
 - `apps/apps/<app>/` — workload apps as Kustomize `base/` + `envs/kind/` +
   `stages/<stage>/`. **Keep Argo CD resources out of `apps/`.**
 - `docs/` — `TODO.md`, `kargo-promotion.md`.
-- `tools/` — Bash helpers. `tf/` — self-contained OpenTofu
-  entrypoint that stands on its own: `make -C tf apply` brings up everything from
-  scratch (`kind` cluster → OLM → Argo CD → root app). Don't unify it with the
-  root `Makefile`, which instead assumes a cluster already exists.
+- `tools/` — Bash helpers. `tf/` — OpenTofu module that brings up everything
+  from scratch (`kind` cluster → cilium → Argo CD → root app). The root
+  `Makefile` is the front door and drives it: `make cluster-up` wraps
+  `make -C tf apply` (picking the workspace + tfvars per cluster).
 
 ## Commands
 
-Bootstrap is either `make -C tf apply` (full `kind` environment from scratch) or
-the root Makefile's `argocd-helm-install-basic`/`argocd-olm-install-basic` +
-`argocd-apply-root` (into an existing cluster). Run `make` for the full list.
+Bootstrap a full `kind` environment from scratch with `make cluster-up`
+(default helm hub) or `make cluster-workload-up` (second cluster); both wrap the
+OpenTofu module in `tf/`. The root Makefile's
+`argocd-helm-install-basic`/`argocd-olm-install-basic` + `argocd-apply-root`
+path (install into an existing cluster) is `[DEPRECATED]`. Run `make` for the
+full list.
 CI (`pr.yml`) runs `make fmt`, `make lint`,
 `make gator-verify`, `make test-prom-rules`; the test workflow runs
 `tools/validate.sh` (`kubeconform`). Tools are pinned in `.tool-versions` and

@@ -13,8 +13,8 @@ MONITORING_NS=openshift-user-workload-monitoring
 OPERATORS_NS=openshift-operators
 # OLM_NS=olm
 # OLM_NS=openshift-operator-lifecycle-manager
-# Root app env dir (envs/$(ENV)) - kind-olm or kind-helm
-ENV=kind-olm
+# Root app env dir (envs/$(ENV)) - kind-helm (default) or kind-olm
+ENV=kind-helm
 # argo-cd flavor overlay for the OLM install (ArgoCD CR kustomization)
 ARGO_ENV=kind-olm
 # Shared per-component class overlay (envs/kind)
@@ -36,7 +36,7 @@ BOOTSTRAP_SEALED_SECRET=apps/infra/private/base/sealedsecret-argocd-repo.yaml
 .PHONY: help
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-33s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-	@printf "\nKey variables (override like \033[36mmake argocd-apply-root ENV=kind-helm\033[0m):\n"
+	@printf "\nKey variables (override like \033[36mmake argocd-apply-root ENV=kind-olm\033[0m):\n"
 	@printf "  ENV=%s (root app dir envs/<ENV>)  ARGO_ENV=%s (OLM flavor overlay)\n" "$(ENV)" "$(ARGO_ENV)"
 	@printf "  ARGO_HELM_ENV=%s (helm flavor values)  ARGO_CLASS=%s (shared class overlay)\n" "$(ARGO_HELM_ENV)" "$(ARGO_CLASS)"
 
@@ -47,10 +47,36 @@ install-tools: ## Install all the tools
 target:
 	mkdir target
 
-##@ Bootstrap (existing cluster - see tf/ for the from-scratch kind path)
+##@ Clusters (kind + Argo CD, provisioned by OpenTofu in tf/)
 
+# These are the entrypoints for humans: they wrap the OpenTofu module in tf/
+# (which does the actual kind + cilium + Argo CD bring-up) and pick the right
+# tofu workspace + tfvars per cluster, so you never touch `tofu workspace`
+# directly. See tf/Makefile for the underlying `apply`/`quick-destroy` engine.
+
+.PHONY: cluster-up
+cluster-up: ## Bring up the default hub cluster (helm flavor) - the usual entrypoint
+	cd tf && tofu workspace select default && $(MAKE) apply
+
+.PHONY: cluster-workload-up
+cluster-workload-up: ## Bring up the second "workload" cluster (pull-model peer)
+	cd tf && tofu workspace select -or-create workload && $(MAKE) apply TFVARS=workload.tfvars
+
+.PHONY: cluster-down
+cluster-down: ## Tear down the current-workspace cluster (kind node + tofu state)
+	$(MAKE) -C tf quick-destroy
+
+.PHONY: kargo-connect
+kargo-connect: ## Wire the workload cluster's Kargo shard to the hub control plane (see docs/kargo-promotion.md)
+	./tools/kargo-shard-kubeconfig.sh
+	$(KUBECTL) --context kind-argocd-conductr-workload -n kargo rollout restart deploy -l app.kubernetes.io/component=controller
+
+##@ Bootstrap - manual/legacy (prefer 'make cluster-up'; needs terraform-provisioned cluster otherwise)
+
+# OBSOLETE: the tofu module (make cluster-up) installs Argo CD from scratch.
+# Kept only for bootstrapping Argo CD into a pre-existing, non-tofu cluster.
 .PHONY: argocd-install-basic-common
-argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
+argocd-install-basic-common: ## [DEPRECATED] Install ArgoCD common (Helm/OLM) bits
 	$(KUBECTL) create ns $(ARGOCD_NS) || true
 	if [ -e "keys/$(GPG_KEY)-priv.asc" ] ; then $(KUBECTL) -n $(ARGOCD_NS) create secret generic sops-gpg --namespace=argocd --from-file=sops.asc=keys/$(GPG_KEY)-priv.asc ; fi
 	if [ -e "$(BOOTSTRAP_MANIFEST)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_MANIFEST) ; fi
@@ -69,14 +95,15 @@ argocd-install-basic-common: ## Install ArgoCD common (Helm/OLM) bits
 	# if [ -e "$(BOOTSTRAP_SEALED_SECRET)" ] ; then $(KUBECTL) apply -f $(BOOTSTRAP_SEALED_SECRET) ; fi
 
 .PHONY: argocd-helm-install-basic
-# TODO: A bit overlap with opentofu
-argocd-helm-install-basic: argocd-install-basic-common  ## Install ArgoCD with Helm
+# OBSOLETE: overlaps the tofu module - prefer 'make cluster-up'.
+argocd-helm-install-basic: argocd-install-basic-common  ## [DEPRECATED] Install ArgoCD with Helm
 #	$(KUBECTL) apply -f assets/scc-argocd.yaml
 #   kustomize build --enable-helm apps/local/argo-cd | $(KUBECTL) apply -f -
 	helm upgrade --install --namespace $(ARGOCD_NS) -f apps/infra/argo-cd/values.yaml -f apps/infra/argo-cd/envs/$(ARGO_HELM_ENV)/values.yaml -f apps/infra/argo-cd/bootstrap-override-values.yaml argocd --repo https://argoproj.github.io/argo-helm argo-cd --version 10.1.3
 
 .PHONY: argocd-olm-install-basic
-argocd-olm-install-basic: argocd-install-basic-common  ## Install ArgoCD with OLM
+# OBSOLETE: prefer 'make cluster-up' (tofu, olm flavor via its own workspace).
+argocd-olm-install-basic: argocd-install-basic-common  ## [DEPRECATED] Install ArgoCD with OLM
 	helm upgrade -i --namespace $(OPERATORS_NS) operators apps/infra/operators -f apps/infra/operators/bootstrap-override-operatorhub-values.yaml
 	$(KUBECTL) -n $(OPERATORS_NS) wait --timeout=180s --for=jsonpath='{.status.state}'=AtLatestKnown subscription/argocd-operator
 	./tools/wait-for-k8s.sh crd/argocds.argoproj.io banane 60 # TODO : There should be a better way
@@ -94,13 +121,13 @@ argocd-apply-root: ## Apply argocd root application
 #	wget -q https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml -O components/olm/non-crd/olm.yaml
 
 .PHONY: olmv0-install
-olmv0-install: ## Ad hoc install olmv0
+olmv0-install: ## [DEPRECATED] Ad hoc install olmv0 (tofu handles OLM for the olm flavor)
 	helm upgrade -i olm oci://ghcr.io/cloudtooling/helm-charts/olm --version 0.30.0 -f tf/values-olm.yaml
 	# Shell based install not in harmony with openshift
 	# curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.30.0/install.sh | bash -s v0.30.0
 
 .PHONY: olmv1-install
-olmv1-install: ## Ad hoc install olmv1
+olmv1-install: ## [DEPRECATED] Ad hoc install olmv1
 	curl -L -s https://github.com/operator-framework/operator-controller/releases/latest/download/install.sh | bash -s
 
 ##@ Argo CD operations
