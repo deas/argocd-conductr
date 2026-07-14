@@ -1,0 +1,46 @@
+# The workload cluster's self-managed Argo CD (pull model): opentofu installs
+# it once (tf/workload.tfvars), then this app takes over - the same
+# chart/values as the hub's envs/kind-helm/app-argo-cd.yaml, minus components
+# a single-purpose control plane doesn't need (inline overlay below).
+# Control plane: tracks wip, never promoted.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: argo-cd
+      helm:
+        valueFiles:
+          - $values/apps/infra/argo-cd/envs/kind-helm/../../values.yaml
+          - $values/apps/infra/argo-cd/envs/kind-helm/values.yaml
+        # Slim overlay (kept inline - there is no per-cluster values dir for
+        # a one-off): no SSO, no notifications, and plain Applications below
+        # instead of ApplicationSets
+        valuesObject:
+          dex:
+            enabled: false
+          notifications:
+            enabled: false
+          applicationSet:
+            enabled: false
+      repoURL: https://argoproj.github.io/argo-helm
+      targetRevision: 10.1.3
+    - ref: values
+      repoURL: https://github.com/deas/argocd-conductr.git
+      targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # https://www.arthurkoziel.com/fixing-argocd-crd-too-long-error/
+      - ServerSideApply=true
+      - CreateNamespace=true

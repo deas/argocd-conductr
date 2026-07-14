@@ -1,0 +1,8 @@
+controller:
+  admissionWebhooks:
+    enabled: false
+  service:
+    # kind has no LoadBalancer provider (metallb is off) - the default
+    # LoadBalancer service stays <pending> forever and the app never leaves
+    # Progressing, which blocks Kargo stage health verification
+    type: NodePort

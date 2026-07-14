@@ -1,0 +1,34 @@
+# Promoted workload (kargo pipeline 2): same layered values as the hub's
+# infra-helm appset, read from the machine-owned stage/cluster-prod branch.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    kargo.akuity.io/authorized-stage: "kargo-default:cluster-prod"
+spec:
+  project: default
+  sources:
+    - repoURL: https://kubernetes.github.io/ingress-nginx
+      chart: ingress-nginx
+      targetRevision: "4.7.1"
+      helm:
+        valueFiles:
+          - $values/apps/infra/ingress-nginx/values.yaml
+          - $values/apps/infra/ingress-nginx/envs/kind/values.yaml
+    - repoURL: https://github.com/deas/argocd-conductr.git
+      targetRevision: stage/cluster-prod
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingress
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

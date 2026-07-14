@@ -5,3 +5,9 @@ fullnameOverride: ""
 rule:
   argocdAppSyncs:
     for: "10m"
+
+grafana:
+  plugins:
+    persistentVolumeClaim:
+      size: ""
+      storageClass: ""

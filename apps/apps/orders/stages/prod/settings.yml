@@ -1,0 +1,13 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: webserver-simple
+          env:
+            - name: STAGE
+              value: "prod"

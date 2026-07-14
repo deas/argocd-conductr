@@ -1,18 +1,29 @@
-# terraform infra for argocd conductr
+# opentofu infra for argocd conductr
 
 ## Usage
 ```shell
 cp sample.tfvars terraform.tfvars
 # Set proper values in terraform.tfvars
-terraform apply
+tofu apply
 ```
+
+## LoadBalancer Services on kind
+
+When running on kind, our preference for `type: LoadBalancer` Services is
+[cloud-provider-kind](https://github.com/kubernetes-sigs/cloud-provider-kind)
+rather than MetalLB. It runs as a host-side helper that assigns external IPs to
+LoadBalancer Services across all local kind clusters at once, with no in-cluster
+CRDs or address-pool configuration to maintain. Because it lives on the host
+(not as cluster resources), it is run out-of-band and is not provisioned by this
+Terraform. MetalLB support was removed - it was never enabled.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | additional\_keys | Files to use to create secrets | `map(any)` | `{}` | no |
-| argo\_env | The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters. | `string` | `"local"` | no |
+| argo\_env | The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters. | `string` | `"kind-olm"` | no |
 | argocd\_install | If/How to install ArgoCD | `string` | `"olm"` | no |
 | bootstrap\_olm | Should the cluster have OLM before ArgoCD? (Openshift like) | `bool` | `true` | no |
 | bootstrap\_path | Path to and additional boostrap manifest. Use this to inject decryption secrets and other resources Argo CD depends on. | `list(string)` | `null` | no |
@@ -21,7 +32,7 @@ terraform apply
 | cilium\_name | Cilium ArgoCD application name in case we are using ArgoCD managed Cilium | `string` | `"cilium"` | no |
 | containerd\_config\_patches | Containerd patches to apply to kind nodes | `list(string)` | `[]` | no |
 | dns\_hosts | Additional Core DNS Entries we want in kind | `map(string)` | `null` | no |
-| env | The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster. | `string` | `"localhost"` | no |
+| env | The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster. | `string` | `"kind-olm"` | no |
 | export\_ocm\_bootstrap\_secret | Whether we want export/output open cluster management secrets | `bool` | `false` | no |
 | export\_submariner\_broker\_secret | Whether we want export/output submariner broker secrets | `bool` | `true` | no |
 | extra\_mounts | Extra mount points we want in kind nodes | `list(map(string))` | `[]` | no |
@@ -31,7 +42,6 @@ terraform apply
 | kubeadm\_config\_patches | Kubeadm config patches | `list(string)` | `[]` | no |
 | kubeconfig\_linked | kubeconfig file and context for a cluster linked to this one. | <pre>object({<br>    path    = string<br>    context = string<br>  })</pre> | `null` | no |
 | kubeconfig\_path | Path to a kubeconfig file of a cluster to use instead of creating a kind instance. | `string` | `null` | no |
-| metallb | If we want to use MetallLb on kind | `bool` | `false` | no |
 | ocm\_bootstrap\_get | The command to execute to obtain the ocm bootstrapsecret | `list(string)` | `[]` | no |
 | pod\_subnet | n/a | `string` | `"10.243.0.0/16"` | no |
 | service\_subnet | n/a | `string` | `"10.95.0.0/12"` | no |

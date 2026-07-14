@@ -1,13 +1,13 @@
 variable "env" {
   type        = string
   description = "The cluster environment key to use to kickoff the ArgoCD deployments. Unique per cluster."
-  default     = "localhost"
+  default     = "kind-olm"
 }
 
 variable "argo_env" {
   type        = string
   description = "The ArgoCD environment key to use to kickoff the ArgoCD deployments. May be shared across clusters."
-  default     = "local"
+  default     = "kind-olm"
 }
 
 variable "pod_subnet" {
@@ -111,7 +111,7 @@ variable "cilium_name" {
 variable "cilium_appset_path" {
   type        = string
   description = "Path to the ArgoCD ApplicationSet to look up the Cilium Application. This is how we choose if we want the Cilium CNI in kind"
-  default     = null # "envs/local/appset-infra-helm.yaml"
+  default     = null # "envs/kind-olm/appset-infra-helm.yaml"
 }
 
 variable "containerd_config_patches" {
@@ -131,12 +131,6 @@ variable "additional_keys" {
   type        = map(any)
   description = "Files to use to create secrets "
   default     = {}
-}
-
-variable "metallb" {
-  type        = bool
-  default     = false # TODO: kubectl version not reliable, depends on random order. Should move it over to helm. 
-  description = "If we want to use MetallLb on kind"
 }
 
 variable "dns_hosts" {

@@ -1,0 +1,38 @@
+# Mirror of envs/kind/values.yaml - keep in sync!
+# The tf CNI bootstrap resolves cilium values via argo_env
+# (tf/main.tf: apps/infra/cilium/envs/${version_env}/values.yaml), so the
+# local-helm env needs this copy. The Argo CD cilium app itself syncs the
+# envs/kind overlay (the class overlay both flavors reuse) - if the two
+# files diverge, Argo would rewrite the live CNI config after bootstrap.
+hubble:
+  enabled: true
+  metrics:
+    enabled: [dns:query;ignoreAAAA, drop, tcp, flow, icmp, http]
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: prometheus
+    dashboards:
+      enabled: true
+      namespace: monitoring
+  relay:
+    enabled: true
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        labels:
+          release: prometheus
+  ui:
+    enabled: true
+    #service:
+    #  type: NodePort
+    #  nodePort: 30580
+
+operator:
+  # -- Enable the cilium-operator component (required).
+  enabled: true
+  replicas: 1
+
+ipam:
+  mode: "kubernetes" # https://docs.cilium.io/en/latest/installation/kind/

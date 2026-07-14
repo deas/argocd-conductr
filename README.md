@@ -59,6 +59,7 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#usage">Installation</a></li>
+        <li><a href="#quick-sync-experiments-with-the-in-cluster-gitea">In-cluster Gitea</a></li>
       </ul>
     </li>
     <li><a href="#todo">TODO</a></li>
@@ -90,7 +91,7 @@ The change process starts at localhost. Hence, we consider `kind` experience ver
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections -->
 <details>
-<summary>Demo using terraform bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state 🪄🎩🐰
+<summary>Demo using opentofu bootstrapping a single node kind cluster showing deployments,statefulsets and daemonsets as they enter their desired state 🪄🎩🐰
 </summary>
 
 ![Demo](./assets/demo.gif)
@@ -120,7 +121,7 @@ We prefer Pull over Push.
 
 We focus on one "Platform Team" managing many clusters using a single repo. It should enable ArgoCD embedding for Application verticals.
 
-Following the App of Apps pattern, our `local` root `Application` is at (`envs/local`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
+Following the App of Apps pattern, our `kind-olm` root `Application` is at (`envs/kind-olm`). The root app kicks off various `ApplicationSets` covering similarly shaped (e.g. `helm`/`kustomize`) apps hosted in [`apps`](./apps). Within that folder, we do not want Argo CD resources. This helps with separation and quick testing cycles.
 
 OLM footprint has a bigger footprint than helm and it comes with its own set of issues as well. It is higher level and way more user friendly. With some components (e.g. Argo CD, Loki, LVM) `helm` is the second class citizen. With others (e.g. Rook), it's the opposite. We prefer first class citizens. Hence, we default to bring in OLM when it is not there initially (such as on `kind`).
 
@@ -134,16 +135,14 @@ We cover deployments of:
 - Argo Rollouts
 - Argo Events
 - Operator Lifecycle Management
-- Metallb
+- Kargo
 - Kube-Prometheus
-- Loki/Promtail
+- Loki
 - Velero
 - Cert-Manager
-- AWS Credentials Sync
 - Sealed Secrets
 - SOPS Secrets
 - Submariner
-- Caretta
 - LitmusChaos
 
 Beyond deployments, we feature:
@@ -153,7 +152,9 @@ Beyond deployments, we feature:
 - Github Actions integration
 - Prometheus Rule Unit Testing
 - A [bare bones alerting application](./apps/infra/monitoring-webhook) in case want to send alerts to very custom receivers (like Matrix Chat Rooms)
-- Open Cluster Management / Submariner Hub and Spoke Setup (WIP)
+- Open Cluster Management / Submariner multi-cluster setup (dormant)
+- Kargo promotion pipelines — per-app Rendered Configs and whole-env
+  promotion to a second cluster (see [`docs/kargo-promotion.md`](./docs/kargo-promotion.md))
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -195,24 +196,44 @@ Some opinions first:
 - `kubectl`
 - `mise` (highly recommended)
 - `docker` (if using `kind`)
-- `terraform` (optional)
-- `helm` (if not using terraform)
+- `opentofu` (required to bring up a cluster)
+- `helm` (only for the deprecated no-opentofu install path)
 
 ### Usage
 
 For basic demo purposes, you can use this public repo. If you want to run against your own, replace the git server reference with your own.
 
-First, you should choose where to start, specifically whether you want to use `terraform`.
-
-If you don't want to use terraform, you should be starting at the root folder. There is a [`Makefile`](./Makefile) with various ad hoc tasks. Simply running
+The root [`Makefile`](./Makefile) is the entrypoint. Run `make` for the full
+list of targets; the **Clusters** section brings everything up from scratch
+(`kind` cluster → cilium → Argo CD → root app) via the OpenTofu module in
+[`./tf`](./tf), which it drives for you:
 
 ```sh
-make
+make cluster-up            # default hub cluster (helm flavor) - the usual entrypoint
+make cluster-workload-up   # optional second "workload" cluster (pull model)
+make kargo-connect         # wire the workload Kargo shard back to the hub
+make cluster-down          # tear the current cluster back down
 ```
 
-should give you some help.
+`cluster-up` picks the right `tofu` workspace and tfvars per cluster, so you
+never touch `tofu workspace` directly. The OLM-preferring `kind-olm` flavor is
+built the same way but in its own workspace with `tf/terraform-batman.tfvars`
+(see [`tf/`](./tf) for the underlying `apply`/`quick-destroy` engine, and
+[`docs/kargo-promotion.md`](./docs/kargo-promotion.md) for the two-cluster
+promotion flow).
 
-If you want to use `terraform`, you'll start similarly in the [`./tf`](./tf) folder. The terraform module supports deployment to `kind` clusters.
+<details>
+<summary>Deprecated: install Argo CD into a pre-existing cluster (no OpenTofu)</summary>
+
+Before OpenTofu was required, the root Makefile could install Argo CD into a
+cluster you had already created (it did not create the `kind` cluster). Those
+targets still exist but are **deprecated** — prefer `make cluster-up`:
+`make argocd-helm-install-basic argocd-apply-root` boots the olm-less
+`kind-helm` flavor (bringing in cert-manager, grafana-operator and the OCM
+cluster-manager as helm charts), while
+`make argocd-olm-install-basic argocd-apply-root ENV=kind-olm` boots the
+OLM-preferring `kind-olm` flavor.
+</details>
 
 Our preferred approach to secrets is sealed-secrets (have a look at [`gen-keys.sh`](./tools/gen-keys.sh) in case you'd like to use `sops` instead).
 
@@ -222,22 +243,61 @@ If using github, you may want to disable github actions and/or add a public depl
 gh repo deploy-key add ...
 ```
 
-In the root folder (w/o terraform), you should be checking
+If you want to see what a target will do before running it, dry-run it first:
 
 ```
-make -n argocd-helm-install-basic argocd-apply-root
+make -n cluster-up
 ```
 
-Run this without `-n` once you feel confident to get the ball rolling.
+Run it without `-n` once you feel confident to get the ball rolling.
 
-The default `local` deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
+The deployment will deploy a [SealedSecret](./apps/infra/private/). It will fail during decryption, because we won't be sharing our key. It is meant to be used with Argo Notifications, so it is not critical for a basic demo. Feel free to introduce your own bootstrap secret.
 
 We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling images can slow things down significantly. Contrary docker a host based solution (such as `k3s`), challenges are harder with `kind`. Make sure to understand your the defails of your painpoints before implementing your solution.
 
 - [Local Registry](https://kind.sigs.k8s.io/docs/user/local-registry/)
 - [Pull-through Docker registry on Kind clusters](https://maelvls.dev/docker-proxy-registry-kind/) (`registry:2` supports only one registry per instnance)
 - `kind load` may address some use cases
-- Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images). (s. `make argocd-destroy`)
+- Remove everything in `kind` installed by Argo CD (so we can rebuild from cached images).
+
+### Quick sync experiments with the in-cluster Gitea
+
+The `kind-olm` and `kind-helm` environments deploy a bare, single-pod
+[Gitea](https://about.gitea.com) ([`apps/infra/gitea`](./apps/infra/gitea)) to
+act as an in-cluster git remote for quick Argo CD sync experiments — edit,
+push, sync without leaving the cluster or waiting on GitHub.
+
+Admin credentials are the chart defaults — `gitea_admin` / `r8sA8CPHD9!bt6d` —
+a local throwaway, fine for `kind`. Reach the UI/API from the host via
+
+```sh
+kubectl -n gitea port-forward svc/gitea-http 3000:3000
+```
+
+Create a repo (make it public and Argo CD needs no repo credentials) and push:
+
+```sh
+curl -su 'gitea_admin:r8sA8CPHD9!bt6d' -X POST localhost:3000/api/v1/user/repos \
+  -H 'Content-Type: application/json' -d '{"name": "sync-lab", "auto_init": true}'
+git clone 'http://gitea_admin:r8sA8CPHD9%21bt6d@localhost:3000/gitea_admin/sync-lab.git'
+```
+
+From inside the cluster — i.e. as an `Application` `repoURL` — the same repo is
+
+```
+http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sync-lab.git
+```
+
+Repositories and the sqlite database live on a small PVC, so they survive pod
+restarts — but they are pruned together with the gitea app itself.
+
+For a scripted end-to-end pass of exactly this loop, run
+[`tools/gitea-sync-demo.sh`](./tools/gitea-sync-demo.sh): it creates a repo,
+pushes manifests, points a throwaway `Application` at it and verifies initial
+sync, update, prune and self-heal before cleaning up after itself. The script
+is deliberately imperative — everything it touches is ephemeral demo state
+that is removed on exit, so the declarative rule ("edit manifests, commit, let
+Argo CD sync") still holds for anything durable.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -245,63 +305,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 
 ## TODO
 
-<!--
-- [ ] Feature 1
-- [ ] Feature 3
-    - [ ] Nested Feature
--->
-
-- Environment propagation : Try [Kargo](https://kargo.io)
-- Try [kro](https://kro.io)
-- [Operator Controller Should Provide a Standard Install Process](https://github.com/operator-framework/operator-controller/issues/1026)
-- Improve ad hoc task support (smart branching) for Red Hat OpenShift [GitOps](https://github.com/redhat-developer/gitops-operator) (ns, secrets), and Ingress (login)
-- ~~Introduce proper GitOps time travel support (tags/hashes)~~
-- Improve Openshift harmonization (esp. with regards to naming/namespaces)
-- `kind` based testing
-- Improve Unit/Integration Test Coverage
-- Prometheus based sync failure alerts (s. known issues)
-- It appear odd that using olm based installation of ocm still requires us to worry about [the hub registration-operator](apps/infra/registration-operator-hub).
-- There are `TODO` tags in code (to provide context)
-- It takes too long for prometheus to get up
-- `terraform` within Argo CD? (just like in `tf-controller`)
-- crossplane
-- For `kind`, we may want to replace Metallb with [`cloud-provider-kind`](https://github.com/kubernetes-sigs/cloud-provider-kind)
-- keycloak + sso (DNS) local trickery
-- Aspire Dashboard? (ultralight oTel)
-- Customer Use Case Demo litmus? Should probably bring the pure chaos bits to Argo CD [`deas/kaos`](https://github.com/deas/ka0s/)
-- ~~helm job sample~~
-- ~~Argo CD Grafana Dashboard~~
-- ~~Argo CD Service Monitor (depends on prom)~~
-- Canary-/Green/Blue Deployment (Rollouts)
-- ~~default to auto update everything~~?
-- ~~Proper self management of Argo CD~~
-- ~~metrics-server~~
-- contour?
-- ~~cilium~~
-- ~~OPA Policies: \_Gatekeeper vs usage in CI~~
-- kubeconform in CI
-- Argo CD +/vs ACM/open cluster management
-- Notifications Sync alerts Slack/Matrix
-- [Manage Kubernetes Operators with Argo CD](https://piotrminkowski.com/2023/05/05/manage-kubernetes-operators-with-argocd/)?
-- Try [Argo-CD Autopilot](https://argocd-autopilot.readthedocs.io/en/stable/)
-- Proper cascaded removal. Argo CD should be last. Will likely involve terraform.
-- ~~[Applications in any namespace](https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/) (s. Known Issues)~~
-- Service Account based OAuth integration on Openshift is nice - but tricky to implement: [OpenShift Authentication Integration with Argo CD](https://cloud.redhat.com/blog/openshift-authentication-integration-with-argocd), [Authentication using OpenShift](https://dexidp.io/docs/connectors/openshift)
-- Openshift Proxy/Global Pull Secrets, Global Pull Secrets, Ingress + API Server
-  Certs, IDP Integration
-- Improve Github Actions Quality Gates
-- Tracing Solution (zipkin, tempo)
-- oTel Sample
-- More Grafana Dashboards / Integrations with Openshift Console Plugin
-- Consider migrating `make` to `just`
-- Dedupe/Modularize `Makefile`/`Justfile`
-- [ocm solutions](https://github.com/open-cluster-management-io/ocm/tree/main/solutions)
-  See the [open issues](https://github.com/deas/argocd-conductr/issues) for a full list of proposed features (and known issues).
-- [OCM : Integration with Argo CD](https://open-cluster-management.io/docs/scenarios/integration-with-argocd/)
-- Argo CD rbac/multi tenancy?
-- ACM appears to auto approve CSRs. Open source auto-approvers appear to specifically target cert-manager (CRD) or kubelet. Introduce [`csr-approver`](https://github.com/deas/csr-approver)
-- Introduce IPv6 with `crc`/kvm
-- Go deeper with `nix`/`devenv` - maybe even replace `mise`
+Tracked work items live in [`docs/TODO.md`](./docs/TODO.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -335,6 +339,7 @@ We want lifecycle of things (Create/Destroy) to be as fast as possible. Pulling 
 - [Argo CD Application Dependencies](https://codefresh.io/blog/argo-cd-application-dependencies/)
 - [Progressive Syncs (alpha)](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Progressive-Syncs/)
 - [Custom Root CAs in OpenShift](https://kenmoini.com/post/2022/02/custom-root-ca-in-openshift/)
+- [Finding: vind (vCluster in Docker) as a kind replacement](./docs/finding-vind-evaluation.md) — why we stay on `kind` for now
 
 <!-- CONTRIBUTING -->
 

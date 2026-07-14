@@ -26,3 +26,5 @@ tf/argocd-conductr-config
 .aider.chat.history.md
 .aider.input.history
 .aider.tags.cache.v4
+secret-sealed-secrets.yaml
+tf/*-config

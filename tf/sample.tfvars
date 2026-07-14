@@ -1,7 +1,7 @@
 # dns_hosts = { "192.168.1.121" = "proxy.local" }
 # kubeconfig_path = "/home/deas/.kube/config"
 # bootstrap_path  = [../secret-sealed-secrets.yaml"]
-# cilium_appset_path = "../envs/local/appset-infra-helm.yaml"
+# cilium_appset_path = "../envs/kind-olm/appset-infra-helm.yaml"
 # bootstrap_olm = true
 
 #additional_keys = {
