@@ -5,6 +5,14 @@
 `tehcyx/kind` Terraform provider)
 **Verdict:** Right shape, wrong time — keep `kind`; revisit vind later.
 
+> **Update (2026-07-17):** the time-boxed spike this finding recommends has
+> landed as `make vind-up` — see [vind.md](./vind.md). It runs *alongside*
+> kind (does not touch the kind provisioning spine): the `vcluster` CLI creates
+> the Docker cluster and OpenTofu consumes it in external-cluster mode, which
+> sidesteps friction #1 (no vind TF provider). It stays on vind's default
+> flannel CNI rather than re-solving Cilium-on-vind (friction #2), so the root
+> env is `envs/vind-helm` = `kind-helm` minus cilium.
+
 ## What vind is (and is not)
 
 - **vind** = vCluster's **Docker driver**: a *standalone, real* Kubernetes

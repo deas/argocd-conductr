@@ -205,12 +205,13 @@ resource "helm_release" "linked_submariner" {
   #}
 }
 
-module "kubeconfig" {
-  source = "github.com/deas/terraform-modules//kubeconfig?ref=main"
-  count  = var.kubeconfig_path != null ? 1 : 0
-  # source     = "../../terraform-modules/kubeconfig"
-  kubeconfig = file(var.kubeconfig_path)
-}
+# External-cluster mode (var.kubeconfig_path set => kind_cluster.default is
+# count=0, e.g. make vind-up): the k8s/helm/kubectl providers reach the cluster
+# through the KUBECONFIG env, not through parsed kubeconfig attributes. A former
+# module "kubeconfig" that base64-decoded certificate-authority-data lived here;
+# it was unused by any provider and crashed on CA-less kubeconfigs (vcluster's
+# docker driver emits insecure-skip-tls-verify), so it was removed. See
+# docs/vind.md and tf/vind-helm.tfvars.
 
 # TODO: Could wrap this in a module providing default values
 resource "helm_release" "olm" {

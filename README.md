@@ -215,6 +215,11 @@ make kargo-connect         # wire the workload Kargo shard back to the hub
 make cluster-down          # tear the current cluster back down
 ```
 
+Experimental: `make vind-up` brings up the same helm-flavor cluster on
+[vind](https://github.com/loft-sh/vind) (vCluster in Docker) instead of `kind` —
+the `vcluster` CLI creates the cluster and the OpenTofu module consumes it in
+external-cluster mode. See [`docs/vind.md`](./docs/vind.md).
+
 `cluster-up` picks the right `tofu` workspace and tfvars per cluster, so you
 never touch `tofu workspace` directly. The OLM-preferring `kind-olm` flavor is
 built the same way but in its own workspace with `tf/terraform-batman.tfvars`

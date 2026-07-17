@@ -66,6 +66,14 @@ cluster-workload-up: ## Bring up the second "workload" cluster (pull-model peer)
 cluster-down: ## Tear down the current-workspace cluster (kind node + tofu state)
 	$(MAKE) -C tf quick-destroy
 
+.PHONY: vind-up
+vind-up: ## Bring up the helm-flavor default cluster on vind (vCluster in Docker) instead of kind (see docs/vind.md)
+	./tools/vind.sh up
+
+.PHONY: vind-down
+vind-down: ## Tear down the vind cluster (tofu state + vcluster + exported kubeconfig)
+	./tools/vind.sh down
+
 .PHONY: kargo-connect
 kargo-connect: ## Wire the workload cluster's Kargo shard to the hub control plane (see docs/kargo-promotion.md)
 	./tools/kargo-shard-kubeconfig.sh
