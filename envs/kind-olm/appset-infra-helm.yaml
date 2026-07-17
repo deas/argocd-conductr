@@ -33,7 +33,7 @@ spec:
                   namespace: openshift-user-workload-monitoring
                   targetRevision: "9.1.*"
                 - appName: sealed-secrets
-                  repoURL: https://bitnami-labs.github.io/sealed-secrets
+                  repoURL: https://bitnami.github.io/sealed-secrets
                   namespace: kube-system
                   targetRevision: "2.16.1"
                 - appName: argo-rollouts
